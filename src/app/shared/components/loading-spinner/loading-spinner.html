@@ -1,0 +1,8 @@
+<div class="flex flex-col items-center justify-center">
+  <div
+    [class]="'inline-block animate-spin rounded-full border-t-transparent ' + getSizeClass() + ' ' + getColorClass()"
+  ></div>
+  @if (message()) {
+    <p class="mt-3 text-gray-600 text-sm">{{ message() }}</p>
+  }
+</div>
