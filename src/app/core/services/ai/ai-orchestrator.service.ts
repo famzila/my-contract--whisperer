@@ -104,6 +104,7 @@ export class AiOrchestratorService {
     ]);
 
     return {
+      summary: executiveSummary, // Use executive summary as main summary
       executiveSummary,
       detailedSummary,
       eli5Summary,
