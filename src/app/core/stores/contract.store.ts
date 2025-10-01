@@ -4,9 +4,11 @@
  * Reference: https://ngrx.io/guide/signals/signal-store
  */
 import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals';
-import { computed } from '@angular/core';
+import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import type { Contract, ContractAnalysis, ContractClause, RiskLevel } from '../models/contract.model';
+import { ContractAnalysisService } from '../services/contract-analysis.service';
+import type { ParsedContract } from '../services/contract-parser.service';
 
 /**
  * Contract store state shape
@@ -120,7 +122,8 @@ export const ContractStore = signalStore(
   })),
   
   // Methods to update state
-  withMethods((store) => ({
+  // 👇 Inject services within withMethods
+  withMethods((store, analysisService = inject(ContractAnalysisService)) => ({
     /**
      * Set contract
      */
@@ -209,6 +212,38 @@ export const ContractStore = signalStore(
      */
     clearErrors: () => {
       patchState(store, { uploadError: null, analysisError: null });
+    },
+    
+    /**
+     * Analyze a contract (main orchestration method)
+     */
+    async analyzeContract(parsedContract: ParsedContract): Promise<void> {
+      patchState(store, { isUploading: true, uploadError: null });
+
+      try {
+        patchState(store, { isAnalyzing: true, analysisError: null });
+        
+        // Call the analysis service
+        const { contract, analysis } = await analysisService.analyzeContract(parsedContract);
+        
+        // Update store with results
+        patchState(store, { 
+          contract, 
+          analysis,
+          isUploading: false,
+          isAnalyzing: false,
+          uploadError: null,
+          analysisError: null,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Analysis failed';
+        patchState(store, { 
+          analysisError: errorMessage,
+          isUploading: false,
+          isAnalyzing: false,
+        });
+        throw error;
+      }
     },
     
     /**
