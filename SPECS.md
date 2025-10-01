@@ -116,6 +116,39 @@ Built with **Chrome Built-in AI APIs** (Gemini Nano, Prompt API, Summarizer API,
 
 ## 📅 The plan 
 
+### 🔧 Development Environment Setup
+
+**Before starting development, enable Chrome Built-in AI:**
+
+1. **Use Chrome Canary or Dev Channel** (131+)
+   - Download from: https://www.google.com/chrome/canary/
+
+2. **Enable Gemini Nano Flags:**
+   - Navigate to `chrome://flags/#optimization-guide-on-device-model`
+   - Set to "Enabled BypassPerfRequirement"
+   - Navigate to `chrome://flags/#prompt-api-for-gemini-nano`
+   - Set to "Enabled"
+   - Navigate to `chrome://flags/#summarization-api-for-gemini-nano`
+   - Set to "Enabled"
+
+3. **Restart Chrome** and wait for Gemini Nano to download
+
+4. **Verify Installation:**
+   - Open DevTools Console
+   - Type: `await window.ai.languageModel.capabilities()`
+   - Should return `{ available: "readily" }` (after model downloads)
+   - Check download status: `chrome://on-device-internals`
+
+5. **For Early Preview Program APIs:**
+   - Join EPP: https://developer.chrome.com/docs/ai/built-in#join-the-epp
+   - Access Prompt API and other experimental features
+
+6. **Origin Trial Tokens (for production):**
+   - Register at: https://developer.chrome.com/origintrials/
+   - Add tokens to HTML `<meta>` tags or HTTP headers
+
+---
+
 ### 🎯 Development Phases
 
 This project will be built in **4 iterative phases** over **3 weeks**, focusing on core functionality first, then progressively adding advanced features. Each phase delivers a working, testable increment.
@@ -186,6 +219,13 @@ This project will be built in **4 iterative phases** over **3 weeks**, focusing 
 - Implement capability detection (check if APIs are available)
 - Add fallback messaging when APIs unavailable
 - Create TypeScript interfaces for AI responses
+
+**⚠️ Important API Availability Notes:**
+- **Prompt API**: Currently EPP-only, works in Chrome Extensions (Windows/macOS/Linux)
+- **Other APIs**: Available via Origin Trials (Summarizer, Writer, Rewriter, Translator)
+- **Gemini Nano**: Auto-downloads when enabled in `chrome://flags`
+- **Development Setup**: Enable "Prompt API for Gemini Nano" and "Summarization API for Gemini Nano" in `chrome://flags/#optimization-guide-on-device-model`
+- **Hybrid Strategy**: Implement server-side fallback for production (Firebase + Gemini API)
 
 **1.3 Contract Input Module**
 - File upload component (PDF, TXT, DOCX support)
