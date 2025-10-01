@@ -51,7 +51,7 @@ export const ContractStore = signalStore(
   withState(initialState),
   
   // Computed values derived from state
-  withComputed(({ contract, analysis }) => ({
+  withComputed(({ contract, analysis, isUploading, isAnalyzing, uploadError, analysisError }) => ({
     // Check if contract is loaded
     hasContract: computed(() => contract() !== null),
     
@@ -109,12 +109,12 @@ export const ContractStore = signalStore(
     }),
     
     // Check if loading
-    isLoading: computed(({ isUploading, isAnalyzing }) => 
+    isLoading: computed(() => 
       isUploading() || isAnalyzing()
     ),
     
     // Check if there are errors
-    hasError: computed(({ uploadError, analysisError }) => 
+    hasError: computed(() => 
       uploadError() !== null || analysisError() !== null
     ),
   })),

@@ -1,1 +1,86 @@
-<p>analysis-dashboard works!</p>
+<div class="py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Loading State -->
+    @if (contractStore.isLoading()) {
+      <div class="flex items-center justify-center py-20">
+        <app-loading-spinner [size]="'xl'" [message]="'Analyzing your contract...'" />
+      </div>
+    }
+
+    <!-- Dashboard Content -->
+    @if (!contractStore.isLoading() && contractStore.hasAnalysis()) {
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Contract Analysis</h1>
+            <p class="text-gray-600">
+              {{ contractStore.contract()?.fileName }} • {{ contractStore.contract()?.wordCount }} words
+            </p>
+          </div>
+          <app-button [variant]="'secondary'" (clicked)="uploadNew()">
+            Upload New Contract
+          </app-button>
+        </div>
+      </div>
+
+      <!-- Risk Score Card -->
+      <app-card class="mb-8">
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-semibold text-gray-900 mb-2">Overall Risk Assessment</h2>
+              <p class="text-gray-600">Based on clause analysis and contract terms</p>
+            </div>
+            <div class="text-center">
+              <div [class]="'text-6xl font-bold mb-2 ' + getRiskScoreColor(contractStore.riskScore())">
+                {{ contractStore.riskScore() }}
+              </div>
+              <div [class]="'text-lg font-medium ' + getRiskScoreColor(contractStore.riskScore())">
+                {{ getRiskScoreLabel(contractStore.riskScore()) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </app-card>
+
+      <!-- Risk Distribution -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <app-card [hoverable]="true">
+          <div class="p-6 text-center">
+            <div class="text-4xl mb-2">🚨</div>
+            <div class="text-3xl font-bold text-error mb-1">{{ contractStore.riskCounts().high }}</div>
+            <div class="text-sm text-gray-600">High Risk</div>
+          </div>
+        </app-card>
+
+        <app-card [hoverable]="true">
+          <div class="p-6 text-center">
+            <div class="text-4xl mb-2">⚠️</div>
+            <div class="text-3xl font-bold text-warning mb-1">{{ contractStore.riskCounts().medium }}</div>
+            <div class="text-sm text-gray-600">Medium Risk</div>
+          </div>
+        </app-card>
+
+        <app-card [hoverable]="true">
+          <div class="p-6 text-center">
+            <div class="text-4xl mb-2">⚡</div>
+            <div class="text-3xl font-bold text-risk-low mb-1">{{ contractStore.riskCounts().low }}</div>
+            <div class="text-sm text-gray-600">Low Risk</div>
+          </div>
+        </app-card>
+
+        <app-card [hoverable]="true">
+          <div class="p-6 text-center">
+            <div class="text-4xl mb-2">✅</div>
+            <div class="text-3xl font-bold text-risk-safe mb-1">{{ contractStore.riskCounts().safe }}</div>
+            <div class="text-sm text-gray-600">Safe</div>
+          </div>
+        </app-card>
+      </div>
+
+      <ng-content></ng-content>
+    }
+  </div>
+</div>

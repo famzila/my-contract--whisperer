@@ -18,6 +18,13 @@ export const routes: Routes = [
             (m) => m.ContractUpload
           ),
       },
+      {
+        path: 'analysis',
+        loadComponent: () =>
+          import('./features/analysis-dashboard/analysis-dashboard').then(
+            (m) => m.AnalysisDashboard
+          ),
+      },
     ],
   },
 ];
