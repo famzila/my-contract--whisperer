@@ -16,6 +16,8 @@ export const AppConfig = {
    * - Requires Chrome Canary with flags enabled:
    *   - chrome://flags/#prompt-api-for-gemini-nano
    *   - chrome://flags/#summarization-api-for-gemini-nano
+   *   - chrome://flags/#writer-api-for-gemini-nano
+   *   - chrome://flags/#rewriter-api-for-gemini-nano
    * - Real AI analysis with actual contract text
    * 
    * 💡 Tip: Set to true for development, false for production/demo

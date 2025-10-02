@@ -8,6 +8,7 @@ import { Button } from '../../shared/components/button/button';
 import type { ContractClause } from '../../core/models/contract.model';
 import type { AIAnalysisResponse } from '../../core/models/ai-analysis.model';
 import { AppConfig } from '../../core/config/app.config';
+import { WriterService } from '../../core/services/ai/writer.service';
 
 @Component({
   selector: 'app-analysis-dashboard',
@@ -19,6 +20,7 @@ import { AppConfig } from '../../core/config/app.config';
 export class AnalysisDashboard implements OnInit {
   private router = inject(Router);
   contractStore = inject(ContractStore);
+  private writerService = inject(WriterService);
   
   // Local state
   selectedTab = signal<'summary' | 'risks' | 'obligations' | 'omissions' | 'questions' | 'disclaimer'>('summary');
@@ -29,6 +31,10 @@ export class AnalysisDashboard implements OnInit {
   
   // Check if mock mode is enabled
   isMockMode = AppConfig.useMockAI;
+  
+  // Email draft state
+  isDraftingEmail = signal<boolean>(false);
+  draftedEmail = signal<string | null>(null);
 
   ngOnInit(): void {
     // Redirect if no contract/analysis
@@ -292,5 +298,136 @@ export class AnalysisDashboard implements OnInit {
     }
     
     return text;
+  }
+  
+  /**
+   * Draft a professional email with questions using Writer API
+   */
+  async draftProfessionalEmail(): Promise<void> {
+    if (this.isDraftingEmail()) return;
+    
+    const data = this.structuredData();
+    if (!data) return;
+    
+    const questions = data.questions;
+    const employerName = data.metadata.parties.employer.name;
+    const employeeName = data.metadata.parties.employee.name;
+    
+    if (questions.length === 0) {
+      console.warn('No questions to draft email');
+      return;
+    }
+    
+    this.isDraftingEmail.set(true);
+    this.draftedEmail.set(null);
+    
+    try {
+      // Check if Writer API is available
+      const isAvailable = await this.writerService.isWriterAvailable();
+      
+      if (!isAvailable || AppConfig.useMockAI) {
+        // Use mock email if Writer API not available or in mock mode
+        console.log('📧 Using mock email template (Writer API not available or mock mode enabled)');
+        const mockEmail = this.generateMockEmail(employerName, employeeName, questions);
+        
+        // Simulate delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        this.draftedEmail.set(mockEmail);
+        this.isDraftingEmail.set(false);
+        return;
+      }
+      
+      // Use Writer API to generate professional email
+      console.log('✍️ Drafting email with Writer API...');
+      
+      const prompt = this.buildEmailPrompt(employerName, employeeName, questions);
+      const email = await this.writerService.write(prompt, {
+        tone: 'formal',
+        length: 'medium',
+        sharedContext: `This is a professional email from ${employeeName} to ${employerName} regarding an employment agreement.`,
+      });
+      
+      this.draftedEmail.set(email);
+      console.log('✅ Email drafted successfully');
+    } catch (error) {
+      console.error('❌ Error drafting email:', error);
+      // Fallback to mock email on error
+      const mockEmail = this.generateMockEmail(employerName, employeeName, questions);
+      this.draftedEmail.set(mockEmail);
+    } finally {
+      this.isDraftingEmail.set(false);
+    }
+  }
+  
+  /**
+   * Build prompt for Writer API
+   */
+  private buildEmailPrompt(employerName: string, employeeName: string, questions: string[]): string {
+    const questionsList = questions.map((q, i) => `${i + 1}. ${q}`).join('\n\n');
+    
+    return `Write a professional, polite email from ${employeeName} to the HR/Recruiter at ${employerName} asking for clarification on the following points from an employment agreement:
+
+${questionsList}
+
+The email should:
+- Be professional and courteous
+- Have a clear subject line
+- Express gratitude for receiving the agreement
+- List the questions in a numbered format
+- End with a professional closing
+- Be concise but complete
+
+Format the email with proper structure including Subject, Greeting, Body, and Closing.`;
+  }
+  
+  /**
+   * Generate mock email when Writer API is not available
+   */
+  private generateMockEmail(employerName: string, employeeName: string, questions: string[]): string {
+    const questionsList = questions
+      .slice(0, 5) // Limit to first 5 questions for readability
+      .map((q, i) => `${i + 1}. ${q}`)
+      .join('\n\n');
+    
+    return `Subject: Clarification on Employment Agreement Terms
+
+Dear HR Team / Hiring Manager,
+
+Thank you for sending over the Employment Agreement for the position at ${employerName}. I am excited about the opportunity to join your team.
+
+Before I proceed with signing, I would appreciate clarification on the following points to ensure I fully understand the terms:
+
+${questionsList}
+
+I believe having clarity on these matters will help ensure we are aligned and will contribute to a successful working relationship.
+
+I look forward to your response and appreciate your time in addressing these questions.
+
+Best regards,
+${employeeName}`;
+  }
+  
+  /**
+   * Copy drafted email to clipboard
+   */
+  async copyDraftedEmail(): Promise<void> {
+    const email = this.draftedEmail();
+    if (!email) return;
+    
+    try {
+      await navigator.clipboard.writeText(email);
+      console.log('✅ Email copied to clipboard');
+      // TODO: Show toast notification
+    } catch (err) {
+      console.error('❌ Failed to copy email:', err);
+    }
+  }
+  
+  /**
+   * Close email draft modal
+   */
+  closeDraftedEmail(): void {
+    this.draftedEmail.set(null);
   }
 }
