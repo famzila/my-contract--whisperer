@@ -8,7 +8,9 @@ import type {
 
 /**
  * Service for Chrome Built-in Summarizer API
- * Handles contract summarization in different formats and lengths
+ * Handles text summarization with different types and formats
+ * 
+ * Reference: https://developer.chrome.com/docs/ai/summarizer-api
  */
 @Injectable({
   providedIn: 'root',
@@ -20,45 +22,61 @@ export class SummarizerService {
    * Check if Summarizer API is available
    */
   async isAvailable(): Promise<boolean> {
-    if (!window.ai?.summarizer) {
-      return false;
+    if ('Summarizer' in window && window.Summarizer) {
+      try {
+        const availability = await window.Summarizer.availability();
+        console.log('📝 Summarizer API availability:', availability);
+        return availability !== 'unavailable';
+      } catch (error) {
+        console.error('❌ Error checking Summarizer availability:', error);
+        return false;
+      }
     }
 
-    try {
-      const capabilities = await this.getCapabilities();
-      return capabilities.available !== 'no';
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Get Summarizer API capabilities
-   */
-  async getCapabilities(): Promise<AISummarizerCapabilities> {
-    if (!window.ai?.summarizer) {
-      throw new Error('Summarizer API not available');
-    }
-
-    return await window.ai.summarizer.capabilities();
+    console.warn('❌ Summarizer API not found');
+    return false;
   }
 
   /**
    * Create a new Summarizer instance
+   * This will trigger model download if needed (requires user interaction)
    */
   async createSummarizer(
     options?: AISummarizerCreateOptions
   ): Promise<AISummarizer> {
-    if (!window.ai?.summarizer) {
+    if (!window.Summarizer) {
       throw new Error('Summarizer API not available');
     }
 
-    const capabilities = await this.getCapabilities();
-    if (capabilities.available === 'no') {
+    // Check availability
+    const availability = await window.Summarizer.availability();
+    
+    if (availability === 'unavailable') {
       throw new Error('Summarizer API not available on this device');
     }
 
-    this.summarizer = await window.ai.summarizer.create(options);
+    // Prepare options with monitor for download progress
+    const createOptions: AISummarizerCreateOptions = {
+      outputLanguage: 'en', // Specify English output to avoid warnings
+      ...options,
+      monitor: (m) => {
+        m.addEventListener('downloadprogress', (e) => {
+          const percent = (e.loaded * 100).toFixed(1);
+          console.log(`📥 Downloading Summarizer model: ${percent}%`);
+        });
+      },
+    };
+
+    // Log download status
+    if (availability === 'downloadable') {
+      console.log('📥 Summarizer model needs to be downloaded. Starting download...');
+      console.log('⏳ This may take a few moments. Download progress will be shown below.');
+    }
+
+    console.log('🚀 Creating Summarizer session...');
+    this.summarizer = await window.Summarizer.create(createOptions);
+    console.log('✅ Summarizer session created successfully');
+    
     return this.summarizer;
   }
 
@@ -81,7 +99,7 @@ export class SummarizerService {
   }
 
   /**
-   * Summarize text with streaming response
+   * Summarize text with streaming
    */
   summarizeStreaming(
     text: string,
@@ -97,8 +115,8 @@ export class SummarizerService {
   /**
    * Generate executive summary (short, key points)
    */
-  async generateExecutiveSummary(contractText: string): Promise<string> {
-    return await this.summarize(contractText, {
+  async generateExecutiveSummary(text: string): Promise<string> {
+    return await this.summarize(text, {
       type: 'key-points',
       length: 'short',
       format: 'markdown',
@@ -108,10 +126,10 @@ export class SummarizerService {
   /**
    * Generate detailed summary
    */
-  async generateDetailedSummary(contractText: string): Promise<string> {
-    return await this.summarize(contractText, {
+  async generateDetailedSummary(text: string): Promise<string> {
+    return await this.summarize(text, {
       type: 'tl;dr',
-      length: 'medium',
+      length: 'long',
       format: 'markdown',
     });
   }
@@ -119,9 +137,8 @@ export class SummarizerService {
   /**
    * Generate ELI5 (Explain Like I'm 5) summary
    */
-  async generateELI5Summary(contractText: string): Promise<string> {
-    // Use shorter length for simpler explanation
-    return await this.summarize(contractText, {
+  async generateELI5Summary(text: string): Promise<string> {
+    return await this.summarize(text, {
       type: 'tl;dr',
       length: 'short',
       format: 'plain-text',
@@ -129,7 +146,7 @@ export class SummarizerService {
   }
 
   /**
-   * Destroy the current summarizer
+   * Clean up resources
    */
   destroy(): void {
     if (this.summarizer) {
@@ -138,4 +155,3 @@ export class SummarizerService {
     }
   }
 }
-

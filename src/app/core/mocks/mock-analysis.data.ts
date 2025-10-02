@@ -1,0 +1,238 @@
+import type { AIAnalysisResponse } from '../models/ai-analysis.model';
+
+/**
+ * Mock contract analysis response for development
+ */
+export const MOCK_ANALYSIS: AIAnalysisResponse = {
+  metadata: {
+    contractType: 'Employment Agreement',
+    effectiveDate: 'October 1, 2025',
+    jurisdiction: 'California, USA',
+    parties: {
+      employer: {
+        name: 'Acme Technologies, Inc.',
+        location: 'San Francisco, CA 94105',
+      },
+      employee: {
+        name: 'Jane Doe',
+        location: 'San Jose, CA 95112',
+        position: 'Senior Software Engineer',
+      },
+    },
+  },
+  summary: {
+    parties: 'Acme Technologies, Inc. hires Jane Doe as a Senior Software Engineer.',
+    role: 'Employment',
+    responsibilities: [
+      'Writing and reviewing code',
+      'Designing scalable architectures',
+      'Mentoring junior developers',
+      'Adhering to security policies',
+      'Devote full professional time to Company business',
+    ],
+    compensation: {
+      baseSalary: 120000,
+      bonus: 'Discretionary performance bonus up to 15% of annual base salary',
+      equity: '5,000 stock options, vesting quarterly over 4 years',
+      other: null,
+    },
+    benefits: [
+      'Health, dental, vision insurance',
+      '20 paid vacation days',
+      '10 paid holidays',
+      '5 sick days',
+      '401(k) plan with 5% employer match',
+    ],
+    termination: {
+      atWill: 'Either party may terminate with 30 days written notice.',
+      forCause: 'Company may terminate immediately for misconduct, breach, or gross negligence.',
+      severance: '8 weeks salary continuation if terminated without cause',
+    },
+    restrictions: {
+      confidentiality: 'Agrees not to disclose proprietary information.',
+      nonCompete: 'No competitive business for 12 months after termination within California.',
+      nonSolicitation: 'No soliciting Company clients, customers, or employees for 12 months post-termination.',
+      other: null,
+    },
+  },
+  risks: [
+    {
+      title: 'Non-Compete Clause in California',
+      severity: 'High',
+      emoji: '🚨',
+      description: 'A 12-month non-compete restriction in California may be unenforceable under California Business and Professions Code Section 16600, which generally voids non-compete agreements.',
+      impact: 'If enforced, this severely limits your ability to work in your field for a year. However, California law typically protects employees from such restrictions, making this clause likely unenforceable.',
+    },
+    {
+      title: 'At-Will Employment',
+      severity: 'Medium',
+      emoji: '⚠️',
+      description: 'Either party can end the employment with only 30 days notice, providing limited job security.',
+      impact: 'You could be terminated with just 30 days notice for any lawful reason or no reason at all, creating financial uncertainty.',
+    },
+    {
+      title: 'Broad IP Assignment',
+      severity: 'Medium',
+      emoji: '⚠️',
+      description: 'All work created during employment becomes company property, potentially including personal projects.',
+      impact: 'Side projects or personal coding work done on your own time could be claimed by the company if related to their business.',
+    },
+    {
+      title: 'Vague "Gross Negligence" Definition',
+      severity: 'Medium',
+      emoji: '⚠️',
+      description: 'The contract allows immediate termination for "gross negligence" but does not define what constitutes it.',
+      impact: 'Ambiguity could lead to sudden termination without severance for actions you did not realize were considered gross negligence.',
+    },
+    {
+      title: 'Discretionary Bonus',
+      severity: 'Low',
+      emoji: 'ℹ️',
+      description: 'The bonus is described as "discretionary," meaning there is no guarantee you will receive it even if performance targets are met.',
+      impact: 'Your actual compensation may be lower than expected if bonuses are not paid consistently.',
+    },
+  ],
+  obligations: {
+    employer: [
+      {
+        duty: 'Pay base salary',
+        amount: 120000,
+        frequency: 'bi-weekly',
+        startDate: null,
+        duration: null,
+        scope: null,
+      },
+      {
+        duty: 'Provide health, dental, and vision insurance',
+        amount: null,
+        frequency: null,
+        startDate: 'Day 1',
+        duration: null,
+        scope: 'Full coverage as per company policy',
+      },
+      {
+        duty: 'Grant stock options',
+        amount: 5000,
+        frequency: null,
+        startDate: null,
+        duration: 'Vesting quarterly over 4 years',
+        scope: 'Subject to vesting schedule and continued employment',
+      },
+      {
+        duty: 'Contribute to 401(k)',
+        amount: null,
+        frequency: 'per pay period',
+        startDate: null,
+        duration: null,
+        scope: '5% employer match',
+      },
+      {
+        duty: 'Provide paid time off',
+        amount: null,
+        frequency: null,
+        startDate: null,
+        duration: null,
+        scope: '20 vacation days, 10 holidays, 5 sick days annually',
+      },
+    ],
+    employee: [
+      {
+        duty: 'Perform Senior Software Engineer duties',
+        amount: null,
+        frequency: null,
+        startDate: null,
+        duration: null,
+        scope: 'Full-time professional dedication',
+      },
+      {
+        duty: 'Write and review code',
+        amount: null,
+        frequency: null,
+        startDate: null,
+        duration: null,
+        scope: 'As assigned by supervisor',
+      },
+      {
+        duty: 'Design scalable architectures',
+        amount: null,
+        frequency: null,
+        startDate: null,
+        duration: null,
+        scope: 'For company projects',
+      },
+      {
+        duty: 'Mentor junior developers',
+        amount: null,
+        frequency: null,
+        startDate: null,
+        duration: null,
+        scope: 'As needed',
+      },
+      {
+        duty: 'Maintain confidentiality',
+        amount: null,
+        frequency: null,
+        startDate: null,
+        duration: 'Indefinitely, including post-employment',
+        scope: 'All proprietary information',
+      },
+      {
+        duty: 'Comply with non-solicitation',
+        amount: null,
+        frequency: null,
+        startDate: null,
+        duration: '12 months post-termination',
+        scope: 'No soliciting clients, customers, or employees',
+      },
+    ],
+  },
+  omissions: [
+    {
+      item: 'Overtime compensation policy',
+      impact: 'Unclear whether overtime hours will be compensated or if the position is exempt. This could lead to unpaid extra work.',
+      priority: 'High',
+    },
+    {
+      item: 'Remote work or work-from-home policy',
+      impact: 'No mention of remote work flexibility, which could affect work-life balance and relocation requirements.',
+      priority: 'High',
+    },
+    {
+      item: 'Performance review process and timeline',
+      impact: 'Without clear performance evaluation criteria, salary increases and promotions may be unclear or arbitrary.',
+      priority: 'Medium',
+    },
+    {
+      item: 'Arbitration cost allocation',
+      impact: 'The contract may require arbitration but does not specify who pays the fees, which could be expensive for the employee.',
+      priority: 'High',
+    },
+    {
+      item: 'Change of control or acquisition clause',
+      impact: 'If the company is acquired, your employment terms, stock options, or severance could change without clear protections.',
+      priority: 'Medium',
+    },
+    {
+      item: 'Intellectual property for work outside business hours',
+      impact: 'No carve-out for personal projects done on your own time and equipment, potentially giving the company rights to all your work.',
+      priority: 'High',
+    },
+    {
+      item: 'Expense reimbursement policy',
+      impact: 'No details on reimbursement for work-related expenses like equipment, travel, or professional development.',
+      priority: 'Low',
+    },
+  ],
+  questions: [
+    'Can the non-compete clause be removed or limited, given that it may be unenforceable in California?',
+    'What exactly constitutes "gross negligence" for immediate termination purposes?',
+    'Is the performance bonus based on objective metrics, and what is the historical payout rate?',
+    'How are stock options affected if the company is acquired or goes public?',
+    'Is there a clear process for performance reviews and salary adjustments?',
+    'Who pays for arbitration costs if a dispute arises?',
+    'Can I work on personal software projects outside of work hours without company ownership claims?',
+    'Is there flexibility for remote work or hybrid arrangements?',
+  ],
+  disclaimer: 'I am an AI assistant, not a lawyer. This information is for educational purposes only. Consult a qualified attorney for legal advice.',
+};
+

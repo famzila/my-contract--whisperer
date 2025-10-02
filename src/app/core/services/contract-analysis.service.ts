@@ -2,6 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { AiOrchestratorService } from './ai/ai-orchestrator.service';
 import { ContractParserService, type ParsedContract } from './contract-parser.service';
 import type { Contract, ContractAnalysis, ContractClause, Obligation, RiskLevel } from '../models/contract.model';
+import type { AIAnalysisResponse } from '../models/ai-analysis.model';
+import { AppConfig } from '../config/app.config';
+import { MOCK_ANALYSIS } from '../mocks/mock-analysis.data';
 
 /**
  * Contract Analysis Service
@@ -38,63 +41,341 @@ export class ContractAnalysisService {
       estimatedReadingTime: this.parser.estimateReadingTime(parsedContract.text),
     };
 
+    // Check if mock mode is enabled
+    if (AppConfig.useMockAI) {
+      console.log('🎭 Mock AI mode enabled - returning mock analysis');
+      
+      // Simulate delay for realistic UX
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      return {
+        contract,
+        analysis: this.createMockAnalysisFromStructuredData(contract.id),
+      };
+    }
+    
     // Check AI services availability
     const aiStatus = await this.aiOrchestrator.checkAvailability();
     
-    if (!aiStatus.allAvailable) {
-      // For MVP, create mock analysis if AI not available
+    console.log('🤖 AI Services Status:', {
+      prompt: aiStatus.prompt,
+      summarizer: aiStatus.summarizer,
+      translator: aiStatus.translator,
+      writer: aiStatus.writer,
+      rewriter: aiStatus.rewriter,
+      allAvailable: aiStatus.allAvailable
+    });
+    
+    // We only need Prompt and Summarizer APIs for basic analysis
+    if (!aiStatus.prompt || !aiStatus.summarizer) {
+      console.warn('⚠️ Required AI services not available:', {
+        promptAvailable: aiStatus.prompt,
+        summarizerAvailable: aiStatus.summarizer
+      });
+      console.warn('💡 Ensure you are using Chrome Canary with flags enabled at chrome://flags');
       return {
         contract,
-        analysis: this.createMockAnalysis(contract.id),
+        analysis: this.createMockAnalysis(contract.id, parsedContract.text),
       };
     }
 
-    // Perform AI analysis
-    const aiAnalysis = await this.aiOrchestrator.analyzeContract(parsedContract.text);
+    try {
+      console.log('🔍 Starting AI analysis...');
+      
+      // Perform AI analysis with real services
+      const aiAnalysis = await this.aiOrchestrator.analyzeContract(parsedContract.text);
+      
+      console.log('📊 AI Analysis received:', {
+        summaryLength: aiAnalysis.summary?.length,
+        clausesLength: aiAnalysis.clauses?.length,
+      });
 
-    // Parse AI results and create structured analysis
-    const clauses = this.parseClausesFromAI(aiAnalysis.clauses);
-    const obligations = this.extractObligations(clauses);
-    const riskScore = this.calculateRiskScore(clauses);
+      // Try to parse JSON response from AI
+      let structuredAnalysis: AIAnalysisResponse | null = null;
+      
+      try {
+        structuredAnalysis = JSON.parse(aiAnalysis.clauses);
+        console.log('✅ Successfully parsed structured JSON response');
+      } catch (jsonError) {
+        console.warn('⚠️ AI response is not valid JSON, falling back to text parsing');
+      }
 
-    const analysis: ContractAnalysis = {
-      contractId: contract.id,
-      summary: aiAnalysis.summary,
-      clauses,
-      riskScore,
-      obligations,
-      analyzedAt: new Date(),
-    };
+      // Parse AI results and create structured analysis
+      const clauses = structuredAnalysis 
+        ? this.parseClausesFromJSON(structuredAnalysis)
+        : await this.parseClausesFromAI(aiAnalysis.clauses, parsedContract.text);
+        
+      const obligations = structuredAnalysis
+        ? this.parseObligationsFromJSON(structuredAnalysis)
+        : this.extractObligationsFromText(parsedContract.text, clauses, aiAnalysis.clauses);
+        
+      const riskScore = this.calculateRiskScore(clauses);
 
-    return { contract, analysis };
+      // Store structured JSON for UI display if available
+      const summaryText = structuredAnalysis 
+        ? JSON.stringify(structuredAnalysis, null, 2)
+        : aiAnalysis.clauses;
+
+      const analysis: ContractAnalysis = {
+        contractId: contract.id,
+        summary: summaryText || 'Unable to generate summary',
+        clauses,
+        riskScore,
+        obligations,
+        analyzedAt: new Date(),
+      };
+
+      console.log('✅ Analysis complete:', {
+        clauseCount: clauses.length,
+        obligationCount: obligations.length,
+        riskScore,
+        isStructured: !!structuredAnalysis,
+      });
+
+      return { contract, analysis };
+    } catch (error) {
+      console.error('❌ AI Analysis failed:', error);
+      // Fallback to mock analysis on error
+      return {
+        contract,
+        analysis: this.createMockAnalysis(contract.id, parsedContract.text),
+      };
+    }
   }
 
   /**
-   * Parse clauses from AI response
+   * Parse clauses from structured JSON response
    */
-  private parseClausesFromAI(aiResponse: string): ContractClause[] {
-    // For MVP, create structured clauses from AI text
-    // In production, the AI would return properly formatted JSON
+  private parseClausesFromJSON(aiResponse: AIAnalysisResponse): ContractClause[] {
+    console.log('📝 Parsing clauses from JSON response...');
     
-    try {
-      // Try to parse as JSON first
-      const parsed = JSON.parse(aiResponse);
-      if (Array.isArray(parsed)) {
-        return parsed.map(c => ({
-          id: this.generateId(),
-          type: c.type || 'other',
-          content: c.content || '',
-          plainLanguage: c.plainLanguage || c.explanation || '',
-          riskLevel: c.riskLevel || 'medium',
-          confidence: c.confidence || 0.8,
-        }));
-      }
-    } catch {
-      // If not JSON, create sample clauses
-      return this.createSampleClauses();
+    const clauses: ContractClause[] = aiResponse.risks.map(risk => ({
+      id: this.generateId(),
+      type: this.normalizeClauseType(risk.title),
+      content: risk.description,
+      plainLanguage: `${risk.description}\n\nImpact: ${risk.impact}`,
+      riskLevel: this.mapSeverityToRiskLevel(risk.severity),
+      confidence: 0.95,
+    }));
+    
+    console.log(`✅ Parsed ${clauses.length} clauses from JSON`);
+    return clauses;
+  }
+  
+  /**
+   * Map severity string to risk level
+   */
+  private mapSeverityToRiskLevel(severity: string): RiskLevel {
+    switch (severity.toLowerCase()) {
+      case 'high':
+        return 'high';
+      case 'medium':
+        return 'medium';
+      case 'low':
+        return 'low';
+      default:
+        return 'medium';
     }
+  }
 
-    return this.createSampleClauses();
+  /**
+   * Parse obligations from structured JSON response
+   */
+  private parseObligationsFromJSON(aiResponse: AIAnalysisResponse): Obligation[] {
+    console.log('📝 Parsing obligations from JSON response...');
+    
+    const obligations: Obligation[] = [
+      ...aiResponse.obligations.employer.map(obl => {
+        let description = `Employer: ${obl.duty}`;
+        if (obl.amount) description += ` ($${obl.amount})`;
+        if (obl.frequency) description += ` - ${obl.frequency}`;
+        if (obl.scope) description += ` (${obl.scope})`;
+        
+        return {
+          id: this.generateId(),
+          description,
+          recurring: !!obl.frequency,
+          completed: false,
+          priority: 'medium' as const,
+        };
+      }),
+      ...aiResponse.obligations.employee.map(obl => {
+        let description = `Employee: ${obl.duty}`;
+        if (obl.scope) description += ` (${obl.scope})`;
+        
+        return {
+          id: this.generateId(),
+          description,
+          recurring: !!obl.frequency,
+          completed: false,
+          priority: 'medium' as const,
+        };
+      }),
+    ];
+    
+    console.log(`✅ Parsed ${obligations.length} obligations from JSON`);
+    return obligations;
+  }
+
+  /**
+   * Parse clauses from AI response (fallback for non-JSON)
+   * The AI returns structured text with risk flags, we parse it into our data model
+   */
+  private async parseClausesFromAI(aiResponse: string, contractText: string): Promise<ContractClause[]> {
+    console.log('📝 Parsing clauses from AI response...');
+    
+    const clauses: ContractClause[] = [];
+    
+    // Extract the Risk Flags section
+    const riskSection = aiResponse.match(/🚨 Risk Flags([\s\S]*?)(?:📅 Obligations|$)/i);
+    
+    if (riskSection && riskSection[1]) {
+      const riskText = riskSection[1];
+      const lines = riskText.split('\n').filter(line => line.trim());
+      
+      for (const line of lines) {
+        // Match lines with risk indicators: 🚨, ⚠️, or ✅
+        const riskMatch = line.match(/^[•\-*]?\s*(🚨|⚠️|✅)\s*(.+?):\s*(.+)/);
+        
+        if (riskMatch) {
+          const [, emoji, title, description] = riskMatch;
+          const riskLevel = this.mapEmojiToRiskLevel(emoji);
+          const clauseType = this.normalizeClauseType(title.trim());
+          
+          clauses.push({
+            id: this.generateId(),
+            type: clauseType,
+            content: description.trim(),
+            plainLanguage: description.trim(),
+            riskLevel,
+            confidence: 0.9,
+          });
+        }
+      }
+    }
+    
+    // If we couldn't parse any clauses from Risk Flags, try general extraction
+    if (clauses.length === 0) {
+      console.log('⚠️ Could not parse AI risk flags, extracting from full response');
+      return this.extractClausesFromText(contractText);
+    }
+    
+    console.log(`✅ Parsed ${clauses.length} clauses from AI analysis`);
+    return clauses;
+  }
+  
+  /**
+   * Map emoji risk indicator to risk level
+   */
+  private mapEmojiToRiskLevel(emoji: string): RiskLevel {
+    switch (emoji) {
+      case '🚨':
+        return 'high';
+      case '⚠️':
+        return 'medium';
+      case '✅':
+        return 'safe';
+      default:
+        return 'low';
+    }
+  }
+  
+  /**
+   * Extract clauses directly from contract text (fallback)
+   */
+  private extractClausesFromText(contractText: string): ContractClause[] {
+    const clauses: ContractClause[] = [];
+    const text = contractText.toLowerCase();
+    
+    // Look for common contract clause patterns
+    const clausePatterns: Array<{ type: import('../models/contract.model').ClauseType; keywords: string[]; risk: RiskLevel }> = [
+      { type: 'payment', keywords: ['payment', 'fee', 'charge', 'invoice', 'price'], risk: 'high' },
+      { type: 'termination', keywords: ['terminate', 'cancellation', 'end this agreement'], risk: 'medium' },
+      { type: 'liability', keywords: ['liability', 'liable', 'damages', 'indemnify'], risk: 'high' },
+      { type: 'confidentiality', keywords: ['confidential', 'secret', 'proprietary'], risk: 'safe' },
+      { type: 'renewal', keywords: ['renew', 'extend', 'automatically continue'], risk: 'medium' },
+      { type: 'warranty', keywords: ['warrant', 'guarantee', 'warranty'], risk: 'low' },
+    ];
+    
+    const sentences = contractText.match(/[^.!?]+[.!?]+/g) || [];
+    
+    for (const pattern of clausePatterns) {
+      for (const sentence of sentences) {
+        const sentenceLower = sentence.toLowerCase();
+        if (pattern.keywords.some(keyword => sentenceLower.includes(keyword))) {
+          clauses.push({
+            id: this.generateId(),
+            type: pattern.type,
+            content: sentence.trim(),
+            plainLanguage: this.simplifyLegalText(sentence.trim()),
+            riskLevel: pattern.risk,
+            confidence: 0.6,
+          });
+          break; // Only one clause per pattern
+        }
+      }
+    }
+    
+    return clauses.length > 0 ? clauses : this.createSampleClauses();
+  }
+  
+  /**
+   * Simplify legal text to plain language
+   */
+  private simplifyLegalText(text: string): string {
+    return text
+      .replace(/\bherein\b/gi, 'in this document')
+      .replace(/\bhereof\b/gi, 'of this')
+      .replace(/\bhereby\b/gi, 'by this')
+      .replace(/\bsaid\b/gi, 'the')
+      .replace(/\bshall\b/gi, 'will')
+      .replace(/\bpursuant to\b/gi, 'according to')
+      .trim();
+  }
+  
+  /**
+   * Normalize clause type names
+   */
+  private normalizeClauseType(type: string): import('../models/contract.model').ClauseType {
+    const normalized = type.toLowerCase().trim();
+    
+    if (normalized.includes('payment') || normalized.includes('fee')) return 'payment';
+    if (normalized.includes('termination') || normalized.includes('cancel')) return 'termination';
+    if (normalized.includes('liabil') || normalized.includes('damage')) return 'liability';
+    if (normalized.includes('confidential') || normalized.includes('secret')) return 'confidentiality';
+    if (normalized.includes('renew') || normalized.includes('extend')) return 'renewal';
+    if (normalized.includes('warrant') || normalized.includes('guarantee')) return 'warranty';
+    if (normalized.includes('indemnity') || normalized.includes('indemnif')) return 'indemnity';
+    if (normalized.includes('intellectual property') || normalized.includes('ip ')) return 'intellectual-property';
+    if (normalized.includes('dispute') || normalized.includes('arbitration')) return 'dispute-resolution';
+    if (normalized.includes('governing law') || normalized.includes('jurisdiction')) return 'governing-law';
+    
+    return 'other';
+  }
+  
+  /**
+   * Assess risk level from clause description
+   */
+  private assessRiskLevel(description: string): RiskLevel {
+    const desc = description.toLowerCase();
+    
+    // High risk indicators
+    if (desc.includes('penalty') || desc.includes('forfeit') || desc.includes('indemnif') || 
+        desc.includes('not liable') || desc.includes('no liability')) {
+      return 'high';
+    }
+    
+    // Medium risk indicators
+    if (desc.includes('may') || desc.includes('automatically') || desc.includes('unless')) {
+      return 'medium';
+    }
+    
+    // Low risk indicators
+    if (desc.includes('option') || desc.includes('reasonable') || desc.includes('mutual')) {
+      return 'low';
+    }
+    
+    return 'safe';
   }
 
   /**
@@ -146,55 +427,62 @@ export class ContractAnalysisService {
   }
 
   /**
-   * Extract obligations from clauses
+   * Extract obligations from AI response and contract text
    */
-  private extractObligations(clauses: ContractClause[]): Obligation[] {
+  private extractObligationsFromText(contractText: string, clauses: ContractClause[], aiResponse?: string): Obligation[] {
     const obligations: Obligation[] = [];
 
-    // Look for payment-related clauses
-    const paymentClauses = clauses.filter(c => c.type === 'payment');
-    paymentClauses.forEach(clause => {
-      obligations.push({
-        id: this.generateId(),
-        description: 'Make payment as per contract terms',
-        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-        recurring: true,
-        completed: false,
-        priority: 'high',
-      });
-    });
-
-    // Look for renewal clauses
-    const renewalClauses = clauses.filter(c => c.type === 'renewal');
-    renewalClauses.forEach(clause => {
-      obligations.push({
-        id: this.generateId(),
-        description: 'Review contract before auto-renewal',
-        dueDate: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000), // ~11 months
-        recurring: true,
-        completed: false,
-        priority: 'medium',
-      });
-    });
-
-    // Sample obligations for demo
-    obligations.push(
-      {
-        id: this.generateId(),
-        description: 'Provide monthly reports as specified in Section 5',
-        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        recurring: true,
-        completed: false,
-        priority: 'medium',
-      },
-      {
-        id: this.generateId(),
-        description: 'Maintain insurance coverage per requirements',
-        recurring: false,
-        completed: false,
-        priority: 'high',
+    // Try to parse obligations from AI response first
+    if (aiResponse) {
+      const obligationsSection = aiResponse.match(/📅 Obligations([\s\S]*?)$/i);
+      
+      if (obligationsSection && obligationsSection[1]) {
+        const obligText = obligationsSection[1];
+        const lines = obligText.split('\n').filter(line => line.trim() && line.match(/^[•\-*]/));
+        
+        for (const line of lines) {
+          const cleaned = line.replace(/^[•\-*]\s*/, '').trim();
+          if (cleaned && cleaned.toLowerCase() !== 'not specified') {
+            obligations.push({
+              id: this.generateId(),
+              description: cleaned,
+              recurring: false,
+              completed: false,
+              priority: 'medium',
+            });
+          }
+        }
       }
-    );
+    }
+
+    // If no obligations found from AI, use clause-based extraction
+    if (obligations.length === 0) {
+      // Look for payment-related clauses
+      const paymentClauses = clauses.filter(c => c.type === 'payment');
+      if (paymentClauses.length > 0) {
+        obligations.push({
+          id: this.generateId(),
+          description: 'Make payment as per contract terms',
+          dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          recurring: true,
+          completed: false,
+          priority: 'high',
+        });
+      }
+
+      // Look for renewal clauses
+      const renewalClauses = clauses.filter(c => c.type === 'renewal');
+      if (renewalClauses.length > 0) {
+        obligations.push({
+          id: this.generateId(),
+          description: 'Review contract before auto-renewal',
+          dueDate: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000),
+          recurring: true,
+          completed: false,
+          priority: 'medium',
+        });
+      }
+    }
 
     return obligations;
   }
@@ -221,26 +509,46 @@ export class ContractAnalysisService {
   }
 
   /**
-   * Create mock analysis for testing/demo
+   * Create mock analysis for testing/demo when AI is not available
    */
-  private createMockAnalysis(contractId: string): ContractAnalysis {
-    const clauses = this.createSampleClauses();
+  private createMockAnalysis(contractId: string, contractText: string): ContractAnalysis {
+    // Extract real clauses from the contract text
+    const clauses = this.extractClausesFromText(contractText);
     
     return {
       contractId,
-      summary: `This is a standard service agreement with moderate risk factors. 
-      
-Key Points:
-• 30-day termination notice required
-• Late payment penalties apply (5% per month)
-• Limited liability for the service provider
-• Automatic annual renewal
-• Confidentiality obligations for both parties
+      summary: `AI Analysis (Limited Mode): This contract has been analyzed using text pattern matching. For full AI-powered analysis, please use Chrome Canary with Built-in AI enabled.
 
-Overall Assessment: This contract contains some clauses that require attention, particularly regarding late payment penalties and liability limitations. Review carefully before signing.`,
+Key Points Identified:
+• ${clauses.length} contract clauses detected
+• Risk assessment based on clause types
+• Extracted from actual contract content
+
+Note: This is a fallback analysis. Enable Chrome Built-in AI for detailed insights and plain-language explanations.`,
       clauses,
       riskScore: this.calculateRiskScore(clauses),
-      obligations: this.extractObligations(clauses),
+      obligations: this.extractObligationsFromText(contractText, clauses),
+      analyzedAt: new Date(),
+    };
+  }
+
+  /**
+   * Create mock analysis from structured mock data
+   */
+  private createMockAnalysisFromStructuredData(contractId: string): ContractAnalysis {
+    console.log('🎭 Creating analysis from structured mock data');
+    
+    // Convert structured mock to analysis format
+    const clauses = this.parseClausesFromJSON(MOCK_ANALYSIS);
+    const obligations = this.parseObligationsFromJSON(MOCK_ANALYSIS);
+    const riskScore = this.calculateRiskScore(clauses);
+    
+    return {
+      contractId,
+      summary: JSON.stringify(MOCK_ANALYSIS, null, 2),
+      clauses,
+      riskScore,
+      obligations,
       analyzedAt: new Date(),
     };
   }

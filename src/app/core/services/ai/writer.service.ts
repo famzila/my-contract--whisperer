@@ -11,7 +11,8 @@ import type {
 
 /**
  * Service for Chrome Built-in Writer and Rewriter APIs
- * Handles clause rewriting and text generation
+ * Note: These APIs are not yet available in the new Chrome API shape (Chrome Canary 131+)
+ * This service returns stubs until the APIs are implemented
  */
 @Injectable({
   providedIn: 'root',
@@ -22,208 +23,77 @@ export class WriterService {
 
   /**
    * Check if Writer API is available
+   * Note: Writer API is not yet available in Chrome Canary's new API shape
    */
   async isWriterAvailable(): Promise<boolean> {
-    if (!window.ai?.writer) {
-      return false;
-    }
-
-    try {
-      const capabilities = await this.getWriterCapabilities();
-      return capabilities.available !== 'no';
-    } catch {
-      return false;
-    }
+    console.warn('⚠️ Writer API not yet available in new Chrome API shape');
+    return false;
   }
 
   /**
    * Check if Rewriter API is available
+   * Note: Rewriter API is not yet available in Chrome Canary's new API shape
    */
   async isRewriterAvailable(): Promise<boolean> {
-    if (!window.ai?.rewriter) {
-      return false;
-    }
-
-    try {
-      const capabilities = await this.getRewriterCapabilities();
-      return capabilities.available !== 'no';
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Get Writer API capabilities
-   */
-  async getWriterCapabilities(): Promise<AIWriterCapabilities> {
-    if (!window.ai?.writer) {
-      throw new Error('Writer API not available');
-    }
-
-    return await window.ai.writer.capabilities();
-  }
-
-  /**
-   * Get Rewriter API capabilities
-   */
-  async getRewriterCapabilities(): Promise<AIWriterCapabilities> {
-    if (!window.ai?.rewriter) {
-      throw new Error('Rewriter API not available');
-    }
-
-    return await window.ai.rewriter.capabilities();
-  }
-
-  /**
-   * Create a new Writer instance
-   */
-  async createWriter(options?: AIWriterCreateOptions): Promise<AIWriter> {
-    if (!window.ai?.writer) {
-      throw new Error('Writer API not available');
-    }
-
-    const capabilities = await this.getWriterCapabilities();
-    if (capabilities.available === 'no') {
-      throw new Error('Writer API not available on this device');
-    }
-
-    this.writer = await window.ai.writer.create(options);
-    return this.writer;
-  }
-
-  /**
-   * Create a new Rewriter instance
-   */
-  async createRewriter(options?: AIRewriterCreateOptions): Promise<AIRewriter> {
-    if (!window.ai?.rewriter) {
-      throw new Error('Rewriter API not available');
-    }
-
-    const capabilities = await this.getRewriterCapabilities();
-    if (capabilities.available === 'no') {
-      throw new Error('Rewriter API not available on this device');
-    }
-
-    this.rewriter = await window.ai.rewriter.create(options);
-    return this.rewriter;
+    console.warn('⚠️ Rewriter API not yet available in new Chrome API shape');
+    return false;
   }
 
   /**
    * Write text
+   * Note: Not yet available
    */
   async write(input: string, options?: AIWriterOptions): Promise<string> {
-    if (!this.writer) {
-      await this.createWriter();
-    }
-
-    if (!this.writer) {
-      throw new Error('Failed to create Writer');
-    }
-
-    return await this.writer.write(input, options);
+    throw new Error('Writer API not yet available in Chrome Canary new API shape');
   }
 
   /**
    * Rewrite text
+   * Note: Not yet available
    */
   async rewrite(input: string, options?: AIRewriterOptions): Promise<string> {
-    if (!this.rewriter) {
-      await this.createRewriter();
-    }
-
-    if (!this.rewriter) {
-      throw new Error('Failed to create Rewriter');
-    }
-
-    return await this.rewriter.rewrite(input, options);
+    throw new Error('Rewriter API not yet available in Chrome Canary new API shape');
   }
 
   /**
    * Rewrite clause more clearly
    */
   async rewriteClearly(clauseText: string): Promise<string> {
-    return await this.rewrite(clauseText, {
-      tone: 'neutral',
-      length: 'medium',
-    });
+    throw new Error('Rewriter API not yet available');
   }
 
   /**
    * Suggest fairer terms for a clause
    */
   async suggestFairerTerms(clauseText: string): Promise<string> {
-    return await this.write(
-      `Suggest fairer, more balanced terms for this contract clause: ${clauseText}`,
-      {
-        tone: 'formal',
-        length: 'medium',
-      }
-    );
+    throw new Error('Writer API not yet available');
   }
 
   /**
    * Make clause more specific
    */
   async makeMoreSpecific(clauseText: string): Promise<string> {
-    return await this.rewrite(clauseText, {
-      tone: 'formal',
-      length: 'long',
-    });
+    throw new Error('Rewriter API not yet available');
   }
 
   /**
-   * Simplify clause language
+   * Simplify language
    */
   async simplifyLanguage(clauseText: string): Promise<string> {
-    return await this.rewrite(clauseText, {
-      tone: 'casual',
-      length: 'short',
-    });
+    throw new Error('Rewriter API not yet available');
   }
 
   /**
-   * Generate alternative clause
+   * Clean up resources
    */
-  async generateAlternative(
-    clauseText: string,
-    context: string
-  ): Promise<string> {
-    return await this.write(
-      `Given this context: ${context}\n\nRewrite this clause with better terms: ${clauseText}`,
-      {
-        sharedContext: context,
-        tone: 'formal',
-        length: 'medium',
-      }
-    );
-  }
-
-  /**
-   * Destroy Writer
-   */
-  destroyWriter(): void {
+  destroyAll(): void {
     if (this.writer) {
       this.writer.destroy();
       this.writer = null;
     }
-  }
-
-  /**
-   * Destroy Rewriter
-   */
-  destroyRewriter(): void {
     if (this.rewriter) {
       this.rewriter.destroy();
       this.rewriter = null;
     }
   }
-
-  /**
-   * Destroy all instances
-   */
-  destroyAll(): void {
-    this.destroyWriter();
-    this.destroyRewriter();
-  }
 }
-

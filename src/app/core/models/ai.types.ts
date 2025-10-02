@@ -5,7 +5,7 @@
 
 // AI Capabilities
 export interface AICapabilities {
-  available: 'readily' | 'after-download' | 'no';
+  available: 'readily' | 'after-download' | 'no' | 'downloadable' | 'downloading';
 }
 
 // Prompt API
@@ -27,6 +27,29 @@ export interface AIPromptOptions {
   signal?: AbortSignal;
 }
 
+export interface AILanguageModelCreateOptions {
+  initialPrompts?: AIPrompt[];
+  temperature?: number;
+  topK?: number;
+  signal?: AbortSignal;
+  monitor?: (monitor: AICreateMonitor) => void;
+}
+
+export interface AIPrompt {
+  role: 'system' | 'user';
+  content: string;
+}
+
+export interface AICreateMonitor {
+  addEventListener(type: 'downloadprogress', listener: (event: DownloadProgressEvent) => void): void;
+  removeEventListener(type: 'downloadprogress', listener: (event: DownloadProgressEvent) => void): void;
+}
+
+export interface DownloadProgressEvent {
+  loaded: number;
+  total: number;
+}
+
 // Summarizer API
 export interface AISummarizerCapabilities extends AICapabilities {
   supportsType?: (type: AISummarizerType) => boolean;
@@ -45,6 +68,7 @@ export interface AISummarizerOptions {
   format?: AISummarizerFormat;
   length?: AISummarizerLength;
   signal?: AbortSignal;
+  outputLanguage?: string; // e.g., 'en', 'es', 'ja'
 }
 
 export type AISummarizerType = 'tl;dr' | 'key-points' | 'teaser' | 'headline';
@@ -94,37 +118,15 @@ export interface Translator {
   destroy(): void;
 }
 
-// Global AI interfaces
-export interface AI {
-  languageModel: {
-    capabilities(): Promise<AILanguageModelCapabilities>;
-    create(options?: AILanguageModelCreateOptions): Promise<AILanguageModel>;
-  };
-  summarizer: {
-    capabilities(): Promise<AISummarizerCapabilities>;
-    create(options?: AISummarizerCreateOptions): Promise<AISummarizer>;
-  };
-  writer: {
-    capabilities(): Promise<AIWriterCapabilities>;
-    create(options?: AIWriterCreateOptions): Promise<AIWriter>;
-  };
-  rewriter: {
-    capabilities(): Promise<AIWriterCapabilities>;
-    create(options?: AIRewriterCreateOptions): Promise<AIRewriter>;
-  };
-}
 
-export interface AILanguageModelCreateOptions {
-  temperature?: number;
-  topK?: number;
-  systemPrompt?: string;
-}
 
 export interface AISummarizerCreateOptions {
   type?: AISummarizerType;
   format?: AISummarizerFormat;
   length?: AISummarizerLength;
   sharedContext?: string;
+  monitor?: (monitor: AICreateMonitor) => void;
+  outputLanguage?: string; // e.g., 'en', 'es', 'ja'
 }
 
 export interface AIWriterCreateOptions {
@@ -149,10 +151,25 @@ export interface TranslatorCreateOptions {
   targetLanguage: string;
 }
 
-// Extend Window interface
+// Extend Window interface for Chrome Built-in AI APIs
 declare global {
   interface Window {
-    ai?: AI;
+    // Chrome Built-in AI APIs (Chrome Canary 131+)
+    LanguageModel?: {
+      params(): Promise<{
+        defaultTemperature: number;
+        maxTemperature: number;
+        defaultTopK: number;
+        maxTopK: number;
+      }>;
+      create(options?: AILanguageModelCreateOptions): Promise<AILanguageModel>;
+    };
+    
+    Summarizer?: {
+      availability(): Promise<'available' | 'downloadable' | 'downloading' | 'unavailable'>;
+      create(options?: AISummarizerCreateOptions): Promise<AISummarizer>;
+    };
+    
     translation?: Translation;
   }
 }

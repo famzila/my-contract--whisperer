@@ -1,86 +1,576 @@
-<div class="py-8 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-7xl mx-auto">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+  <div class="max-w-6xl mx-auto px-4 py-8">
     
+    <!-- Header with Metadata -->
+    <div class="mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+        <div>
+          <div class="flex items-center gap-3">
+            <h1 class="text-3xl font-bold text-gray-900">Contract Analysis</h1>
+            @if (isMockMode) {
+              <span class="px-3 py-1 text-sm font-medium bg-amber-100 text-amber-800 rounded-full border border-amber-200">
+                🎭 Mock Mode
+              </span>
+            }
+          </div>
+          @if (contractStore.contract()?.text) {
+            <p class="text-gray-600 mt-2">Analyzed on {{ formatDate(contractStore.analysis()?.analyzedAt) }}</p>
+          }
+        </div>
+        <app-button (click)="uploadNew()" variant="secondary" size="md">
+          Upload New Contract
+        </app-button>
+      </div>
+      
+      <!-- Metadata Card -->
+      @if (getMetadata()) {
+        <app-card>
+          <div class="p-6 bg-gradient-to-br from-indigo-50 to-white">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <h3 class="text-sm font-semibold text-gray-600 mb-1">Contract Type</h3>
+                <p class="text-gray-900 font-medium">{{ getMetadata()!.contractType }}</p>
+              </div>
+              @if (getMetadata()!.effectiveDate) {
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-600 mb-1">Effective Date</h3>
+                  <p class="text-gray-900 font-medium">{{ getMetadata()!.effectiveDate }}</p>
+                </div>
+              }
+              @if (getMetadata()!.jurisdiction) {
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-600 mb-1">Jurisdiction</h3>
+                  <p class="text-gray-900 font-medium">{{ getMetadata()!.jurisdiction }}</p>
+                </div>
+              }
+              <div>
+                <h3 class="text-sm font-semibold text-gray-600 mb-1">Parties</h3>
+                <p class="text-gray-900 text-sm">{{ getMetadata()!.parties.employer.name }}</p>
+                <p class="text-gray-900 text-sm">{{ getMetadata()!.parties.employee.name }}</p>
+              </div>
+            </div>
+          </div>
+        </app-card>
+      }
+    </div>
+
     <!-- Loading State -->
-    @if (contractStore.isLoading()) {
-      <div class="flex items-center justify-center py-20">
-        <app-loading-spinner [size]="'xl'" [message]="'Analyzing your contract...'" />
+    @if (contractStore.isAnalyzing()) {
+      <div class="flex items-center justify-center py-12">
+        <app-loading-spinner size="lg" />
       </div>
     }
 
-    <!-- Dashboard Content -->
-    @if (!contractStore.isLoading() && contractStore.hasAnalysis()) {
-      <!-- Header -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Contract Analysis</h1>
-            <p class="text-gray-600">
-              {{ contractStore.contract()?.fileName }} • {{ contractStore.contract()?.wordCount }} words
-            </p>
-          </div>
-          <app-button [variant]="'secondary'" (clicked)="uploadNew()">
-            Upload New Contract
-          </app-button>
+    <!-- Tab Navigation -->
+    @if (!contractStore.isAnalyzing() && contractStore.hasAnalysis() && structuredData()) {
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div class="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300">
+          <button
+            (click)="selectTab('summary')"
+            [class]="selectedTab() === 'summary' 
+              ? 'border-b-3 border-primary text-primary bg-primary/5' 
+              : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
+            📋 Summary
+          </button>
+          <button
+            (click)="selectTab('risks')"
+            [class]="selectedTab() === 'risks' 
+              ? 'border-b-3 border-error text-error bg-error/5' 
+              : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
+            🚨 Risks
+          </button>
+          <button
+            (click)="selectTab('obligations')"
+            [class]="selectedTab() === 'obligations' 
+              ? 'border-b-3 border-info text-info bg-info/5' 
+              : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
+            📅 Obligations
+          </button>
+          <button
+            (click)="selectTab('omissions')"
+            [class]="selectedTab() === 'omissions' 
+              ? 'border-b-3 border-warning text-warning bg-warning/5' 
+              : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
+            🚧 Omissions
+          </button>
+          <button
+            (click)="selectTab('questions')"
+            [class]="selectedTab() === 'questions' 
+              ? 'border-b-3 border-accent text-accent bg-accent/5' 
+              : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
+            ❓ Questions
+          </button>
+          <button
+            (click)="selectTab('disclaimer')"
+            [class]="selectedTab() === 'disclaimer' 
+              ? 'border-b-3 border-gray-500 text-gray-700 bg-gray-100' 
+              : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
+            ⚖️ Disclaimer
+          </button>
         </div>
       </div>
 
-      <!-- Risk Score Card -->
-      <app-card class="mb-8">
-        <div class="p-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-xl font-semibold text-gray-900 mb-2">Overall Risk Assessment</h2>
-              <p class="text-gray-600">Based on clause analysis and contract terms</p>
-            </div>
-            <div class="text-center">
-              <div [class]="'text-6xl font-bold mb-2 ' + getRiskScoreColor(contractStore.riskScore())">
-                {{ contractStore.riskScore() }}
+      <!-- Tab Content -->
+      <div class="animate-fade-in">
+        
+        <!-- Summary Tab -->
+        @if (selectedTab() === 'summary' && getSummary()) {
+          <div class="space-y-6">
+            <app-card>
+              <div class="p-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <span class="text-3xl">📋</span>
+                  Contract Summary
+                </h2>
+                
+                <div class="space-y-6">
+                  <!-- Parties -->
+                  <div>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2">👥 Parties</h3>
+                    <p class="text-gray-700">{{ getSummary()!.parties }}</p>
+                  </div>
+                  
+                  <!-- Role -->
+                  <div>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2">💼 Role/Relationship</h3>
+                    <p class="text-gray-700">{{ getSummary()!.role }}</p>
+                  </div>
+                  
+                  <!-- Responsibilities -->
+                  @if (getSummary()!.responsibilities.length > 0) {
+                    <div>
+                      <h3 class="font-semibold text-lg text-gray-800 mb-2">📋 Key Responsibilities</h3>
+                      <ul class="list-disc list-inside space-y-1 text-gray-700">
+                        @for (resp of getSummary()!.responsibilities; track $index) {
+                          <li>{{ resp }}</li>
+                        }
+                      </ul>
+                    </div>
+                  }
+                  
+                  <!-- Compensation -->
+                  <div>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2">💰 Compensation & Benefits</h3>
+                    <div class="space-y-2 text-gray-700">
+                      @if (getSummary()!.compensation.baseSalary) {
+                        <p><strong>Base Salary:</strong> ${{ getSummary()!.compensation.baseSalary }}</p>
+                      }
+                      @if (getSummary()!.compensation.bonus) {
+                        <p><strong>Bonus:</strong> {{ getSummary()!.compensation.bonus }}</p>
+                      }
+                      @if (getSummary()!.compensation.equity) {
+                        <p><strong>Equity:</strong> {{ getSummary()!.compensation.equity }}</p>
+                      }
+                      @if (getSummary()!.compensation.other) {
+                        <p><strong>Other:</strong> {{ getSummary()!.compensation.other }}</p>
+                      }
+                    </div>
+                    @if (getSummary()!.benefits.length > 0) {
+                      <ul class="list-disc list-inside space-y-1 text-gray-700 mt-3">
+                        @for (benefit of getSummary()!.benefits; track $index) {
+                          <li>{{ benefit }}</li>
+                        }
+                      </ul>
+                    }
+                  </div>
+                  
+                  <!-- Termination -->
+                  <div>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2">🚪 Termination Conditions</h3>
+                    <div class="space-y-2 text-gray-700">
+                      @if (getSummary()!.termination.atWill) {
+                        <p><strong>At-Will:</strong> {{ getSummary()!.termination.atWill }}</p>
+                      }
+                      @if (getSummary()!.termination.forCause) {
+                        <p><strong>For Cause:</strong> {{ getSummary()!.termination.forCause }}</p>
+                      }
+                      @if (getSummary()!.termination.severance) {
+                        <p><strong>Severance:</strong> {{ getSummary()!.termination.severance }}</p>
+                      }
+                    </div>
+                  </div>
+                  
+                  <!-- Restrictions -->
+                  <div>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2">🔒 Restrictions</h3>
+                    <div class="space-y-2 text-gray-700">
+                      @if (getSummary()!.restrictions.confidentiality) {
+                        <p><strong>Confidentiality:</strong> {{ getSummary()!.restrictions.confidentiality }}</p>
+                      }
+                      @if (getSummary()!.restrictions.nonCompete) {
+                        <p><strong>Non-Compete:</strong> {{ getSummary()!.restrictions.nonCompete }}</p>
+                      }
+                      @if (getSummary()!.restrictions.nonSolicitation) {
+                        <p><strong>Non-Solicitation:</strong> {{ getSummary()!.restrictions.nonSolicitation }}</p>
+                      }
+                      @if (getSummary()!.restrictions.other) {
+                        <p><strong>Other:</strong> {{ getSummary()!.restrictions.other }}</p>
+                      }
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div [class]="'text-lg font-medium ' + getRiskScoreColor(contractStore.riskScore())">
-                {{ getRiskScoreLabel(contractStore.riskScore()) }}
-              </div>
+            </app-card>
+          </div>
+        }
+
+        <!-- Risks Tab -->
+        @if (selectedTab() === 'risks') {
+          <div class="space-y-6">
+            <div class="text-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                <span class="text-3xl">🚨</span>
+                Risk Flags
+              </h2>
+              <p class="text-gray-600 mt-2">Prioritized by severity - High risks first</p>
+            </div>
+            
+            @if (getRisks().length > 0) {
+              <!-- High Risks -->
+              @if (getHighRisks().length > 0) {
+                <div class="space-y-3">
+                  <h3 class="text-lg font-semibold text-error flex items-center gap-2">
+                    <span>🚨</span> High Priority Risks
+                  </h3>
+                  @for (risk of getHighRisks(); track $index) {
+                    <app-card>
+                      <div class="flex border-l-4 border-error bg-error/5">
+                        <div class="flex-1 p-6">
+                          <div class="flex items-start gap-3">
+                            <span class="text-2xl">{{ risk.emoji }}</span>
+                            <div class="flex-1">
+                              <h4 class="font-semibold text-gray-900 mb-2">{{ risk.title }}</h4>
+                              <p class="text-gray-700 leading-relaxed mb-2">{{ risk.description }}</p>
+                              <div class="bg-white rounded-lg p-3 border border-error/20">
+                                <p class="text-sm font-medium text-error">⚠️ Impact:</p>
+                                <p class="text-sm text-gray-700 mt-1">{{ risk.impact }}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </app-card>
+                  }
+                </div>
+              }
+              
+              <!-- Medium Risks -->
+              @if (getMediumRisks().length > 0) {
+                <div class="space-y-3">
+                  <h3 class="text-lg font-semibold text-warning flex items-center gap-2">
+                    <span>⚠️</span> Medium Priority Risks
+                  </h3>
+                  @for (risk of getMediumRisks(); track $index) {
+                    <app-card>
+                      <div class="flex border-l-4 border-warning bg-warning/5">
+                        <div class="flex-1 p-6">
+                          <div class="flex items-start gap-3">
+                            <span class="text-2xl">{{ risk.emoji }}</span>
+                            <div class="flex-1">
+                              <h4 class="font-semibold text-gray-900 mb-2">{{ risk.title }}</h4>
+                              <p class="text-gray-700 leading-relaxed mb-2">{{ risk.description }}</p>
+                              <div class="bg-white rounded-lg p-3 border border-warning/20">
+                                <p class="text-sm font-medium text-warning">💡 Impact:</p>
+                                <p class="text-sm text-gray-700 mt-1">{{ risk.impact }}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </app-card>
+                  }
+                </div>
+              }
+              
+              <!-- Low Risks -->
+              @if (getLowRisks().length > 0) {
+                <div class="space-y-3">
+                  <h3 class="text-lg font-semibold text-info flex items-center gap-2">
+                    <span>ℹ️</span> Low Priority Risks
+                  </h3>
+                  @for (risk of getLowRisks(); track $index) {
+                    <app-card>
+                      <div class="flex border-l-4 border-info bg-info/5">
+                        <div class="flex-1 p-6">
+                          <div class="flex items-start gap-3">
+                            <span class="text-2xl">{{ risk.emoji }}</span>
+                            <div class="flex-1">
+                              <h4 class="font-semibold text-gray-900 mb-2">{{ risk.title }}</h4>
+                              <p class="text-gray-700 leading-relaxed">{{ risk.description }}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </app-card>
+                  }
+                </div>
+              }
+            } @else {
+              <app-card>
+                <div class="p-8 text-center text-gray-500">
+                  <span class="text-4xl mb-4 block">✨</span>
+                  <p>No significant risks identified in this contract.</p>
+                </div>
+              </app-card>
+            }
+          </div>
+        }
+
+        <!-- Obligations Tab -->
+        @if (selectedTab() === 'obligations') {
+          <div class="space-y-6">
+            <div class="text-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                <span class="text-3xl">📅</span>
+                Obligations
+              </h2>
+              <p class="text-gray-600 mt-2">What each party is responsible for - structured and actionable</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Employer/Party 1 -->
+              <app-card>
+                <div class="p-6 bg-gradient-to-br from-blue-50 to-white h-full">
+                  <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <span class="text-2xl">✅</span>
+                    Employer / Company
+                  </h3>
+                  <div class="space-y-3">
+                    @for (obligation of getObligations().employer; track $index) {
+                      <div class="bg-white rounded-lg p-4 border border-blue-200">
+                        <p class="font-medium text-gray-900 mb-1">{{ obligation.duty }}</p>
+                        <div class="text-sm text-gray-600 space-y-1">
+                          @if (obligation.amount) {
+                            <p class="flex items-center gap-2">
+                              <span class="text-green-600">💰</span>
+                              ${{ obligation.amount.toLocaleString() }}
+                            </p>
+                          }
+                          @if (obligation.frequency) {
+                            <p class="flex items-center gap-2">
+                              <span>🔄</span>
+                              {{ obligation.frequency }}
+                            </p>
+                          }
+                          @if (obligation.startDate) {
+                            <p class="flex items-center gap-2">
+                              <span>📅</span>
+                              Starts: {{ obligation.startDate }}
+                            </p>
+                          }
+                          @if (obligation.duration) {
+                            <p class="flex items-center gap-2">
+                              <span>⏱️</span>
+                              Duration: {{ obligation.duration }}
+                            </p>
+                          }
+                          @if (obligation.scope) {
+                            <p class="flex items-center gap-2">
+                              <span>📋</span>
+                              {{ obligation.scope }}
+                            </p>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </app-card>
+              
+              <!-- Employee/Party 2 -->
+              <app-card>
+                <div class="p-6 bg-gradient-to-br from-purple-50 to-white h-full">
+                  <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <span class="text-2xl">🧑‍💻</span>
+                    Employee / Individual
+                  </h3>
+                  <div class="space-y-3">
+                    @for (obligation of getObligations().employee; track $index) {
+                      <div class="bg-white rounded-lg p-4 border border-purple-200">
+                        <p class="font-medium text-gray-900 mb-1">{{ obligation.duty }}</p>
+                        <div class="text-sm text-gray-600 space-y-1">
+                          @if (obligation.scope) {
+                            <p class="flex items-center gap-2">
+                              <span>📋</span>
+                              {{ obligation.scope }}
+                            </p>
+                          }
+                          @if (obligation.duration) {
+                            <p class="flex items-center gap-2">
+                              <span>⏱️</span>
+                              {{ obligation.duration }}
+                            </p>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </app-card>
             </div>
           </div>
-        </div>
-      </app-card>
+        }
 
-      <!-- Risk Distribution -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <app-card [hoverable]="true">
-          <div class="p-6 text-center">
-            <div class="text-4xl mb-2">🚨</div>
-            <div class="text-3xl font-bold text-error mb-1">{{ contractStore.riskCounts().high }}</div>
-            <div class="text-sm text-gray-600">High Risk</div>
+        <!-- Omissions Tab -->
+        @if (selectedTab() === 'omissions') {
+          <div class="space-y-6">
+            <div class="text-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                <span class="text-3xl">🚧</span>
+                What's Missing
+              </h2>
+              <p class="text-gray-600 mt-2">Prioritized by importance - High priority first</p>
+            </div>
+            
+            @if (getOmissions().length > 0) {
+              <!-- High Priority Omissions -->
+              @if (getHighPriorityOmissions().length > 0) {
+                <div class="space-y-3">
+                  <h3 class="text-lg font-semibold text-error flex items-center gap-2">
+                    <span>🚨</span> High Priority Omissions
+                  </h3>
+                  @for (omission of getHighPriorityOmissions(); track $index) {
+                    <app-card>
+                      <div class="flex border-l-4 border-error bg-error/5">
+                        <div class="flex-1 p-6">
+                          <div class="flex items-start gap-3">
+                            <span class="text-2xl">⚠️</span>
+                            <div class="flex-1">
+                              <h4 class="font-semibold text-gray-900 mb-2">{{ omission.item }}</h4>
+                              <div class="bg-white rounded-lg p-3 border border-error/20">
+                                <p class="text-sm font-medium text-error">⚠️ Why this matters:</p>
+                                <p class="text-sm text-gray-700 mt-1">{{ omission.impact }}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </app-card>
+                  }
+                </div>
+              }
+              
+              <!-- Medium Priority Omissions -->
+              @if (getMediumPriorityOmissions().length > 0) {
+                <div class="space-y-3">
+                  <h3 class="text-lg font-semibold text-warning flex items-center gap-2">
+                    <span>⚠️</span> Medium Priority Omissions
+                  </h3>
+                  @for (omission of getMediumPriorityOmissions(); track $index) {
+                    <app-card>
+                      <div class="flex border-l-4 border-warning bg-warning/5">
+                        <div class="flex-1 p-6">
+                          <div class="flex items-start gap-3">
+                            <span class="text-2xl">⚠️</span>
+                            <div class="flex-1">
+                              <h4 class="font-semibold text-gray-900 mb-2">{{ omission.item }}</h4>
+                              <p class="text-sm text-gray-700">{{ omission.impact }}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </app-card>
+                  }
+                </div>
+              }
+              
+              <!-- Low Priority Omissions -->
+              @if (getLowPriorityOmissions().length > 0) {
+                <div class="space-y-3">
+                  <h3 class="text-lg font-semibold text-info flex items-center gap-2">
+                    <span>ℹ️</span> Low Priority Omissions
+                  </h3>
+                  @for (omission of getLowPriorityOmissions(); track $index) {
+                    <app-card>
+                      <div class="flex border-l-4 border-info bg-info/5">
+                        <div class="flex-1 p-6">
+                          <div class="flex items-start gap-3">
+                            <span class="text-2xl">ℹ️</span>
+                            <div class="flex-1">
+                              <h4 class="font-semibold text-gray-900 mb-1">{{ omission.item }}</h4>
+                              <p class="text-sm text-gray-700">{{ omission.impact }}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </app-card>
+                  }
+                </div>
+              }
+            } @else {
+              <app-card>
+                <div class="p-8 text-center text-gray-500">
+                  <span class="text-4xl mb-4 block">✨</span>
+                  <p>All important details appear to be covered in this contract.</p>
+                </div>
+              </app-card>
+            }
           </div>
-        </app-card>
+        }
 
-        <app-card [hoverable]="true">
-          <div class="p-6 text-center">
-            <div class="text-4xl mb-2">⚠️</div>
-            <div class="text-3xl font-bold text-warning mb-1">{{ contractStore.riskCounts().medium }}</div>
-            <div class="text-sm text-gray-600">Medium Risk</div>
+        <!-- Questions Tab -->
+        @if (selectedTab() === 'questions') {
+          <div class="space-y-4">
+            <div class="text-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                <span class="text-3xl">❓</span>
+                Questions You Should Ask
+              </h2>
+              <p class="text-gray-600 mt-2">Clarify these points before signing</p>
+            </div>
+            
+            @if (getQuestions().length > 0) {
+              <div class="space-y-3">
+                @for (question of getQuestions(); track $index) {
+                  <app-card>
+                    <div class="p-6">
+                      <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-start gap-3 flex-1">
+                          <span class="text-2xl">❓</span>
+                          <p class="text-gray-800 font-medium leading-relaxed">{{ question }}</p>
+                        </div>
+                        <button
+                          (click)="copyQuestion(question)"
+                          class="px-3 py-1 text-sm bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors whitespace-nowrap">
+                          📋 Copy
+                        </button>
+                      </div>
+                    </div>
+                  </app-card>
+                }
+              </div>
+            } @else {
+              <app-card>
+                <div class="p-8 text-center text-gray-500">
+                  <span class="text-4xl mb-4 block">✨</span>
+                  <p>No specific questions identified for this contract.</p>
+                </div>
+              </app-card>
+            }
           </div>
-        </app-card>
+        }
 
-        <app-card [hoverable]="true">
-          <div class="p-6 text-center">
-            <div class="text-4xl mb-2">⚡</div>
-            <div class="text-3xl font-bold text-risk-low mb-1">{{ contractStore.riskCounts().low }}</div>
-            <div class="text-sm text-gray-600">Low Risk</div>
-          </div>
-        </app-card>
+        <!-- Disclaimer Tab -->
+        @if (selectedTab() === 'disclaimer') {
+          <app-card>
+            <div class="p-8 bg-gray-50">
+              <h2 class="text-2xl font-bold text-gray-700 mb-6 flex items-center gap-3">
+                <span class="text-3xl">⚖️</span>
+                Legal Disclaimer
+              </h2>
+              <p class="text-gray-600 leading-relaxed text-lg">{{ getDisclaimer() }}</p>
+            </div>
+          </app-card>
+        }
 
-        <app-card [hoverable]="true">
-          <div class="p-6 text-center">
-            <div class="text-4xl mb-2">✅</div>
-            <div class="text-3xl font-bold text-risk-safe mb-1">{{ contractStore.riskCounts().safe }}</div>
-            <div class="text-sm text-gray-600">Safe</div>
-          </div>
-        </app-card>
       </div>
-
-      <ng-content></ng-content>
     }
+
   </div>
 </div>

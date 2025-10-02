@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import type {
   AILanguageModel,
-  AILanguageModelCapabilities,
   AILanguageModelCreateOptions,
   AIPromptOptions,
 } from '../../models/ai.types';
@@ -9,6 +8,8 @@ import type {
 /**
  * Service for Chrome Built-in Prompt API (Gemini Nano)
  * Handles Q&A, clause extraction, and general language model interactions
+ * 
+ * Reference: https://developer.chrome.com/docs/ai/prompt-api
  */
 @Injectable({
   providedIn: 'root',
@@ -20,45 +21,166 @@ export class PromptService {
    * Check if Prompt API is available
    */
   async isAvailable(): Promise<boolean> {
-    if (!window.ai?.languageModel) {
-      return false;
+    if ('LanguageModel' in window) {
+      console.log('✅ LanguageModel API found');
+      return true;
     }
 
-    try {
-      const capabilities = await this.getCapabilities();
-      return capabilities.available !== 'no';
-    } catch {
-      return false;
-    }
+    console.warn('❌ Prompt API not found');
+    return false;
   }
 
   /**
-   * Get Prompt API capabilities
+   * Get Prompt API parameters
    */
-  async getCapabilities(): Promise<AILanguageModelCapabilities> {
-    if (!window.ai?.languageModel) {
-      throw new Error('Prompt API not available');
+  async getParams(): Promise<{
+    defaultTemperature: number;
+    maxTemperature: number;
+    defaultTopK: number;
+    maxTopK: number;
+  }> {
+    if ('LanguageModel' in window && window.LanguageModel) {
+      return await window.LanguageModel.params();
     }
 
-    return await window.ai.languageModel.capabilities();
+    // Fallback defaults if API not available
+    return {
+      defaultTemperature: 1,
+      maxTemperature: 2,
+      defaultTopK: 3,
+      maxTopK: 128,
+    };
   }
 
   /**
    * Create a new Prompt API session
+   * This will trigger model download if needed (requires user interaction)
    */
   async createSession(
     options?: AILanguageModelCreateOptions
   ): Promise<AILanguageModel> {
-    if (!window.ai?.languageModel) {
-      throw new Error('Prompt API not available');
+    if (!window.LanguageModel) {
+      throw new Error('LanguageModel API not available');
     }
 
-    const capabilities = await this.getCapabilities();
-    if (capabilities.available === 'no') {
-      throw new Error('Prompt API not available on this device');
-    }
+    // Prepare options with system prompt and monitor for download progress
+    const createOptions: AILanguageModelCreateOptions = {
+      ...options,
+      initialPrompts: [
+        {
+          role: 'system',
+          content: `You are an AI legal explainer that helps non-lawyers understand contracts clearly.
 
-    this.session = await window.ai.languageModel.create(options);
+**CRITICAL: You must respond ONLY with valid JSON. No markdown, no code blocks, no extra text. Just raw JSON.**
+
+Analyze contracts and respond with this exact JSON schema:
+
+{
+  "metadata": {
+    "contractType": "Employment Agreement | Service Agreement | etc.",
+    "effectiveDate": "October 1, 2025 or null",
+    "jurisdiction": "California, USA or null",
+    "parties": {
+      "employer": { 
+        "name": "Company Name", 
+        "location": "City, State or null"
+      },
+      "employee": { 
+        "name": "Person Name", 
+        "location": "City, State or null",
+        "position": "Job Title or null"
+      }
+    }
+  },
+  "summary": {
+    "parties": "string describing both parties and their roles",
+    "role": "string describing the relationship type",
+    "responsibilities": ["array", "of", "key", "duties"],
+    "compensation": {
+      "baseSalary": number or null,
+      "bonus": "string description or null",
+      "equity": "string description or null",
+      "other": "string for other compensation or null"
+    },
+    "benefits": ["array", "of", "benefits"],
+    "termination": {
+      "atWill": "string describing at-will terms or null",
+      "forCause": "string describing cause termination or null",
+      "severance": "string describing severance or null"
+    },
+    "restrictions": {
+      "confidentiality": "string or null",
+      "nonCompete": "string with duration/scope or null",
+      "nonSolicitation": "string or null",
+      "other": "string for other restrictions or null"
+    }
+  },
+  "risks": [
+    {
+      "title": "Risk Name",
+      "severity": "High | Medium | Low",
+      "emoji": "🚨 | ⚠️ | ℹ️",
+      "description": "What this clause says in plain English",
+      "impact": "Specific negative consequences for the person signing"
+    }
+  ],
+  "obligations": {
+    "employer": [
+      {
+        "duty": "Short description",
+        "amount": number or null,
+        "frequency": "bi-weekly | monthly | quarterly | null",
+        "startDate": "date or null",
+        "duration": "duration or null",
+        "scope": "additional details or null"
+      }
+    ],
+    "employee": [
+      {
+        "duty": "Short description",
+        "scope": "Full-time | Part-time | etc or null"
+      }
+    ]
+  },
+  "omissions": [
+    {
+      "item": "What is missing",
+      "impact": "Why this absence could be a problem",
+      "priority": "High | Medium | Low"
+    }
+  ],
+  "questions": [
+    "Question 1 the user should ask?",
+    "Question 2 the user should ask?",
+    "Question 3 the user should ask?"
+  ],
+  "disclaimer": "I am an AI assistant, not a lawyer. This information is for educational purposes only. Consult a qualified attorney for legal advice."
+}
+
+Rules:
+1. Use plain English, no legalese
+2. Be specific with numbers, dates, amounts
+3. If something isn't in the contract, use null or empty array
+4. For risk severity: "High" = 🚨, "Medium" = ⚠️, "Low" = ℹ️
+5. Prioritize risks: High risks FIRST (could significantly harm), then Medium, then Low
+6. Structure obligations as objects with duty, amount, frequency, scope, etc.
+7. Structure omissions as objects with item, impact, and priority
+8. Focus on protecting the person signing
+9. Output ONLY valid JSON, nothing else`,
+        },
+      ],
+      monitor: (m) => {
+        m.addEventListener('downloadprogress', (e) => {
+          const percent = (e.loaded * 100).toFixed(1);
+          console.log(`📥 Downloading Gemini Nano model: ${percent}%`);
+        });
+      },
+    };
+
+    console.log('🚀 Creating LanguageModel session with system prompt...');
+    this.session = await window.LanguageModel.create(createOptions);
+    console.log('✅ LanguageModel session created successfully');
+    
     return this.session;
   }
 
@@ -71,7 +193,7 @@ export class PromptService {
     }
 
     if (!this.session) {
-      throw new Error('Failed to create Prompt API session');
+      throw new Error('Failed to create session');
     }
 
     return await this.session.prompt(input, options);
@@ -89,35 +211,50 @@ export class PromptService {
   }
 
   /**
-   * Extract clauses from contract text
+   * Extract clauses from contract text with comprehensive analysis
+   * Returns JSON string that can be parsed into AIAnalysisResponse
    */
   async extractClauses(contractText: string): Promise<string> {
-    const prompt = `Analyze the following contract and extract key clauses. Identify:
-1. Termination clauses
-2. Payment obligations
-3. Renewal/expiry dates
-4. Liability and indemnity
-5. Governing law
-6. Confidentiality agreements
+    const prompt = `Analyze this contract and respond with ONLY valid JSON following the schema provided in your system prompt.
 
-Format the response as JSON with clause type, content, and risk level (high/medium/low).
+Contract to analyze:
+${contractText}
 
-Contract:
-${contractText}`;
+Remember: Output ONLY the JSON object, no markdown, no code blocks, no additional text.`;
 
-    return await this.prompt(prompt);
+    console.log('📤 Sending contract analysis request...');
+    const result = await this.prompt(prompt);
+    
+    console.log('📥 Raw AI Response:');
+    console.log('═'.repeat(80));
+    console.log(result);
+    console.log('═'.repeat(80));
+    
+    // Clean up response in case AI adds markdown code blocks
+    let cleanedResult = result.trim();
+    
+    // Remove markdown code blocks if present
+    if (cleanedResult.startsWith('```json')) {
+      cleanedResult = cleanedResult.replace(/```json\n?/g, '').replace(/```\n?$/g, '');
+    } else if (cleanedResult.startsWith('```')) {
+      cleanedResult = cleanedResult.replace(/```\n?/g, '');
+    }
+    
+    cleanedResult = cleanedResult.trim();
+    
+    console.log('🧹 Cleaned JSON:');
+    console.log('═'.repeat(80));
+    console.log(cleanedResult);
+    console.log('═'.repeat(80));
+    
+    return cleanedResult;
   }
 
   /**
-   * Answer questions about a contract
+   * Ask a question about the contract
    */
-  async askQuestion(
-    contractText: string,
-    question: string
-  ): Promise<string> {
-    const prompt = `Given the following contract, answer this question: "${question}"
-
-Provide a clear, concise answer with references to specific clauses if applicable.
+  async askQuestion(contractText: string, question: string): Promise<string> {
+    const prompt = `Based on the following contract, answer this question: ${question}
 
 Contract:
 ${contractText}`;
@@ -126,7 +263,7 @@ ${contractText}`;
   }
 
   /**
-   * Destroy the current session
+   * Clean up resources
    */
   destroy(): void {
     if (this.session) {
@@ -135,4 +272,3 @@ ${contractText}`;
     }
   }
 }
-

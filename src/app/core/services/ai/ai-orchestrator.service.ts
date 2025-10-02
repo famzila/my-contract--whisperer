@@ -68,9 +68,14 @@ export class AiOrchestratorService {
   async analyzeContract(contractText: string): Promise<ContractAnalysisResult> {
     const status = await this.checkAvailability();
 
-    if (!status.allAvailable) {
-      throw new Error('Not all AI services are available. Please check your browser supports Chrome Built-in AI.');
+    // We only need Prompt and Summarizer APIs for basic contract analysis
+    if (!status.prompt || !status.summarizer) {
+      throw new Error(
+        `Required AI services not available. Prompt: ${status.prompt}, Summarizer: ${status.summarizer}`
+      );
     }
+
+    console.log('✅ Both Prompt and Summarizer APIs available. Starting analysis...');
 
     // Run analysis in parallel
     const [summary, clauses] = await Promise.all([

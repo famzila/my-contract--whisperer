@@ -10,3 +10,4 @@ Singleton services, guards, stores, and shared models.
 - `stores/` - NgRx SignalStores for state management
 - `models/` - TypeScript interfaces and types
 
+
