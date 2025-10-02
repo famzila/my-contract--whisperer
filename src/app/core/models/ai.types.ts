@@ -100,13 +100,17 @@ export interface AIWriterOptions {
 }
 
 export interface AIRewriterOptions {
-  tone?: AIWriterTone;
-  length?: AIWriterLength;
+  tone?: AIRewriterTone;
+  length?: AIRewriterLength;
   signal?: AbortSignal;
 }
 
 export type AIWriterTone = 'formal' | 'neutral' | 'casual';
 export type AIWriterLength = 'short' | 'medium' | 'long';
+
+// Rewriter API has different tone and length values
+export type AIRewriterTone = 'as-is' | 'more-formal' | 'more-casual';
+export type AIRewriterLength = 'as-is' | 'shorter' | 'longer';
 
 // Translator API
 export interface TranslationCapabilities {

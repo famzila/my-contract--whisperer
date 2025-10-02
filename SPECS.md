@@ -713,3 +713,6 @@ export const routes: Routes = [
 - **Scalable** → Extension for quick insights, Web App for deep analysis.  
 
 ---
+
+Feedback about APIs
+- why having the Rewriter API uses different tone values than the Writer API. For rewrite The value can be set to more-formal, as-is (default), or more-casual. and for writer: The value can be set to formal, neutral (default), or casual.

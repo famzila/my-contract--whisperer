@@ -633,7 +633,112 @@
       
       <!-- Modal Body -->
       <div class="flex-1 overflow-y-auto p-6">
-        <div class="bg-gray-50 rounded-lg p-6 font-mono text-sm whitespace-pre-wrap">{{ draftedEmail() }}</div>
+        <!-- Rewrite Options Panel -->
+        <div class="mb-4">
+          <button
+            (click)="toggleRewriteOptions()"
+            class="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+            {{ showRewriteOptions() ? 'Hide' : 'Show' }} Rewrite Options
+          </button>
+          
+          @if (showRewriteOptions()) {
+            <div class="mt-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200 animate-fade-in">
+              <h3 class="font-semibold text-gray-900 mb-3">Customize Email Style</h3>
+              
+              <!-- Tone Selection -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tone</label>
+                <div class="flex gap-2">
+                  <button
+                    (click)="setRewriteTone('formal')"
+                    [class]="rewriteTone() === 'formal' 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'"
+                    class="px-4 py-2 rounded-lg border border-indigo-300 text-sm font-medium transition-colors">
+                    Formal
+                  </button>
+                  <button
+                    (click)="setRewriteTone('neutral')"
+                    [class]="rewriteTone() === 'neutral' 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'"
+                    class="px-4 py-2 rounded-lg border border-indigo-300 text-sm font-medium transition-colors">
+                    Neutral
+                  </button>
+                  <button
+                    (click)="setRewriteTone('casual')"
+                    [class]="rewriteTone() === 'casual' 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'"
+                    class="px-4 py-2 rounded-lg border border-indigo-300 text-sm font-medium transition-colors">
+                    Casual
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Length Selection -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Length</label>
+                <div class="flex gap-2">
+                  <button
+                    (click)="setRewriteLength('short')"
+                    [class]="rewriteLength() === 'short' 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'"
+                    class="px-4 py-2 rounded-lg border border-indigo-300 text-sm font-medium transition-colors">
+                    Short
+                  </button>
+                  <button
+                    (click)="setRewriteLength('medium')"
+                    [class]="rewriteLength() === 'medium' 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'"
+                    class="px-4 py-2 rounded-lg border border-indigo-300 text-sm font-medium transition-colors">
+                    Medium
+                  </button>
+                  <button
+                    (click)="setRewriteLength('long')"
+                    [class]="rewriteLength() === 'long' 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'"
+                    class="px-4 py-2 rounded-lg border border-indigo-300 text-sm font-medium transition-colors">
+                    Long
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Apply Button -->
+              <app-button
+                (click)="rewriteEmail()"
+                [disabled]="isRewritingEmail()"
+                variant="primary"
+                size="md"
+                class="w-full">
+                @if (isRewritingEmail()) {
+                  <span class="flex items-center justify-center gap-2">
+                    <app-loading-spinner size="sm" />
+                    Rewriting...
+                  </span>
+                } @else {
+                  🔄 Apply Changes
+                }
+              </app-button>
+            </div>
+          }
+        </div>
+        
+        <!-- Email Content -->
+        <div class="bg-gray-50 rounded-lg p-6 font-mono text-sm whitespace-pre-wrap relative">
+          @if (isRewritingEmail()) {
+            <div class="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
+              <app-loading-spinner size="md" />
+            </div>
+          }
+          {{ draftedEmail() }}
+        </div>
       </div>
       
       <!-- Modal Footer -->

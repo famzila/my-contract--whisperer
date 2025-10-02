@@ -35,6 +35,12 @@ export class AnalysisDashboard implements OnInit {
   // Email draft state
   isDraftingEmail = signal<boolean>(false);
   draftedEmail = signal<string | null>(null);
+  isRewritingEmail = signal<boolean>(false);
+  showRewriteOptions = signal<boolean>(false);
+  
+  // Rewrite options
+  rewriteTone = signal<'formal' | 'neutral' | 'casual'>('formal');
+  rewriteLength = signal<'short' | 'medium' | 'long'>('medium');
 
   ngOnInit(): void {
     // Redirect if no contract/analysis
@@ -338,17 +344,26 @@ export class AnalysisDashboard implements OnInit {
         return;
       }
       
-      // Use Writer API to generate professional email
-      console.log('✍️ Drafting email with Writer API...');
+      // Use Writer API to generate professional email with streaming
+      console.log('✍️ Drafting email with Writer API (streaming)...');
       
       const prompt = this.buildEmailPrompt(employerName, employeeName, questions);
-      const email = await this.writerService.write(prompt, {
+      const stream = await this.writerService.writeStreaming(prompt, {
         tone: 'formal',
         length: 'medium',
         sharedContext: `This is a professional email from ${employeeName} to ${employerName} regarding an employment agreement.`,
       });
       
-      this.draftedEmail.set(email);
+      // Process the stream - Writer API returns an async iterable of text chunks
+      let emailText = '';
+      
+      for await (const chunk of stream as any) {
+        emailText += chunk;
+        
+        // Update email in real-time for that "wow effect"
+        this.draftedEmail.set(emailText);
+      }
+      
       console.log('✅ Email drafted successfully');
     } catch (error) {
       console.error('❌ Error drafting email:', error);
@@ -366,17 +381,18 @@ export class AnalysisDashboard implements OnInit {
   private buildEmailPrompt(employerName: string, employeeName: string, questions: string[]): string {
     const questionsList = questions.map((q, i) => `${i + 1}. ${q}`).join('\n\n');
     
-    return `Write a professional, polite email from ${employeeName} to the HR/Recruiter at ${employerName} asking for clarification on the following points from an employment agreement:
+    return `Write a professional, polite email from ${employeeName} to the HR team or hiring manager at ${employerName} asking for clarification on the following points from an employment agreement:
 
 ${questionsList}
 
 The email should:
-- Be professional and courteous
-- Have a clear subject line
-- Express gratitude for receiving the agreement
+- Start with "Subject: Clarification on Employment Agreement Terms"
+- Address the recipient as "Dear HR Team" or "Dear Hiring Manager" (be specific to ${employerName})
+- Express gratitude for receiving the agreement and excitement about the opportunity
 - List the questions in a numbered format
-- End with a professional closing
-- Be concise but complete
+- Mention that clarity will help ensure alignment and contribute to a successful working relationship
+- End with "Best regards," followed by ${employeeName}
+- Be professional, courteous, concise but complete
 
 Format the email with proper structure including Subject, Greeting, Body, and Closing.`;
   }
@@ -392,7 +408,7 @@ Format the email with proper structure including Subject, Greeting, Body, and Cl
     
     return `Subject: Clarification on Employment Agreement Terms
 
-Dear HR Team / Hiring Manager,
+Dear ${employerName} HR Team,
 
 Thank you for sending over the Employment Agreement for the position at ${employerName}. I am excited about the opportunity to join your team.
 
@@ -429,5 +445,118 @@ ${employeeName}`;
    */
   closeDraftedEmail(): void {
     this.draftedEmail.set(null);
+    this.showRewriteOptions.set(false);
+  }
+  
+  /**
+   * Toggle rewrite options panel
+   */
+  toggleRewriteOptions(): void {
+    this.showRewriteOptions.update(val => !val);
+  }
+  
+  /**
+   * Rewrite email with new tone/length using streaming
+   */
+  async rewriteEmail(): Promise<void> {
+    const currentEmail = this.draftedEmail();
+    if (!currentEmail || this.isRewritingEmail()) return;
+    
+    this.isRewritingEmail.set(true);
+    
+    try {
+      // Check if Rewriter API is available
+      const isAvailable = await this.writerService.isRewriterAvailable();
+      
+      if (!isAvailable || AppConfig.useMockAI) {
+        console.log('📧 Rewriter API not available, using Writer API as fallback');
+        
+        // Fallback to Writer API with new instructions
+        const data = this.structuredData();
+        if (!data) return;
+        
+        const prompt = `Rewrite this email with a ${this.rewriteTone()} tone and ${this.rewriteLength()} length:\n\n${currentEmail}`;
+        const rewritten = await this.writerService.write(prompt, {
+          tone: this.rewriteTone(),
+          length: this.rewriteLength(),
+        });
+        
+        this.draftedEmail.set(rewritten);
+        this.isRewritingEmail.set(false);
+        return;
+      }
+      
+      // Use Rewriter API with streaming
+      console.log('🔄 Rewriting email with Rewriter API (streaming)...');
+      
+      // Map user-friendly options to Rewriter API values
+      const rewriterTone = this.mapToneToRewriterAPI(this.rewriteTone());
+      const rewriterLength = this.mapLengthToRewriterAPI(this.rewriteLength());
+      
+      const stream = await this.writerService.rewriteStreaming(currentEmail, {
+        tone: rewriterTone,
+        length: rewriterLength,
+      });
+      
+      // Process the stream
+      // The Rewriter API returns an async iterable of text chunks
+      let rewrittenText = '';
+      
+      for await (const chunk of stream as any) {
+        rewrittenText += chunk;
+        
+        // Update email in real-time
+        this.draftedEmail.set(rewrittenText);
+      }
+      
+      console.log('✅ Email rewritten successfully');
+    } catch (error) {
+      console.error('❌ Error rewriting email:', error);
+      // Keep original email on error
+    } finally {
+      this.isRewritingEmail.set(false);
+    }
+  }
+  
+  /**
+   * Set rewrite tone
+   */
+  setRewriteTone(tone: 'formal' | 'neutral' | 'casual'): void {
+    this.rewriteTone.set(tone);
+  }
+  
+  /**
+   * Set rewrite length
+   */
+  setRewriteLength(length: 'short' | 'medium' | 'long'): void {
+    this.rewriteLength.set(length);
+  }
+  
+  /**
+   * Map user-friendly tone to Rewriter API tone
+   */
+  private mapToneToRewriterAPI(tone: 'formal' | 'neutral' | 'casual'): 'more-formal' | 'as-is' | 'more-casual' {
+    switch (tone) {
+      case 'formal':
+        return 'more-formal';
+      case 'neutral':
+        return 'as-is';
+      case 'casual':
+        return 'more-casual';
+    }
+  }
+  
+  /**
+   * Map user-friendly length to Rewriter API length
+   */
+  private mapLengthToRewriterAPI(length: 'short' | 'medium' | 'long'): 'shorter' | 'as-is' | 'longer' {
+    switch (length) {
+      case 'short':
+        return 'shorter';
+      case 'medium':
+        return 'as-is';
+      case 'long':
+        return 'longer';
+    }
   }
 }

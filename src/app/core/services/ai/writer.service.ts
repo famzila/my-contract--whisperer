@@ -152,7 +152,7 @@ export class WriterService {
 
     // Create rewriter with options
     const createOptions: any = {
-      tone: options?.tone || 'formal',
+      tone: options?.tone || 'as-is',
       length: options?.length || 'as-is',
     };
 
@@ -178,7 +178,7 @@ export class WriterService {
    * Rewrite clause more clearly
    */
   async rewriteClearly(clauseText: string): Promise<string> {
-    return await this.rewrite(clauseText, { tone: 'neutral', length: 'as-is' });
+    return await this.rewrite(clauseText, { tone: 'as-is' });
   }
 
   /**
@@ -201,7 +201,43 @@ export class WriterService {
    * Simplify language
    */
   async simplifyLanguage(clauseText: string): Promise<string> {
-    return await this.rewrite(clauseText, { tone: 'casual', length: 'shorter' });
+    return await this.rewrite(clauseText, { tone: 'more-casual', length: 'shorter' });
+  }
+  
+  /**
+   * Rewrite with streaming output
+   */
+  async rewriteStreaming(input: string, options?: AIRewriterOptions): Promise<ReadableStream> {
+    console.log('🔄 Rewriting with Rewriter API (streaming)...');
+
+    const availability = await (window as any).Rewriter.availability();
+
+    if (availability === 'no') {
+      throw new Error('Rewriter API is not available');
+    }
+
+    // Create rewriter with options
+    const createOptions: any = {
+      tone: options?.tone || 'as-is',
+      length: options?.length || 'as-is',
+    };
+
+    // Add monitor for download progress if needed
+    if (availability === 'downloadable' || availability === 'after-download') {
+      createOptions.monitor = (m: any) => {
+        m.addEventListener('downloadprogress', (e: any) => {
+          const percent = (e.loaded * 100).toFixed(1);
+          console.log(`📥 Downloading Rewriter model: ${percent}%`);
+        });
+      };
+    }
+
+    const rewriter = await (window as any).Rewriter.create(createOptions);
+    this.rewriter = rewriter;
+
+    // Rewrite the content with streaming
+    const stream = rewriter.rewriteStreaming(input, { signal: options?.signal });
+    return stream;
   }
 
   /**
