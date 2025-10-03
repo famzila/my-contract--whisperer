@@ -9,6 +9,7 @@ export * from './loading-spinner/loading-spinner';
 export * from './modal/modal';
 export * from './language-selector/language-selector';
 export * from './language-banner/language-banner';
+export * from './non-contract-error/non-contract-error';
 
 
 

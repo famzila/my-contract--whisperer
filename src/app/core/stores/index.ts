@@ -7,6 +7,7 @@ export * from './contract.store';
 export * from './ui.store';
 export * from './email-draft.store';
 export * from './language.store';
+export * from './onboarding.store';
 
 
 
