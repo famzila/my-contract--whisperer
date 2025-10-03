@@ -1,0 +1,104 @@
+@if (isOpen()) {
+  <!-- Backdrop -->
+  <div 
+    class="fixed inset-0 bg-black/50 z-40 animate-[fadeIn_200ms_ease]"
+    (click)="onClose()"
+    aria-hidden="true"
+  ></div>
+  
+  <!-- Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div 
+      class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-[slideUp_300ms_ease]"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header -->
+      <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-1">
+              Who Are You in This Contract?
+            </h2>
+            <p class="text-sm text-gray-600">
+              This helps us tailor the analysis to your perspective
+            </p>
+          </div>
+          
+          <button
+            type="button"
+            (click)="onClose()"
+            class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Close"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Body -->
+      <div class="p-8">
+        <!-- Detection Confidence Badge (if high confidence) -->
+        @if (detectedParties()?.confidence === 'high' && detectedParties()?.parties) {
+          <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p class="text-sm font-medium text-blue-900 flex items-center gap-2">
+              <span class="text-lg">✨</span>
+              We detected the following parties in your contract:
+            </p>
+          </div>
+        }
+        
+        <!-- Party Options Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          @for (option of partyOptions(); track option.value) {
+            <button
+              type="button"
+              (click)="onSelectRole(option.value)"
+              class="flex items-start gap-4 p-5 text-left bg-white border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 hover:shadow-md active:scale-[0.98] transition-all duration-150 group"
+              [class.col-span-full]="option.value === 'both_views'"
+            >
+              <!-- Icon -->
+              <div class="flex-shrink-0 text-4xl leading-none mt-1 group-hover:scale-110 transition-transform duration-150">
+                {{ option.icon }}
+              </div>
+              
+              <!-- Content -->
+              <div class="flex-1 min-w-0">
+                <h3 class="text-lg font-semibold text-gray-900 mb-1 group-hover:text-primary transition-colors">
+                  {{ option.label }}
+                </h3>
+                @if (option.description) {
+                  <p class="text-sm text-gray-600">
+                    {{ option.description }}
+                  </p>
+                }
+              </div>
+              
+              <!-- Arrow Icon -->
+              <svg 
+                class="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all duration-150" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          }
+        </div>
+        
+        <!-- Info Box -->
+        <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <p class="text-sm text-gray-700 flex items-start gap-2">
+            <span class="text-lg flex-shrink-0">💡</span>
+            <span>
+              <strong>Pro Tip:</strong> Choose "Compare Both Perspectives" to see risks and obligations from 
+              both parties' viewpoints. This helps you understand the full picture before signing.
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+}

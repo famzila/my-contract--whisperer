@@ -10,6 +10,7 @@ export * from './modal/modal';
 export * from './language-selector/language-selector';
 export * from './language-banner/language-banner';
 export * from './non-contract-error/non-contract-error';
+export * from './party-selector-modal/party-selector-modal';
 
 
 
