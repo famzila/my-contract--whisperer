@@ -2,16 +2,14 @@ import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@ang
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ContractStore, EmailDraftStore } from '../../core/stores';
-import { Card } from '../../shared/components/card/card';
-import { LoadingSpinner } from '../../shared/components/loading-spinner/loading-spinner';
-import { Button } from '../../shared/components/button/button';
+import { Card, LoadingSpinner, Button, LanguageBanner } from '../../shared/components';
 import type { ContractClause } from '../../core/models/contract.model';
 import type { AIAnalysisResponse } from '../../core/models/ai-analysis.model';
 import { AppConfig } from '../../core/config/app.config';
 
 @Component({
   selector: 'app-analysis-dashboard',
-  imports: [CommonModule, Card, LoadingSpinner, Button],
+  imports: [CommonModule, Card, LoadingSpinner, Button, LanguageBanner],
   templateUrl: './analysis-dashboard.html',
   styleUrl: './analysis-dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

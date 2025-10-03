@@ -714,5 +714,463 @@ export const routes: Routes = [
 
 ---
 
-Feedback about APIs
-- why having the Rewriter API uses different tone values than the Writer API. For rewrite The value can be set to more-formal, as-is (default), or more-casual. and for writer: The value can be set to formal, neutral (default), or casual.
+## 🧠 **PERSPECTIVE-AWARE ANALYSIS STRATEGY** (NEW)
+
+### **Problem Statement**
+Traditional contract analysis assumes one perspective (usually the "weaker party" like employee, tenant). However:
+- 🏢 **Employers** need to understand THEIR risks when hiring
+- 🏠 **Landlords** need to know THEIR obligations in leases
+- 💼 **Clients** need clarity on THEIR protections in service contracts
+
+**Solution**: Smart, context-aware analysis that adapts to user's role.
+
+---
+
+### **🎯 Smart Onboarding Flow**
+
+```
+User Journey:
+┌──────────────────────────────────────────┐
+│ 1. UPLOAD CONTRACT                       │
+└─────────────┬────────────────────────────┘
+              │
+              ▼
+┌──────────────────────────────────────────┐
+│ 2. CONTRACT VALIDATION                   │
+│    AI checks: "Is this a contract?"      │
+│    - Yes → Continue                      │
+│    - No → Show friendly error            │
+└─────────────┬────────────────────────────┘
+              │
+              ▼
+┌──────────────────────────────────────────┐
+│ 3. LANGUAGE DETECTION                    │
+│    Detect contract language (EN/FR/AR)   │
+└─────────────┬────────────────────────────┘
+              │
+              ▼
+┌──────────────────────────────────────────┐
+│ 4. LANGUAGE PREFERENCE MODAL             │
+│    "Contract in EN, analyze in AR?"      │
+│    User choice: Keep or change           │
+└─────────────┬────────────────────────────┘
+              │
+              ▼
+┌──────────────────────────────────────────┐
+│ 5. PARTY DETECTION (NER + Rules)         │
+│    Auto-extract party names & roles      │
+└─────────────┬────────────────────────────┘
+              │
+         ┌────┴─────┐
+         │          │
+    HIGH CONF   LOW CONF
+         │          │
+         ▼          ▼
+   ┌─────────┐  ┌──────────┐
+   │ Show    │  │ Show     │
+   │ Names   │  │ Generic  │
+   │ + Both  │  │ Roles    │
+   └────┬────┘  └─────┬────┘
+        │             │
+        └──────┬──────┘
+               │
+               ▼
+┌──────────────────────────────────────────┐
+│ 6. PARTY ROLE SELECTOR                   │
+│    "Who are you in this contract?"       │
+│    - 🏢 Acme Corp (Employer)             │
+│    - 🧑‍💻 Jane Doe (Employee)             │
+│    - 👀 Compare Both Perspectives        │
+└─────────────┬────────────────────────────┘
+              │
+              ▼
+┌──────────────────────────────────────────┐
+│ 7. CONTEXT EXTRACTION (Auto)             │
+│    - Jurisdiction (from contract)        │
+│    - Cross-border detection              │
+│    - Industry context                    │
+└─────────────┬────────────────────────────┘
+              │
+              ▼
+┌──────────────────────────────────────────┐
+│ 8. PERSPECTIVE-AWARE ANALYSIS            │
+│    AI analyzes with:                     │
+│    - User's role context                 │
+│    - Language preference                 │
+│    - Jurisdiction awareness              │
+└─────────────┬────────────────────────────┘
+              │
+              ▼
+┌──────────────────────────────────────────┐
+│ 9. SMART RESULTS DISPLAY                 │
+│    - Analysis in preferred language      │
+│    - Risks tailored to user's role       │
+│    - Context-aware warnings              │
+│    - [Show Original] for verification    │
+└──────────────────────────────────────────┘
+```
+
+---
+
+### **🤖 AI Techniques**
+
+#### **1. Contract Validation (Is this a contract?)**
+```typescript
+Algorithm:
+1. Use Prompt API to classify document type
+2. Check for contract indicators:
+   - Keywords: "agreement", "parties", "obligations", "termination"
+   - Structure: Whereas clauses, signatures, dates
+   - Legal language patterns
+3. Return confidence score (0-100%)
+
+If NOT a contract:
+- Show friendly message: "This looks like a [essay/email/recipe]"
+- Suggest contract types we support
+- Don't analyze
+```
+
+#### **2. Party Detection (NER + Rule-Based)**
+```typescript
+Algorithm:
+1. Named Entity Recognition (via Prompt API):
+   - Extract organization names
+   - Extract person names
+   - Identify addresses
+   
+2. Relationship Inference:
+   - Pattern matching: "Employer-Employee", "Landlord-Tenant"
+   - Context clues: Job titles, property addresses
+   - Contract type keywords
+   
+3. Confidence Scoring:
+   - High (90%+): Clear parties, roles identified
+   - Medium (60-89%): Parties found, roles unclear
+   - Low (<60%): Complex/multi-party contract
+
+Output:
+{
+  confidence: 'high',
+  parties: {
+    party1: { name: 'Acme Corp', role: 'Employer' },
+    party2: { name: 'Jane Doe', role: 'Employee' }
+  },
+  contractType: 'bilateral' | 'multilateral'
+}
+```
+
+#### **3. Context Extraction (Auto-detected)**
+```typescript
+Automatically extract without asking user:
+- Jurisdiction: "California, USA" (from "Governing Law" clause)
+- Party locations: From addresses
+- Cross-border: party1Country !== party2Country
+- Industry: Keywords (tech, healthcare, real estate)
+- Contract date: Effective date
+- Currency: USD, EUR, etc.
+
+Use context for smart warnings:
+- California non-compete → "Likely unenforceable"
+- Cross-border → "Tax implications in both countries"
+- Remote work → "Visa/work permit considerations"
+```
+
+#### **4. Perspective-Aware Prompts**
+```typescript
+Dynamic system prompts based on user role:
+
+For EMPLOYER:
+"Analyze from employer's perspective. Focus on:
+- Employer's obligations & costs
+- Employee performance commitments
+- Termination rights for employer
+- IP ownership protections
+- Risks: Employee leaves with IP, litigation"
+
+For EMPLOYEE:
+"Analyze from employee's perspective. Focus on:
+- Compensation fairness
+- Job security (at-will vs. cause)
+- Career restrictions (non-compete)
+- Work-life balance
+- Risks: Underpayment, sudden termination"
+
+For BOTH VIEWS:
+"Show dual perspectives:
+- Party 1 risks vs Party 2 risks
+- Party 1 obligations vs Party 2 obligations
+- Fairness balance assessment"
+```
+
+---
+
+### **🌍 Translation Strategy**
+
+#### **Approach: Translate OUTPUT, Not Contract**
+
+**Why This is Best**:
+- ✅ Preserves legal accuracy (AI analyzes original)
+- ✅ User gets results in their language
+- ✅ Simple UX (one language shown)
+- ✅ Fast (translate once after analysis)
+
+**Implementation**:
+```typescript
+Flow:
+1. Detect contract language: English
+2. User selects: Arabic
+3. AI analyzes in English (preserves legal nuance)
+4. Translate analysis results to Arabic
+5. Show results in Arabic
+6. [Show Original] button → Expand to see English
+
+Note: App language (header/buttons) ≠ Analysis language
+- User sets app to Arabic → UI is RTL, Arabic nav
+- But if they choose English analysis → Results in English
+- Layout stays RTL (app preference)
+```
+
+**UI Pattern**:
+```
+┌──────────────────────────────────────┐
+│ 🚨 RISK: At-Will Employment         │
+│ ⚠️ High Severity                     │
+│                                      │
+│ [Arabic translation of analysis]     │
+│                                      │
+│ 💡 Analyzed from English, shown in  │
+│ Arabic for clarity.                  │
+│                                      │
+│ [🔍 Show Original English] ←Click   │
+└──────────────────────────────────────┘
+```
+
+---
+
+### **📊 Enhanced JSON Schema**
+
+```json
+{
+  "metadata": {
+    "contractType": "Employment Agreement",
+    "detectedLanguage": "en",
+    "analyzedForRole": "employee",        // 👈 NEW
+    "analyzedInLanguage": "ar",           // 👈 NEW
+    "effectiveDate": "October 1, 2025",
+    "endDate": "September 30, 2026",      // 👈 NEW (Contract expiration/termination date)
+    "duration": "12 months",              // 👈 NEW (Human-readable duration)
+    "autoRenew": false,                   // 👈 NEW (Critical for user awareness)
+    "jurisdiction": "California, USA",
+    "parties": {
+      "party1": {
+        "name": "Acme Technologies, Inc.",
+        "role": "Employer",
+        "location": "San Francisco, CA"
+      },
+      "party2": {
+        "name": "Jane Doe",
+        "role": "Employee",
+        "location": "San Jose, CA"
+      }
+    },
+    "context": {                          // 👈 NEW
+      "isCrossBorder": false,
+      "governingLaw": "Laws of California",
+      "currency": "USD",
+      "industryContext": "Technology"
+    }
+  },
+  "summary": {
+    "fromYourPerspective": "...",         // 👈 NEW: Role-specific
+    "keyBenefits": [...],                 // 👈 What's GOOD for you
+    "keyConcerns": [...],                 // 👈 What's RISKY for you
+    "parties": "...",
+    "role": "...",
+    "compensation": {...}
+  },
+  "risks": [
+    {
+      "title": "At-Will Employment",
+      "severity": "High",
+      "impactOn": "employee",             // 👈 NEW: Who is affected
+      "description": "You can be fired anytime",
+      "contextWarning": null              // 👈 NEW: Jurisdiction-specific
+    }
+  ],
+  "contextWarnings": [                    // 👈 NEW
+    {
+      "type": "cross-border",
+      "severity": "High",
+      "message": "Employee in France, Employer in US → conflicting labor laws"
+    },
+    {
+      "type": "jurisdiction",
+      "severity": "Medium",
+      "message": "California law prohibits non-compete clauses"
+    }
+  ],
+  "obligations": {
+    "yours": [...],                       // 👈 Based on role
+    "theirs": [...]                       // 👈 Other party
+  }
+}
+```
+
+---
+
+### **🎯 IMPLEMENTATION ROADMAP (2 Weeks)**
+
+#### **Week 1: Foundation (Days 1-7)**
+
+**Day 1-2: Smart Onboarding Infrastructure**
+- [ ] Create `OnboardingStore` (NgRx SignalStore)
+  - State: `step`, `contractLanguage`, `userLanguage`, `userRole`, `parties`
+- [ ] Implement contract validation service
+  - `validateContract(text): Promise<boolean>`
+  - Use Prompt API for classification
+- [ ] Build non-contract error UI component
+  - Friendly message with suggestions
+
+**Day 3-4: Party Detection & NER**
+- [ ] Implement party extraction algorithm
+  - `extractParties(text): Promise<PartyDetectionResult>`
+  - Use Prompt API for NER
+  - Rule-based relationship inference
+- [ ] Create party selector modal component
+  - High confidence: Show extracted names
+  - Low confidence: Show generic roles
+  - Always include "Compare Both Views" option
+- [ ] Integrate with onboarding flow
+
+**Day 5-6: Perspective-Aware Analysis**
+- [ ] Update `prompt.service.ts` with dynamic system prompts
+  - `buildPerspectivePrompt(role: UserRole): string`
+  - Different prompts for employer/employee/landlord/etc.
+- [ ] Enhance analysis service to accept context
+  - `analyzeContract(text, context: AnalysisContext)`
+- [ ] Update JSON schema parsers for new fields
+
+**Day 7: Context Extraction**
+- [ ] Implement auto-context extraction
+  - `extractContext(text): Promise<ContractContext>`
+  - Jurisdiction, addresses, currency, industry
+- [ ] Add context-aware warning system
+  - Cross-border detection
+  - Jurisdiction-specific rules (California non-compete)
+- [ ] Display context warnings in UI
+
+#### **Week 2: Translation & Polish (Days 8-14)**
+
+**Day 8-9: Translation Implementation**
+- [ ] Implement "Translate OUTPUT" strategy
+  - Analyze in original language
+  - Translate results to user preference
+- [ ] Create expandable "Show Original" component
+  - Click to see original text
+  - Side-by-side comparison
+- [ ] Add first-time user tooltip explaining approach
+
+**Day 10-11: Language Independence**
+- [ ] Separate app language from analysis language
+  - App language → UI (header, buttons)
+  - Analysis language → Content
+- [ ] Fix RTL layout logic
+  - App direction based on app language
+  - Analysis content direction independent
+- [ ] Test edge cases (Arabic app, English analysis)
+
+**Day 12: Integration & Testing**
+- [ ] Connect all onboarding steps in sequence
+- [ ] Test full flow: Upload → Validate → Detect → Select → Analyze
+- [ ] Handle error cases gracefully
+- [ ] Performance optimization (caching, lazy loading)
+
+**Day 13: UI/UX Polish**
+- [ ] Smooth animations between onboarding steps
+- [ ] Loading states for each phase
+- [ ] Progress indicator (Step X of 6)
+- [ ] Skip options where appropriate
+- [ ] Accessibility review (keyboard nav, ARIA)
+
+**Day 14: Documentation & Demo**
+- [ ] Update user guide with new flow
+- [ ] Create demo video showing:
+  - Upload contract
+  - Auto-detection (language, parties)
+  - Role selection
+  - Perspective-aware results
+  - Translation verification
+- [ ] Final bug fixes
+
+---
+
+### **✅ Success Metrics**
+
+**Contract Validation**:
+- [ ] 95%+ accuracy in contract detection
+- [ ] Clear, friendly error messages for non-contracts
+
+**Party Detection**:
+- [ ] 85%+ accuracy in party extraction
+- [ ] Smart fallback to generic roles when uncertain
+
+**Perspective Analysis**:
+- [ ] Analysis clearly tailored to selected role
+- [ ] Risks/obligations match user's perspective
+- [ ] "Both views" comparison is balanced
+
+**Translation**:
+- [ ] Original legal text preserved
+- [ ] Analysis readable in user's language
+- [ ] "Show Original" works for verification
+
+**User Experience**:
+- [ ] Onboarding takes <60 seconds
+- [ ] Each step is clear and purposeful
+- [ ] No unnecessary friction
+- [ ] Users feel app "understands them"
+
+---
+
+### **🔮 Post-MVP Enhancements**
+
+**Phase 2 (After Hackathon)**:
+- [ ] Voice input for party role selection
+- [ ] Machine learning for party detection (improve accuracy)
+- [ ] Jurisdiction rules database (20+ countries)
+- [ ] Industry-specific analysis templates
+- [ ] Multi-contract comparison (employer comparing offers)
+- [ ] Negotiation suggestions based on perspective
+- [ ] Cultural context warnings (US vs. EU labor norms)
+
+---
+
+## 📝 **API NOTES**
+
+**Rewriter vs Writer API Tone Values**:
+- **Rewriter API**: `'more-formal'` | `'as-is'` | `'more-casual'`
+- **Writer API**: `'formal'` | `'neutral'` | `'casual'`
+
+**Mapping Strategy**:
+```typescript
+// When calling Rewriter
+tone: 'formal' → 'more-formal'
+tone: 'neutral' → 'as-is'
+tone: 'casual' → 'more-casual'
+
+// When calling Writer
+Use: 'formal' | 'neutral' | 'casual' directly
+```
+
+---
+
+## 🎯 **CURRENT FOCUS**
+
+**Next Implementation**: Start Week 1, Day 1-2
+1. Create OnboardingStore
+2. Implement contract validation
+3. Build non-contract error UI
+
+**Estimated Time**: 3-4 hours
+
+Ready to begin! 🚀

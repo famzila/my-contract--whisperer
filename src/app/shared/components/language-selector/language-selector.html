@@ -1,0 +1,79 @@
+<div class="language-selector">
+  <!-- Language Button -->
+  <button
+    type="button"
+    (click)="toggleDropdown()"
+    class="language-button"
+    aria-label="Select language"
+    aria-expanded="isDropdownOpen()"
+  >
+    @if (selectedLanguage()) {
+      <span class="flag">{{ selectedLanguage()!.flag }}</span>
+      <span class="language-name">{{ selectedLanguage()!.nativeName }}</span>
+    }
+    <svg 
+      class="chevron" 
+      [class.rotate]="isDropdownOpen()"
+      xmlns="http://www.w3.org/2000/svg" 
+      width="16" 
+      height="16" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      stroke-width="2"
+    >
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+
+  <!-- Dropdown Menu -->
+  @if (isDropdownOpen()) {
+    <div 
+      class="dropdown-menu"
+      (click)="closeDropdown()"
+    >
+      <div class="dropdown-header">
+        <span class="dropdown-title">🌍 Choose Your Language</span>
+        <p class="dropdown-subtitle">Analysis will be shown in your preferred language</p>
+      </div>
+      
+      <div class="language-list">
+        @for (lang of availableLanguages(); track lang.code) {
+          <button
+            type="button"
+            (click)="selectLanguage(lang.code)"
+            class="language-option"
+            [class.selected]="lang.code === selectedLanguage()?.code"
+          >
+            <span class="lang-flag">{{ lang.flag }}</span>
+            <div class="lang-info">
+              <span class="lang-native">{{ lang.nativeName }}</span>
+              <span class="lang-english">{{ lang.name }}</span>
+            </div>
+            @if (lang.code === selectedLanguage()?.code) {
+              <svg 
+                class="check-icon" 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="18" 
+                height="18" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2.5"
+              >
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            }
+          </button>
+        }
+      </div>
+    </div>
+    
+    <!-- Backdrop -->
+    <div 
+      class="dropdown-backdrop" 
+      (click)="closeDropdown()"
+      aria-hidden="true"
+    ></div>
+  }
+</div>

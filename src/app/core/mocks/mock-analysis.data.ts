@@ -7,6 +7,9 @@ export const MOCK_ANALYSIS: AIAnalysisResponse = {
   metadata: {
     contractType: 'Employment Agreement',
     effectiveDate: 'October 1, 2025',
+    endDate: 'September 30, 2026',
+    duration: '12 months',
+    autoRenew: false,
     jurisdiction: 'California, USA',
     parties: {
       employer: {
@@ -19,6 +22,9 @@ export const MOCK_ANALYSIS: AIAnalysisResponse = {
         position: 'Senior Software Engineer',
       },
     },
+    detectedLanguage: 'en',
+    analyzedForRole: 'employee',
+    analyzedInLanguage: 'en',
   },
   summary: {
     parties: 'Acme Technologies, Inc. hires Jane Doe as a Senior Software Engineer.',

@@ -8,17 +8,35 @@ export interface AIAnalysisResponse {
   obligations: Obligations;
   omissions: Omission[];
   questions: string[];
+  contextWarnings?: ContextWarning[];  // 👈 NEW: Jurisdiction/cross-border warnings
   disclaimer: string;
+}
+
+/**
+ * Context-aware warnings (cross-border, jurisdiction-specific)
+ */
+export interface ContextWarning {
+  type: 'cross-border' | 'jurisdiction' | 'industry' | 'compliance';
+  severity: 'High' | 'Medium' | 'Low';
+  message: string;
 }
 
 export interface ContractMetadata {
   contractType: string;
   effectiveDate: string | null;
+  endDate: string | null;           // 👈 Contract expiration/termination date
+  duration: string | null;           // 👈 Human-readable duration (e.g., "12 months")
+  autoRenew: boolean | null;         // 👈 Does contract auto-renew?
   jurisdiction: string | null;
   parties: {
     employer: Party;
     employee: Party;
   };
+  
+  // Context fields (for perspective-aware analysis)
+  detectedLanguage?: string;         // 👈 Contract's original language
+  analyzedForRole?: string;          // 👈 Which role analysis is tailored for
+  analyzedInLanguage?: string;       // 👈 Language of analysis output
 }
 
 export interface Party {
@@ -65,7 +83,9 @@ export interface RiskFlag {
   severity: RiskSeverity;
   emoji: RiskEmoji;
   description: string;
-  impact: string; // Explain the potential impact
+  impact: string;                    // Explain the potential impact
+  impactOn?: string;                 // 👈 NEW: Who is affected (employer/employee)
+  contextWarning?: string | null;    // 👈 NEW: Jurisdiction-specific warning
 }
 
 export interface Obligations {

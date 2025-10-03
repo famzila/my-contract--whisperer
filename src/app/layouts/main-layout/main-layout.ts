@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { LanguageSelector } from '../../shared/components';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterModule],
+  imports: [RouterModule, LanguageSelector],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

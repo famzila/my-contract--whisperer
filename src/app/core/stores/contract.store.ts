@@ -9,6 +9,7 @@ import { patchState } from '@ngrx/signals';
 import type { Contract, ContractAnalysis, ContractClause, RiskLevel } from '../models/contract.model';
 import { ContractAnalysisService } from '../services/contract-analysis.service';
 import { ContractParserService, type ParsedContract } from '../services/contract-parser.service';
+import { LanguageStore } from './language.store';
 
 /**
  * Contract store state shape
@@ -122,8 +123,13 @@ export const ContractStore = signalStore(
   })),
   
   // Methods to update state
-  // 👇 Inject services within withMethods
-  withMethods((store, analysisService = inject(ContractAnalysisService), parserService = inject(ContractParserService)) => ({
+  // 👇 Inject services within withMethods (proper store pattern)
+  withMethods((
+    store, 
+    analysisService = inject(ContractAnalysisService), 
+    parserService = inject(ContractParserService),
+    languageStore = inject(LanguageStore)
+  ) => ({
     /**
      * Set contract
      */
@@ -267,7 +273,11 @@ export const ContractStore = signalStore(
       try {
         patchState(store, { isAnalyzing: true, analysisError: null });
         
-        // Call the analysis service
+        // Step 1: Detect contract language (triggers language banner if needed)
+        console.log('🌍 Detecting contract language...');
+        languageStore.detectContractLanguage(parsedContract.text);
+        
+        // Step 2: Call the analysis service
         const { contract, analysis } = await analysisService.analyzeContract(parsedContract);
         
         // Update store with results
@@ -279,6 +289,8 @@ export const ContractStore = signalStore(
           uploadError: null,
           analysisError: null,
         });
+        
+        console.log('✅ Contract analysis completed with language detection');
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Analysis failed';
         patchState(store, { 
