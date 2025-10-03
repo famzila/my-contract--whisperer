@@ -1,14 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ContractStore } from '../../core/stores/contract.store';
+import { ContractStore, EmailDraftStore } from '../../core/stores';
 import { Card } from '../../shared/components/card/card';
 import { LoadingSpinner } from '../../shared/components/loading-spinner/loading-spinner';
 import { Button } from '../../shared/components/button/button';
 import type { ContractClause } from '../../core/models/contract.model';
 import type { AIAnalysisResponse } from '../../core/models/ai-analysis.model';
 import { AppConfig } from '../../core/config/app.config';
-import { WriterService } from '../../core/services/ai/writer.service';
 
 @Component({
   selector: 'app-analysis-dashboard',
@@ -19,10 +18,12 @@ import { WriterService } from '../../core/services/ai/writer.service';
 })
 export class AnalysisDashboard implements OnInit {
   private router = inject(Router);
-  contractStore = inject(ContractStore);
-  private writerService = inject(WriterService);
   
-  // Local state
+  // Stores
+  contractStore = inject(ContractStore);
+  emailStore = inject(EmailDraftStore);
+  
+  // Local UI state only
   selectedTab = signal<'summary' | 'risks' | 'obligations' | 'omissions' | 'questions' | 'disclaimer'>('summary');
   expandedQuestionId = signal<string | null>(null);
   
@@ -31,16 +32,6 @@ export class AnalysisDashboard implements OnInit {
   
   // Check if mock mode is enabled
   isMockMode = AppConfig.useMockAI;
-  
-  // Email draft state
-  isDraftingEmail = signal<boolean>(false);
-  draftedEmail = signal<string | null>(null);
-  isRewritingEmail = signal<boolean>(false);
-  showRewriteOptions = signal<boolean>(false);
-  
-  // Rewrite options
-  rewriteTone = signal<'formal' | 'neutral' | 'casual'>('formal');
-  rewriteLength = signal<'short' | 'medium' | 'long'>('medium');
 
   ngOnInit(): void {
     // Redirect if no contract/analysis
@@ -308,10 +299,9 @@ export class AnalysisDashboard implements OnInit {
   
   /**
    * Draft a professional email with questions using Writer API
+   * Delegates to EmailDraftStore
    */
   async draftProfessionalEmail(): Promise<void> {
-    if (this.isDraftingEmail()) return;
-    
     const data = this.structuredData();
     if (!data) return;
     
@@ -319,244 +309,58 @@ export class AnalysisDashboard implements OnInit {
     const employerName = data.metadata.parties.employer.name;
     const employeeName = data.metadata.parties.employee.name;
     
-    if (questions.length === 0) {
-      console.warn('No questions to draft email');
-      return;
-    }
-    
-    this.isDraftingEmail.set(true);
-    this.draftedEmail.set(null);
-    
-    try {
-      // Check if Writer API is available
-      const isAvailable = await this.writerService.isWriterAvailable();
-      
-      if (!isAvailable || AppConfig.useMockAI) {
-        // Use mock email if Writer API not available or in mock mode
-        console.log('📧 Using mock email template (Writer API not available or mock mode enabled)');
-        const mockEmail = this.generateMockEmail(employerName, employeeName, questions);
-        
-        // Simulate delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        this.draftedEmail.set(mockEmail);
-        this.isDraftingEmail.set(false);
-        return;
-      }
-      
-      // Use Writer API to generate professional email with streaming
-      console.log('✍️ Drafting email with Writer API (streaming)...');
-      
-      const prompt = this.buildEmailPrompt(employerName, employeeName, questions);
-      const stream = await this.writerService.writeStreaming(prompt, {
-        tone: 'formal',
-        length: 'medium',
-        sharedContext: `This is a professional email from ${employeeName} to ${employerName} regarding an employment agreement.`,
-      });
-      
-      // Process the stream - Writer API returns an async iterable of text chunks
-      let emailText = '';
-      
-      for await (const chunk of stream as any) {
-        emailText += chunk;
-        
-        // Update email in real-time for that "wow effect"
-        this.draftedEmail.set(emailText);
-      }
-      
-      console.log('✅ Email drafted successfully');
-    } catch (error) {
-      console.error('❌ Error drafting email:', error);
-      // Fallback to mock email on error
-      const mockEmail = this.generateMockEmail(employerName, employeeName, questions);
-      this.draftedEmail.set(mockEmail);
-    } finally {
-      this.isDraftingEmail.set(false);
-    }
-  }
-  
-  /**
-   * Build prompt for Writer API
-   */
-  private buildEmailPrompt(employerName: string, employeeName: string, questions: string[]): string {
-    const questionsList = questions.map((q, i) => `${i + 1}. ${q}`).join('\n\n');
-    
-    return `Write a professional, polite email from ${employeeName} to the HR team or hiring manager at ${employerName} asking for clarification on the following points from an employment agreement:
-
-${questionsList}
-
-The email should:
-- Start with "Subject: Clarification on Employment Agreement Terms"
-- Address the recipient as "Dear HR Team" or "Dear Hiring Manager" (be specific to ${employerName})
-- Express gratitude for receiving the agreement and excitement about the opportunity
-- List the questions in a numbered format
-- Mention that clarity will help ensure alignment and contribute to a successful working relationship
-- End with "Best regards," followed by ${employeeName}
-- Be professional, courteous, concise but complete
-
-Format the email with proper structure including Subject, Greeting, Body, and Closing.`;
-  }
-  
-  /**
-   * Generate mock email when Writer API is not available
-   */
-  private generateMockEmail(employerName: string, employeeName: string, questions: string[]): string {
-    const questionsList = questions
-      .slice(0, 5) // Limit to first 5 questions for readability
-      .map((q, i) => `${i + 1}. ${q}`)
-      .join('\n\n');
-    
-    return `Subject: Clarification on Employment Agreement Terms
-
-Dear ${employerName} HR Team,
-
-Thank you for sending over the Employment Agreement for the position at ${employerName}. I am excited about the opportunity to join your team.
-
-Before I proceed with signing, I would appreciate clarification on the following points to ensure I fully understand the terms:
-
-${questionsList}
-
-I believe having clarity on these matters will help ensure we are aligned and will contribute to a successful working relationship.
-
-I look forward to your response and appreciate your time in addressing these questions.
-
-Best regards,
-${employeeName}`;
+    // Delegate to EmailDraftStore
+    await this.emailStore.draftEmail(questions, employerName, employeeName);
   }
   
   /**
    * Copy drafted email to clipboard
+   * Delegates to EmailDraftStore
    */
   async copyDraftedEmail(): Promise<void> {
-    const email = this.draftedEmail();
-    if (!email) return;
-    
-    try {
-      await navigator.clipboard.writeText(email);
-      console.log('✅ Email copied to clipboard');
+    const success = await this.emailStore.copyEmail();
+    if (success) {
       // TODO: Show toast notification
-    } catch (err) {
-      console.error('❌ Failed to copy email:', err);
     }
   }
   
   /**
    * Close email draft modal
+   * Delegates to EmailDraftStore
    */
   closeDraftedEmail(): void {
-    this.draftedEmail.set(null);
-    this.showRewriteOptions.set(false);
+    this.emailStore.clearEmail();
   }
   
   /**
    * Toggle rewrite options panel
+   * Delegates to EmailDraftStore
    */
   toggleRewriteOptions(): void {
-    this.showRewriteOptions.update(val => !val);
+    this.emailStore.toggleRewriteOptions();
   }
   
   /**
-   * Rewrite email with new tone/length using streaming
+   * Rewrite email with new tone/length
+   * Delegates to EmailDraftStore
    */
   async rewriteEmail(): Promise<void> {
-    const currentEmail = this.draftedEmail();
-    if (!currentEmail || this.isRewritingEmail()) return;
-    
-    this.isRewritingEmail.set(true);
-    
-    try {
-      // Check if Rewriter API is available
-      const isAvailable = await this.writerService.isRewriterAvailable();
-      
-      if (!isAvailable || AppConfig.useMockAI) {
-        console.log('📧 Rewriter API not available, using Writer API as fallback');
-        
-        // Fallback to Writer API with new instructions
-        const data = this.structuredData();
-        if (!data) return;
-        
-        const prompt = `Rewrite this email with a ${this.rewriteTone()} tone and ${this.rewriteLength()} length:\n\n${currentEmail}`;
-        const rewritten = await this.writerService.write(prompt, {
-          tone: this.rewriteTone(),
-          length: this.rewriteLength(),
-        });
-        
-        this.draftedEmail.set(rewritten);
-        this.isRewritingEmail.set(false);
-        return;
-      }
-      
-      // Use Rewriter API with streaming
-      console.log('🔄 Rewriting email with Rewriter API (streaming)...');
-      
-      // Map user-friendly options to Rewriter API values
-      const rewriterTone = this.mapToneToRewriterAPI(this.rewriteTone());
-      const rewriterLength = this.mapLengthToRewriterAPI(this.rewriteLength());
-      
-      const stream = await this.writerService.rewriteStreaming(currentEmail, {
-        tone: rewriterTone,
-        length: rewriterLength,
-      });
-      
-      // Process the stream
-      // The Rewriter API returns an async iterable of text chunks
-      let rewrittenText = '';
-      
-      for await (const chunk of stream as any) {
-        rewrittenText += chunk;
-        
-        // Update email in real-time
-        this.draftedEmail.set(rewrittenText);
-      }
-      
-      console.log('✅ Email rewritten successfully');
-    } catch (error) {
-      console.error('❌ Error rewriting email:', error);
-      // Keep original email on error
-    } finally {
-      this.isRewritingEmail.set(false);
-    }
+    await this.emailStore.rewriteEmail();
   }
   
   /**
    * Set rewrite tone
+   * Delegates to EmailDraftStore
    */
   setRewriteTone(tone: 'formal' | 'neutral' | 'casual'): void {
-    this.rewriteTone.set(tone);
+    this.emailStore.setRewriteTone(tone);
   }
   
   /**
    * Set rewrite length
+   * Delegates to EmailDraftStore
    */
   setRewriteLength(length: 'short' | 'medium' | 'long'): void {
-    this.rewriteLength.set(length);
-  }
-  
-  /**
-   * Map user-friendly tone to Rewriter API tone
-   */
-  private mapToneToRewriterAPI(tone: 'formal' | 'neutral' | 'casual'): 'more-formal' | 'as-is' | 'more-casual' {
-    switch (tone) {
-      case 'formal':
-        return 'more-formal';
-      case 'neutral':
-        return 'as-is';
-      case 'casual':
-        return 'more-casual';
-    }
-  }
-  
-  /**
-   * Map user-friendly length to Rewriter API length
-   */
-  private mapLengthToRewriterAPI(length: 'short' | 'medium' | 'long'): 'shorter' | 'as-is' | 'longer' {
-    switch (length) {
-      case 'short':
-        return 'shorter';
-      case 'medium':
-        return 'as-is';
-      case 'long':
-        return 'longer';
-    }
+    this.emailStore.setRewriteLength(length);
   }
 }
