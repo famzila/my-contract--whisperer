@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, signal, inject } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ContractParserService, type ParsedContract } from '../../core/services/contract-parser.service';
 import { ContractStore } from '../../core/stores/contract.store';
 import { UiStore } from '../../core/stores/ui.store';
 
@@ -16,19 +15,14 @@ type UploadMode = 'file' | 'text';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ContractUpload {
-  // Only inject parser service for file/text parsing
-  // Store handles all analysis logic
-  private parserService = inject(ContractParserService);
-  private contractStore = inject(ContractStore);
+  // Stores only - no direct service injection
+  contractStore = inject(ContractStore);
   private uiStore = inject(UiStore);
   private router = inject(Router);
 
-  // State signals
+  // Local UI state
   mode = signal<UploadMode>('file');
   contractText = signal('');
-  isLoading = signal(false);
-  error = signal<string | null>(null);
-  parsedContract = signal<ParsedContract | null>(null);
   isDragging = signal(false);
 
   /**
@@ -36,7 +30,7 @@ export class ContractUpload {
    */
   setMode(mode: UploadMode): void {
     this.mode.set(mode);
-    this.clearError();
+    this.contractStore.clearErrors();
   }
 
   /**
@@ -83,70 +77,45 @@ export class ContractUpload {
 
   /**
    * Process uploaded file
+   * Delegates to ContractStore
    */
   private async processFile(file: File): Promise<void> {
-    this.isLoading.set(true);
-    this.clearError();
-
     try {
-      // Parse the file
-      const parsed = await this.parserService.parseFile(file);
-      this.parsedContract.set(parsed);
-      
-      // Let the store handle analysis
-      await this.contractStore.analyzeContract(parsed);
+      // Let the store handle parsing and analysis
+      await this.contractStore.parseAndAnalyzeFile(file);
       
       // Show success and navigate
       this.uiStore.showToast('Contract analyzed successfully!', 'success');
       await this.router.navigate(['/analysis']);
     } catch (err) {
       const error = err as Error;
-      this.error.set(error.message);
       this.uiStore.showToast('Analysis failed: ' + error.message, 'error');
-    } finally {
-      this.isLoading.set(false);
     }
   }
 
   /**
    * Process text input
+   * Delegates to ContractStore
    */
   async onTextSubmit(): Promise<void> {
     const text = this.contractText();
     
     if (!text.trim()) {
-      this.error.set('Please enter contract text');
+      this.uiStore.showToast('Please enter contract text', 'error');
       return;
     }
 
-    this.isLoading.set(true);
-    this.clearError();
-
     try {
-      // Parse the text
-      const parsed = this.parserService.parseText(text);
-      this.parsedContract.set(parsed);
-      
-      // Let the store handle analysis
-      await this.contractStore.analyzeContract(parsed);
+      // Let the store handle parsing and analysis
+      await this.contractStore.parseAndAnalyzeText(text);
       
       // Show success and navigate
       this.uiStore.showToast('Contract analyzed successfully!', 'success');
       await this.router.navigate(['/analysis']);
     } catch (err) {
       const error = err as Error;
-      this.error.set(error.message);
       this.uiStore.showToast('Analysis failed: ' + error.message, 'error');
-    } finally {
-      this.isLoading.set(false);
     }
-  }
-
-  /**
-   * Clear error message
-   */
-  private clearError(): void {
-    this.error.set(null);
   }
 
   /**
@@ -154,9 +123,7 @@ export class ContractUpload {
    */
   reset(): void {
     this.contractText.set('');
-    this.parsedContract.set(null);
-    this.clearError();
-    this.isLoading.set(false);
+    this.contractStore.clearErrors();
   }
 
   /**
@@ -165,15 +132,14 @@ export class ContractUpload {
   get wordCount(): number {
     const text = this.contractText();
     if (!text) return 0;
-    return this.parserService.getWordCount(text);
+    return text.split(/\s+/).filter(word => word.length > 0).length;
   }
 
   /**
-   * Get estimated reading time
+   * Get estimated reading time (200 words per minute)
    */
   get readingTime(): number {
-    const text = this.contractText();
-    if (!text) return 0;
-    return this.parserService.estimateReadingTime(text);
+    const words = this.wordCount;
+    return Math.ceil(words / 200);
   }
 }

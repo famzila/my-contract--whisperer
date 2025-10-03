@@ -276,13 +276,13 @@ export const EmailDraftStore = signalStore(
 function buildEmailPrompt(employerName: string, employeeName: string, questions: string[]): string {
   const questionsList = questions.map((q, i) => `${i + 1}. ${q}`).join('\n\n');
   
-  return `Write a professional, polite email from ${employeeName} to the HR team or hiring manager at ${employerName} asking for clarification on the following points from an employment agreement:
+  return `Write a professional, polite email from ${employeeName} to ${employerName} asking for clarification on the following points from an employment agreement:
 
 ${questionsList}
 
 The email should:
 - Start with "Subject: Clarification on Employment Agreement Terms"
-- Address the recipient as "Dear HR Team" or "Dear Hiring Manager" (be specific to ${employerName})
+- Address the recipient as "Dear ${employerName} Team," (ALWAYS use this exact format: company name + "Team,")
 - Express gratitude for receiving the agreement and excitement about the opportunity
 - List the questions in a numbered format
 - Mention that clarity will help ensure alignment and contribute to a successful working relationship
@@ -303,7 +303,7 @@ function generateMockEmail(employerName: string, employeeName: string, questions
   
   return `Subject: Clarification on Employment Agreement Terms
 
-Dear ${employerName} HR Team,
+Dear ${employerName} Team,
 
 Thank you for sending over the Employment Agreement for the position at ${employerName}. I am excited about the opportunity to join your team.
 

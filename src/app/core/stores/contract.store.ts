@@ -8,7 +8,7 @@ import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import type { Contract, ContractAnalysis, ContractClause, RiskLevel } from '../models/contract.model';
 import { ContractAnalysisService } from '../services/contract-analysis.service';
-import type { ParsedContract } from '../services/contract-parser.service';
+import { ContractParserService, type ParsedContract } from '../services/contract-parser.service';
 
 /**
  * Contract store state shape
@@ -123,7 +123,7 @@ export const ContractStore = signalStore(
   
   // Methods to update state
   // 👇 Inject services within withMethods
-  withMethods((store, analysisService = inject(ContractAnalysisService)) => ({
+  withMethods((store, analysisService = inject(ContractAnalysisService), parserService = inject(ContractParserService)) => ({
     /**
      * Set contract
      */
@@ -212,6 +212,50 @@ export const ContractStore = signalStore(
      */
     clearErrors: () => {
       patchState(store, { uploadError: null, analysisError: null });
+    },
+    
+    /**
+     * Parse and analyze a file
+     */
+    async parseAndAnalyzeFile(file: File): Promise<void> {
+      patchState(store, { isUploading: true, uploadError: null });
+
+      try {
+        // Parse the file
+        const parsedContract = await parserService.parseFile(file);
+        
+        // Analyze the parsed contract
+        await this.analyzeContract(parsedContract);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'File parsing failed';
+        patchState(store, { 
+          uploadError: errorMessage,
+          isUploading: false,
+        });
+        throw error;
+      }
+    },
+    
+    /**
+     * Parse and analyze text input
+     */
+    async parseAndAnalyzeText(text: string, source: string = 'manual-input'): Promise<void> {
+      patchState(store, { isUploading: true, uploadError: null });
+
+      try {
+        // Parse the text
+        const parsedContract = parserService.parseText(text, source);
+        
+        // Analyze the parsed contract
+        await this.analyzeContract(parsedContract);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Text parsing failed';
+        patchState(store, { 
+          uploadError: errorMessage,
+          isUploading: false,
+        });
+        throw error;
+      }
     },
     
     /**

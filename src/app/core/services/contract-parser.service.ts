@@ -134,31 +134,85 @@ export class ContractParserService {
   }
 
   /**
-   * Extract text from PDF file
-   * Note: Basic implementation - for MVP, user can copy/paste text
-   * Future: Integrate pdf.js library for better PDF parsing
+   * Extract text from PDF file using pdf.js
    */
   private async extractTextFromPdf(file: File): Promise<string> {
-    // For MVP Phase 1, we'll return a helpful message
-    // In Phase 2, we can integrate pdf.js or similar library
-    throw new Error(
-      'PDF parsing will be available in a future update. ' +
-      'For now, please copy the contract text and paste it directly.'
-    );
+    try {
+      // Dynamically import pdf.js to avoid bundle bloat
+      const pdfjsLib = await import('pdfjs-dist');
+      
+      // Configure worker
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+      
+      // Read file as ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      
+      // Load PDF document
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
+      
+      // Extract text from all pages
+      const textPromises: Promise<string>[] = [];
+      
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        textPromises.push(
+          pdf.getPage(pageNum).then(async (page) => {
+            const textContent = await page.getTextContent();
+            return textContent.items
+              .map((item: any) => item.str)
+              .join(' ');
+          })
+        );
+      }
+      
+      const pageTexts = await Promise.all(textPromises);
+      const fullText = pageTexts.join('\n\n');
+      
+      if (!fullText || fullText.trim().length === 0) {
+        throw new Error('PDF appears to be empty or contains only images');
+      }
+      
+      return fullText;
+    } catch (error) {
+      console.error('PDF parsing error:', error);
+      throw new Error(
+        `Failed to parse PDF: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
+        'Try copying the text and pasting it directly.'
+      );
+    }
   }
 
   /**
-   * Extract text from DOCX file
-   * Note: Basic implementation - for MVP, user can copy/paste text
-   * Future: Integrate mammoth.js or similar library
+   * Extract text from DOCX file using mammoth.js
    */
   private async extractTextFromDocx(file: File): Promise<string> {
-    // For MVP Phase 1, we'll return a helpful message
-    // In Phase 2, we can integrate mammoth.js or similar library
-    throw new Error(
-      'DOCX parsing will be available in a future update. ' +
-      'For now, please copy the contract text and paste it directly.'
-    );
+    try {
+      // Dynamically import mammoth to avoid bundle bloat
+      const mammoth = await import('mammoth');
+      
+      // Read file as ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      
+      // Extract text from DOCX
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      
+      if (!result.value || result.value.trim().length === 0) {
+        throw new Error('DOCX appears to be empty');
+      }
+      
+      // Log any messages from mammoth (warnings, etc.)
+      if (result.messages.length > 0) {
+        console.warn('DOCX parsing messages:', result.messages);
+      }
+      
+      return result.value;
+    } catch (error) {
+      console.error('DOCX parsing error:', error);
+      throw new Error(
+        `Failed to parse DOCX: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
+        'Try copying the text and pasting it directly.'
+      );
+    }
   }
 
   /**
