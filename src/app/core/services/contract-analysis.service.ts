@@ -5,6 +5,8 @@ import type { Contract, ContractAnalysis, ContractClause, Obligation, RiskLevel 
 import type { AIAnalysisResponse } from '../models/ai-analysis.model';
 import { AppConfig } from '../config/app.config';
 import { MOCK_ANALYSIS } from '../mocks/mock-analysis.data';
+import type { AnalysisContext } from '../models/analysis-context.model';
+import { DEFAULT_ANALYSIS_CONTEXT } from '../models/analysis-context.model';
 
 /**
  * Contract Analysis Service
@@ -23,12 +25,21 @@ export class ContractAnalysisService {
   private parser = inject(ContractParserService);
 
   /**
-   * Analyze a contract from parsed input
+   * Analyze a contract from parsed input with optional context
    */
-  async analyzeContract(parsedContract: ParsedContract): Promise<{
+  async analyzeContract(
+    parsedContract: ParsedContract,
+    context?: AnalysisContext
+  ): Promise<{
     contract: Contract;
     analysis: ContractAnalysis;
   }> {
+    // Use provided context or default
+    const analysisContext: AnalysisContext = context || {
+      ...DEFAULT_ANALYSIS_CONTEXT,
+      contractLanguage: 'en',
+      userPreferredLanguage: 'en',
+    };
     // Create contract object
     const contract: Contract = {
       id: this.generateId(),
@@ -80,10 +91,13 @@ export class ContractAnalysisService {
     }
 
     try {
-      console.log('🔍 Starting AI analysis...');
+      console.log(`🔍 Starting AI analysis${analysisContext.userRole ? ` from ${analysisContext.userRole}'s perspective` : ''}...`);
       
-      // Perform AI analysis with real services
-      const aiAnalysis = await this.aiOrchestrator.analyzeContract(parsedContract.text);
+      // Perform AI analysis with real services, passing user role context
+      const aiAnalysis = await this.aiOrchestrator.analyzeContract(
+        parsedContract.text,
+        analysisContext.userRole
+      );
       
       console.log('📊 AI Analysis received:', {
         summaryLength: aiAnalysis.summary?.length,

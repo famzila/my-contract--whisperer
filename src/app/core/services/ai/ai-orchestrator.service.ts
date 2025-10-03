@@ -63,9 +63,12 @@ export class AiOrchestratorService {
   }
 
   /**
-   * Analyze a complete contract
+   * Analyze a complete contract with optional user role context
    */
-  async analyzeContract(contractText: string): Promise<ContractAnalysisResult> {
+  async analyzeContract(
+    contractText: string,
+    userRole?: 'employer' | 'employee' | 'client' | 'contractor' | 'landlord' | 'tenant' | 'partner' | 'both_views' | null
+  ): Promise<ContractAnalysisResult> {
     const status = await this.checkAvailability();
 
     // We only need Prompt and Summarizer APIs for basic contract analysis
@@ -75,13 +78,24 @@ export class AiOrchestratorService {
       );
     }
 
-    console.log('✅ Both Prompt and Summarizer APIs available. Starting analysis...');
+    console.log(`✅ Both Prompt and Summarizer APIs available. Starting analysis${userRole ? ` from ${userRole}'s perspective` : ''}...`);
 
-    // Run analysis in parallel
-    const [summary, clauses] = await Promise.all([
-      this.summarizerService.generateExecutiveSummary(contractText),
-      this.promptService.extractClauses(contractText),
-    ]);
+    // Create session with perspective context
+    const session = await this.promptService.createSession({ userRole });
+    
+    // Run analysis using the perspective-aware session
+    const clauses = await session.prompt(`Analyze this contract and respond with ONLY valid JSON following the schema provided in your system prompt.
+
+Contract to analyze:
+${contractText}
+
+Remember: Output ONLY the JSON object, no markdown, no code blocks, no additional text.`);
+    
+    // Generate summary
+    const summary = await this.summarizerService.generateExecutiveSummary(contractText);
+    
+    // Cleanup session
+    session.destroy();
 
     return {
       summary,

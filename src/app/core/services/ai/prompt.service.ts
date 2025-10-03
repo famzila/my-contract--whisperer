@@ -53,23 +53,30 @@ export class PromptService {
   }
 
   /**
-   * Create a new Prompt API session
+   * Create a new Prompt API session with optional perspective
    * This will trigger model download if needed (requires user interaction)
    */
   async createSession(
-    options?: AILanguageModelCreateOptions
+    options?: AILanguageModelCreateOptions & { 
+      userRole?: 'employer' | 'employee' | 'client' | 'contractor' | 'landlord' | 'tenant' | 'partner' | 'both_views' | null 
+    }
   ): Promise<AILanguageModel> {
     if (!window.LanguageModel) {
       throw new Error('LanguageModel API not available');
     }
 
+    // Get perspective-aware prompt if userRole is provided
+    const perspectivePrompt = options?.userRole ? this.buildPerspectivePrompt(options.userRole) : '';
+
     // Prepare options with system prompt and monitor for download progress
     const createOptions: AILanguageModelCreateOptions = {
       ...options,
-      initialPrompts: [
+      initialPrompts: options?.initialPrompts || [
         {
           role: 'system',
           content: `You are an AI legal explainer that helps non-lawyers understand contracts clearly.
+
+${perspectivePrompt}
 
 **CRITICAL: You must respond ONLY with valid JSON. No markdown, no code blocks, no extra text. Just raw JSON.**
 
@@ -270,5 +277,103 @@ ${contractText}`;
       this.session.destroy();
       this.session = null;
     }
+  }
+
+  /**
+   * Build perspective-aware system prompt based on user role
+   */
+  buildPerspectivePrompt(userRole: 'employer' | 'employee' | 'client' | 'contractor' | 'landlord' | 'tenant' | 'partner' | 'both_views' | null): string {
+    const basePerspectives = {
+      employer: `You are analyzing this contract from the EMPLOYER'S perspective.
+
+Focus on:
+- 💼 Employer's obligations, costs, and financial commitments
+- 📋 Employee's performance commitments and deliverables
+- ⚖️ Termination rights and conditions for employer
+- 🔒 IP ownership, confidentiality, and company protections
+- 🚨 Risks: Employee underperformance, IP theft, litigation costs
+
+Tailor risks and obligations to help the employer understand what they must provide and how to protect their interests.`,
+
+      employee: `You are analyzing this contract from the EMPLOYEE'S perspective.
+
+Focus on:
+- 💰 Compensation fairness and total package value
+- 🛡️ Job security (at-will vs. for-cause termination)
+- 🚫 Career restrictions (non-compete, non-solicitation, IP assignment)
+- ⚖️ Work-life balance (hours, vacation, remote work)
+- 🚨 Risks: Underpayment, sudden termination, limited job mobility
+
+Tailor risks and obligations to help the employee understand what they're giving up and how to protect their career.`,
+
+      client: `You are analyzing this contract from the CLIENT'S perspective.
+
+Focus on:
+- 📦 Deliverables, scope, and what you're paying for
+- 💵 Payment terms, milestones, and total cost
+- ⏱️ Timeline, deadlines, and delivery guarantees
+- 🔒 Confidentiality and IP ownership rights
+- 🚨 Risks: Missed deadlines, poor quality, scope creep
+
+Tailor analysis to help the client understand what they'll receive, payment obligations, and how to enforce quality.`,
+
+      contractor: `You are analyzing this contract from the CONTRACTOR'S/FREELANCER'S perspective.
+
+Focus on:
+- 💰 Payment terms, rates, and when you get paid
+- 📋 Scope of work and what's expected
+- 🔒 IP rights (do you retain any work product?)
+- ⚖️ Liability limitations and indemnification
+- 🚨 Risks: Non-payment, scope creep, unfair IP assignment
+
+Tailor analysis to help the contractor understand fair compensation, payment timing, and liability exposure.`,
+
+      landlord: `You are analyzing this contract from the LANDLORD'S perspective.
+
+Focus on:
+- 💵 Rent payment terms, security deposit, and late fees
+- 🔒 Property damage protections and maintenance obligations
+- ⚖️ Eviction rights and termination conditions
+- 📋 Tenant responsibilities and restrictions
+- 🚨 Risks: Non-payment, property damage, difficult eviction
+
+Tailor analysis to help the landlord ensure timely rent payment and property protection.`,
+
+      tenant: `You are analyzing this contract from the TENANT'S perspective.
+
+Focus on:
+- 💰 Rent amount, increases, and additional fees
+- 🏠 Security deposit return conditions
+- 🔧 Maintenance responsibilities (yours vs. landlord's)
+- ⚖️ Termination rights and penalties for early exit
+- 🚨 Risks: Unfair eviction, withheld deposit, surprise costs
+
+Tailor analysis to help the tenant understand total housing cost and how to get security deposit back.`,
+
+      partner: `You are analyzing this contract from a PARTNER'S perspective.
+
+Focus on:
+- 🤝 Equity split and ownership structure
+- 💼 Roles, responsibilities, and decision-making authority
+- 💰 Profit distribution and capital contributions
+- ⚖️ Exit strategy and buyout terms
+- 🚨 Risks: Unequal workload, decision deadlocks, unfair exits
+
+Tailor analysis to help the partner understand fairness of equity split and exit options.`,
+
+      both_views: `You are analyzing this contract from BOTH PARTIES' perspectives.
+
+For each major risk and obligation, show how BOTH parties are affected.
+
+In the "impactOn" field for risks, specify "employer" | "employee" | "both".
+In obligations, clearly separate into "employer" and "employee" arrays.
+
+Provide balanced analysis showing:
+- How each party benefits
+- How each party is at risk
+- Whether clauses are fair or one-sided`,
+    };
+
+    return basePerspectives[userRole || 'employee'];
   }
 }

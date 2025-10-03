@@ -10,6 +10,7 @@ import type { Contract, ContractAnalysis, ContractClause, RiskLevel } from '../m
 import { ContractAnalysisService } from '../services/contract-analysis.service';
 import { ContractParserService, type ParsedContract } from '../services/contract-parser.service';
 import { LanguageStore } from './language.store';
+import { OnboardingStore } from './onboarding.store';
 
 /**
  * Contract store state shape
@@ -128,7 +129,8 @@ export const ContractStore = signalStore(
     store, 
     analysisService = inject(ContractAnalysisService), 
     parserService = inject(ContractParserService),
-    languageStore = inject(LanguageStore)
+    languageStore = inject(LanguageStore),
+    onboardingStore = inject(OnboardingStore)
   ) => ({
     /**
      * Set contract
@@ -277,8 +279,27 @@ export const ContractStore = signalStore(
         console.log('🌍 Detecting contract language...');
         languageStore.detectContractLanguage(parsedContract.text);
         
-        // Step 2: Call the analysis service
-        const { contract, analysis } = await analysisService.analyzeContract(parsedContract);
+        // Step 2: Build analysis context from onboarding and language stores
+        const detectedParties = onboardingStore.detectedParties();
+        const analysisContext = {
+          contractLanguage: languageStore.detectedContractLanguage() || 'en',
+          userPreferredLanguage: languageStore.preferredLanguage(),
+          userRole: onboardingStore.selectedRole(),
+          detectedParties: detectedParties?.parties && detectedParties.parties.party1 && detectedParties.parties.party2
+            ? { 
+                party1: detectedParties.parties.party1,
+                party2: detectedParties.parties.party2
+              }
+            : undefined,
+        };
+        
+        console.log('📊 Analysis Context:', analysisContext);
+        
+        // Step 3: Call the analysis service with context
+        const { contract, analysis } = await analysisService.analyzeContract(
+          parsedContract,
+          analysisContext
+        );
         
         // Update store with results
         patchState(store, { 
