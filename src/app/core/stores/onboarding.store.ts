@@ -73,6 +73,9 @@ interface OnboardingState {
   detectedParties: PartyDetectionResult | null;
   selectedRole: UserRole;
   
+  // Temporarily store parsed contract during onboarding
+  pendingContractText: string | null;
+  
   // Progress tracking
   canProceed: boolean;
   isProcessing: boolean;
@@ -91,6 +94,7 @@ const initialState: OnboardingState = {
   selectedLanguage: null,
   detectedParties: null,
   selectedRole: null,
+  pendingContractText: null,
   canProceed: false,
   isProcessing: false,
   error: null,
@@ -117,18 +121,39 @@ export const OnboardingStore = signalStore(
     
     /**
      * Check if language selection is needed
+     * Show modal if:
+     * 1. Language has been detected from contract
+     * 2. User hasn't selected a language yet (selectedLanguage is null OR different from detected)
      */
     needsLanguageSelection: computed(() => {
       const detected = detectedLanguage();
       const selected = selectedLanguage();
-      return detected && detected !== selected;
+      
+      // If no language detected yet, don't show modal
+      if (!detected) return false;
+      
+      // If user already selected a language, don't show modal
+      if (selected) return false;
+      
+      // Show modal if we have a detected language but no selection yet
+      return true;
     }),
     
     /**
      * Check if party selection is needed
+     * Only show party modal when:
+     * 1. Contract is valid
+     * 2. Language has been selected (no language modal showing)
+     * 3. Party extraction is complete (detectedParties is not null)
+     * 4. User hasn't selected a role yet
      */
     needsPartySelection: computed(() => {
-      return isValidContract() === true && !selectedRole();
+      const valid = isValidContract() === true;
+      const languageSelected = selectedLanguage() !== null;
+      const partiesDetected = detectedParties() !== null;
+      const noRoleSelected = !selectedRole();
+      
+      return valid && languageSelected && partiesDetected && noRoleSelected;
     }),
     
     /**
@@ -255,6 +280,13 @@ export const OnboardingStore = signalStore(
      */
     setError: (error: string | null) => {
       patchState(store, { error });
+    },
+    
+    /**
+     * Store pending contract text during onboarding
+     */
+    setPendingContract: (text: string) => {
+      patchState(store, { pendingContractText: text });
     },
     
     /**

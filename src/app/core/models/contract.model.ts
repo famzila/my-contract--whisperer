@@ -14,14 +14,22 @@ export interface Contract {
 
 /**
  * Contract analysis result
+ * Now includes structured data from AI analysis
  */
 export interface ContractAnalysis {
-  contractId: string;
-  summary: string;
+  id: string;  // Changed from contractId to match usage
+  summary: string | any;  // Can be string OR AIAnalysisResponse object
   clauses: ContractClause[];
   riskScore: number;
   obligations: Obligation[];
+  omissions?: Array<{ item: string; impact: string; priority: 'High' | 'Medium' | 'Low'; }>;  // NEW: What's missing (matches Omission interface)
+  questions?: string[];  // NEW: Questions to ask
   analyzedAt: Date;
+  
+  // NEW: Structured metadata from AI
+  metadata?: any;  // ContractMetadata from AIAnalysisResponse
+  contextWarnings?: Array<{ type: string; severity: string; message: string; }>;  // NEW: Context warnings
+  disclaimer?: string;  // NEW: Legal disclaimer
 }
 
 /**
@@ -65,10 +73,11 @@ export type RiskLevel = 'high' | 'medium' | 'low' | 'safe';
 export interface Obligation {
   id: string;
   description: string;
+  party: 'your' | 'their';  // Whose obligation is it?
   dueDate?: Date;
-  recurring: boolean;
+  recurring?: boolean;
   completed: boolean;
-  priority: 'high' | 'medium' | 'low';
+  priority?: 'high' | 'medium' | 'low';
 }
 
 /**

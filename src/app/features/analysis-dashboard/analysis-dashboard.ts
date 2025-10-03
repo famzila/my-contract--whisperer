@@ -2,14 +2,14 @@ import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@ang
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ContractStore, EmailDraftStore } from '../../core/stores';
-import { Card, LoadingSpinner, Button, LanguageBanner } from '../../shared/components';
+import { Card, LoadingSpinner, Button } from '../../shared/components';
 import type { ContractClause } from '../../core/models/contract.model';
-import type { AIAnalysisResponse } from '../../core/models/ai-analysis.model';
+import type { AIAnalysisResponse, RiskSeverity, RiskEmoji } from '../../core/models/ai-analysis.model';
 import { AppConfig } from '../../core/config/app.config';
 
 @Component({
   selector: 'app-analysis-dashboard',
-  imports: [CommonModule, Card, LoadingSpinner, Button, LanguageBanner],
+  imports: [CommonModule, Card, LoadingSpinner, Button],
   templateUrl: './analysis-dashboard.html',
   styleUrl: './analysis-dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,20 +43,94 @@ export class AnalysisDashboard implements OnInit {
   }
 
   /**
-   * Parse AI response - try JSON first, fallback to text parsing
+   * Parse AI response - build structured data from analysis object
    */
   private parseAIResponse(): void {
     const analysis = this.contractStore.analysis();
-    if (!analysis?.summary) return;
+    if (!analysis) return;
     
-    try {
-      // Try to parse as JSON
-      const parsed = JSON.parse(analysis.summary);
-      this.structuredData.set(parsed);
-      console.log('✅ Successfully parsed JSON structured data');
-    } catch (error) {
-      console.warn('⚠️ Could not parse JSON, data may be in text format');
-      this.structuredData.set(null);
+    // Check if analysis already has structured data (new format)
+    if (analysis.metadata || analysis.omissions || analysis.questions) {
+      // Build AIAnalysisResponse from analysis fields
+      const structured: AIAnalysisResponse = {
+        metadata: analysis.metadata || {
+          contractType: 'Unknown',
+          effectiveDate: null,
+          endDate: null,
+          duration: null,
+          autoRenew: null,
+          jurisdiction: null,
+          parties: {
+            employer: { name: 'N/A', location: null },
+            employee: { name: 'N/A', location: null }
+          }
+        },
+        summary: typeof analysis.summary === 'object' ? analysis.summary : {
+          parties: analysis.summary || 'N/A',
+          role: 'N/A',
+          responsibilities: [],
+          compensation: {},
+          benefits: [],
+          termination: {},
+          restrictions: {},
+          fromYourPerspective: analysis.summary || 'N/A',
+          keyBenefits: [],
+          keyConcerns: []
+        },
+        risks: analysis.clauses
+          .filter(c => c.riskLevel !== 'safe')
+          .map(c => ({
+            title: c.plainLanguage.substring(0, 50) + '...',  // Use plainLanguage as title
+            severity: (c.riskLevel === 'high' ? 'High' : c.riskLevel === 'medium' ? 'Medium' : 'Low') as RiskSeverity,
+            emoji: (c.riskLevel === 'high' ? '🚨' : c.riskLevel === 'medium' ? '⚠️' : 'ℹ️') as RiskEmoji,
+            description: c.plainLanguage,
+            impact: `Risk level: ${c.riskLevel}`,  // Required field
+            impactOn: 'both',
+            contextWarning: null
+          })),
+        obligations: {
+          employer: analysis.obligations?.filter(o => o.party === 'their').map(o => ({
+            duty: o.description,
+            amount: null,
+            frequency: null,
+            startDate: null,
+            duration: null,
+            scope: null
+          })) || [],
+          employee: analysis.obligations?.filter(o => o.party === 'your').map(o => ({
+            duty: o.description,
+            amount: null,
+            frequency: null,
+            startDate: null,
+            duration: null,
+            scope: null
+          })) || []
+        },
+        omissions: analysis.omissions?.map(o => ({
+          item: o.item,
+          impact: o.importance,  // Map 'importance' to 'impact'
+          priority: 'Medium' as 'High' | 'Medium' | 'Low'  // Default priority
+        })) || [],
+        questions: analysis.questions || [],
+        contextWarnings: analysis.contextWarnings as any,  // Type cast for now
+        disclaimer: analysis.disclaimer || 'This analysis is provided by an AI system and is not legal advice.'
+      };
+      
+      this.structuredData.set(structured);
+      console.log('✅ Successfully built structured data from analysis');
+      return;
+    }
+    
+    // Fallback: Try to parse summary as JSON (old format)
+    if (typeof analysis.summary === 'string') {
+      try {
+        const parsed = JSON.parse(analysis.summary);
+        this.structuredData.set(parsed);
+        console.log('✅ Successfully parsed JSON from summary string');
+      } catch (error) {
+        console.warn('⚠️ Could not parse JSON, using fallback text format');
+        this.structuredData.set(null);
+      }
     }
   }
 

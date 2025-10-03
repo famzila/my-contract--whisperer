@@ -188,3 +188,110 @@
     </div>
   </div>
 </div>
+
+<!-- Non-Contract Error Modal -->
+@if (onboardingStore.isValidContract() === false) {
+  <app-non-contract-error
+    [documentType]="onboardingStore.documentType() || 'Unknown Document'"
+    [reason]="onboardingStore.validationError() || 'This document does not appear to be a contract'"
+    (retry)="onboardingStore.reset()"
+  />
+}
+
+<!-- Language Selection Banner (shows when language mismatch detected) -->
+@if (onboardingStore.isValidContract() === true && onboardingStore.needsLanguageSelection()) {
+  <div class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 animate-[slideUp_300ms_ease]">
+      <div class="text-center mb-6">
+        <div class="text-5xl mb-4">🌍</div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">
+          Language Mismatch Detected
+        </h2>
+        <p class="text-gray-600">
+          Your contract appears to be in <strong>{{ getLanguageName(onboardingStore.detectedLanguage()) }}</strong>,
+          but your app language is set to <strong>{{ getLanguageName(languageStore.preferredLanguage()) }}</strong>.
+        </p>
+      </div>
+      
+      <div class="space-y-3">
+        <p class="text-sm font-medium text-gray-700 mb-3">
+          Which language would you like for the analysis?
+        </p>
+        
+        <!-- Contract Language Option -->
+        <button
+          type="button"
+          (click)="selectContractLanguage()"
+          class="w-full flex items-center justify-between p-4 text-left bg-white border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-all"
+        >
+          <div>
+            <div class="font-semibold text-gray-900">
+              {{ getLanguageName(onboardingStore.detectedLanguage()) }}
+            </div>
+            <div class="text-sm text-gray-600">
+              Analyze in the contract's original language
+            </div>
+          </div>
+          <span class="text-2xl">{{ getLanguageFlag(onboardingStore.detectedLanguage()) }}</span>
+        </button>
+        
+        <!-- User Preferred Language Option -->
+        <button
+          type="button"
+          (click)="selectUserLanguage()"
+          class="w-full flex items-center justify-between p-4 text-left bg-white border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-all"
+        >
+          <div>
+            <div class="font-semibold text-gray-900">
+              {{ getLanguageName(languageStore.preferredLanguage()) }}
+            </div>
+            <div class="text-sm text-gray-600">
+              Analyze in your preferred language
+            </div>
+          </div>
+          <span class="text-2xl">{{ getLanguageFlag(languageStore.preferredLanguage()) }}</span>
+        </button>
+      </div>
+      
+      <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <p class="text-xs text-blue-900">
+          💡 <strong>Tip:</strong> The AI will analyze the contract and provide results in your chosen language.
+          The original contract text will not be modified.
+        </p>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Loading State: Extracting Parties -->
+@if (onboardingStore.isValidContract() === true && 
+     !onboardingStore.needsLanguageSelection() && 
+     onboardingStore.selectedLanguage() !== null &&
+     onboardingStore.detectedParties() === null) {
+  <div class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 text-center">
+      <div class="text-6xl mb-4 animate-bounce">🔍</div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">
+        Analyzing Contract Parties
+      </h2>
+      <p class="text-gray-600 mb-4">
+        Identifying who's involved in this agreement...
+      </p>
+      <div class="flex items-center justify-center gap-2">
+        <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+        <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+        <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Party Selector Modal (only shows when parties are detected) -->
+@if (onboardingStore.needsPartySelection()) {
+  <app-party-selector-modal
+    [isOpen]="true"
+    [detectedParties]="onboardingStore.detectedParties()"
+    (selectRole)="onSelectRole($event)"
+    (close)="onboardingStore.reset()"
+  />
+}

@@ -131,11 +131,16 @@ export class ContractAnalysisService {
         : aiAnalysis.clauses;
 
       const analysis: ContractAnalysis = {
-        contractId: contract.id,
+        id: contract.id,
         summary: summaryText || 'Unable to generate summary',
         clauses,
         riskScore,
         obligations,
+        omissions: structuredAnalysis?.omissions || [],
+        questions: structuredAnalysis?.questions || [],
+        metadata: structuredAnalysis?.metadata,
+        contextWarnings: structuredAnalysis?.contextWarnings,
+        disclaimer: structuredAnalysis?.disclaimer,
         analyzedAt: new Date(),
       };
 
@@ -208,6 +213,7 @@ export class ContractAnalysisService {
         return {
           id: this.generateId(),
           description,
+          party: 'their' as const,  // Employer obligations are 'their'
           recurring: !!obl.frequency,
           completed: false,
           priority: 'medium' as const,
@@ -220,6 +226,7 @@ export class ContractAnalysisService {
         return {
           id: this.generateId(),
           description,
+          party: 'your' as const,  // Employee obligations are 'your'
           recurring: !!obl.frequency,
           completed: false,
           priority: 'medium' as const,
@@ -460,6 +467,7 @@ export class ContractAnalysisService {
             obligations.push({
               id: this.generateId(),
               description: cleaned,
+              party: 'your',  // Default obligation
               recurring: false,
               completed: false,
               priority: 'medium',
@@ -477,6 +485,7 @@ export class ContractAnalysisService {
         obligations.push({
           id: this.generateId(),
           description: 'Make payment as per contract terms',
+          party: 'your',  // Required field
           dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           recurring: true,
           completed: false,
@@ -490,6 +499,7 @@ export class ContractAnalysisService {
         obligations.push({
           id: this.generateId(),
           description: 'Review contract before auto-renewal',
+          party: 'your',  // Required field
           dueDate: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000),
           recurring: true,
           completed: false,
@@ -528,9 +538,10 @@ export class ContractAnalysisService {
   private createMockAnalysis(contractId: string, contractText: string): ContractAnalysis {
     // Extract real clauses from the contract text
     const clauses = this.extractClausesFromText(contractText);
+    const obligations = this.extractObligationsFromText(contractText, clauses);
     
     return {
-      contractId,
+      id: contractId,
       summary: `AI Analysis (Limited Mode): This contract has been analyzed using text pattern matching. For full AI-powered analysis, please use Chrome Canary with Built-in AI enabled.
 
 Key Points Identified:
@@ -541,7 +552,9 @@ Key Points Identified:
 Note: This is a fallback analysis. Enable Chrome Built-in AI for detailed insights and plain-language explanations.`,
       clauses,
       riskScore: this.calculateRiskScore(clauses),
-      obligations: this.extractObligationsFromText(contractText, clauses),
+      obligations,
+      omissions: [],
+      questions: [],
       analyzedAt: new Date(),
     };
   }
@@ -558,11 +571,16 @@ Note: This is a fallback analysis. Enable Chrome Built-in AI for detailed insigh
     const riskScore = this.calculateRiskScore(clauses);
     
     return {
-      contractId,
+      id: contractId,
       summary: JSON.stringify(MOCK_ANALYSIS, null, 2),
       clauses,
       riskScore,
       obligations,
+      omissions: MOCK_ANALYSIS.omissions,
+      questions: MOCK_ANALYSIS.questions,
+      metadata: MOCK_ANALYSIS.metadata,
+      contextWarnings: MOCK_ANALYSIS.contextWarnings,
+      disclaimer: MOCK_ANALYSIS.disclaimer,
       analyzedAt: new Date(),
     };
   }

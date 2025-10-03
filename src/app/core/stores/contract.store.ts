@@ -9,6 +9,8 @@ import { patchState } from '@ngrx/signals';
 import type { Contract, ContractAnalysis, ContractClause, RiskLevel } from '../models/contract.model';
 import { ContractAnalysisService } from '../services/contract-analysis.service';
 import { ContractParserService, type ParsedContract } from '../services/contract-parser.service';
+import { ContractValidationService } from '../services/contract-validation.service';
+import { PartyExtractionService } from '../services/party-extraction.service';
 import { LanguageStore } from './language.store';
 import { OnboardingStore } from './onboarding.store';
 
@@ -130,7 +132,9 @@ export const ContractStore = signalStore(
     analysisService = inject(ContractAnalysisService), 
     parserService = inject(ContractParserService),
     languageStore = inject(LanguageStore),
-    onboardingStore = inject(OnboardingStore)
+    onboardingStore = inject(OnboardingStore),
+    validationService = inject(ContractValidationService),
+    partyExtractionService = inject(PartyExtractionService)
   ) => ({
     /**
      * Set contract
@@ -223,19 +227,57 @@ export const ContractStore = signalStore(
     },
     
     /**
-     * Parse and analyze a file
+     * Parse and analyze a file with full onboarding flow
      */
     async parseAndAnalyzeFile(file: File): Promise<void> {
       patchState(store, { isUploading: true, uploadError: null });
 
       try {
-        // Parse the file
+        // Step 1: Parse the file
+        console.log('📄 Parsing file...');
         const parsedContract = await parserService.parseFile(file);
         
-        // Analyze the parsed contract
-        await this.analyzeContract(parsedContract);
+        // Step 2: Validate contract
+        console.log('✅ Validating contract...');
+        onboardingStore.setProcessing(true);
+        const validationResult = await validationService.validateContract(parsedContract.text);
+        
+        if (!validationResult.isContract) {
+          // Not a contract - update onboarding store
+          onboardingStore.setValidationResult(
+            false,
+            validationResult.documentType || 'Unknown Document',
+            validationResult.reason
+          );
+          patchState(store, { 
+            uploadError: 'Not a valid contract document',
+            isUploading: false,
+          });
+          throw new Error('Not a contract: ' + validationResult.reason);
+        }
+        
+        // Valid contract!
+        onboardingStore.setValidationResult(true, validationResult.documentType || 'Contract');
+        
+        // Step 3: Detect contract language
+        console.log('🌍 Detecting contract language...');
+        const detectedLang = languageStore.detectContractLanguage(parsedContract.text);
+        onboardingStore.setDetectedLanguage(detectedLang);
+        
+        // Step 4: Extract parties
+        console.log('👥 Extracting parties...');
+        const partyResult = await partyExtractionService.extractParties(parsedContract.text);
+        onboardingStore.setDetectedParties(partyResult);
+        onboardingStore.setProcessing(false);
+        
+        // Step 5: Store parsed contract and wait for user to select language/role
+        onboardingStore.setPendingContract(parsedContract.text);
+        patchState(store, { isUploading: false });
+        console.log('✅ Contract validated, language detected, and parties extracted.');
+        
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'File parsing failed';
+        onboardingStore.setProcessing(false);
         patchState(store, { 
           uploadError: errorMessage,
           isUploading: false,
@@ -245,19 +287,57 @@ export const ContractStore = signalStore(
     },
     
     /**
-     * Parse and analyze text input
+     * Parse and analyze text input with full onboarding flow
      */
     async parseAndAnalyzeText(text: string, source: string = 'manual-input'): Promise<void> {
       patchState(store, { isUploading: true, uploadError: null });
 
       try {
-        // Parse the text
+        // Step 1: Parse the text
+        console.log('📄 Parsing text...');
         const parsedContract = parserService.parseText(text, source);
         
-        // Analyze the parsed contract
-        await this.analyzeContract(parsedContract);
+        // Step 2: Validate contract
+        console.log('✅ Validating contract...');
+        onboardingStore.setProcessing(true);
+        const validationResult = await validationService.validateContract(parsedContract.text);
+        
+        if (!validationResult.isContract) {
+          // Not a contract - update onboarding store
+          onboardingStore.setValidationResult(
+            false,
+            validationResult.documentType || 'Unknown Document',
+            validationResult.reason
+          );
+          patchState(store, { 
+            uploadError: 'Not a valid contract document',
+            isUploading: false,
+          });
+          throw new Error('Not a contract: ' + validationResult.reason);
+        }
+        
+        // Valid contract!
+        onboardingStore.setValidationResult(true, validationResult.documentType || 'Contract');
+        
+        // Step 3: Detect contract language
+        console.log('🌍 Detecting contract language...');
+        const detectedLang = languageStore.detectContractLanguage(parsedContract.text);
+        onboardingStore.setDetectedLanguage(detectedLang);
+        
+        // Step 4: Extract parties
+        console.log('👥 Extracting parties...');
+        const partyResult = await partyExtractionService.extractParties(parsedContract.text);
+        onboardingStore.setDetectedParties(partyResult);
+        onboardingStore.setProcessing(false);
+        
+        // Step 5: Store parsed contract and wait for user to select language/role
+        onboardingStore.setPendingContract(parsedContract.text);
+        patchState(store, { isUploading: false });
+        console.log('✅ Contract validated, language detected, and parties extracted.');
+        
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Text parsing failed';
+        onboardingStore.setProcessing(false);
         patchState(store, { 
           uploadError: errorMessage,
           isUploading: false,
