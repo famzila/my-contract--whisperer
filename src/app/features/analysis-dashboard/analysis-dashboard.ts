@@ -49,7 +49,61 @@ export class AnalysisDashboard implements OnInit {
     const analysis = this.contractStore.analysis();
     if (!analysis) return;
     
-    // Check if analysis already has structured data (new format)
+    console.log('🔍 Parsing analysis:', { 
+      hasMetadata: !!analysis.metadata, 
+      hasOmissions: !!analysis.omissions,
+      summaryType: typeof analysis.summary
+    });
+    
+    // First, try to parse summary as JSON if it's a string
+    let parsedFromSummary: AIAnalysisResponse | null = null;
+    if (typeof analysis.summary === 'string') {
+      try {
+        // Clean up markdown code blocks if present
+        let cleanedSummary = analysis.summary.trim();
+        
+        // Remove markdown code blocks (```json ... ``` or ``` ... ```)
+        if (cleanedSummary.startsWith('```')) {
+          cleanedSummary = cleanedSummary.replace(/^```(?:json)?\s*\n?/g, '').replace(/\n?```\s*$/g, '');
+          console.log('🧹 Cleaned markdown code blocks from summary');
+        }
+        
+        parsedFromSummary = JSON.parse(cleanedSummary);
+        console.log('✅ Parsed JSON from summary string');
+        
+        // CRITICAL FIX: Check if summary.parties is ALSO a JSON string (double-wrapped)
+        if (parsedFromSummary.summary && typeof parsedFromSummary.summary.parties === 'string') {
+          const partiesStr = parsedFromSummary.summary.parties.trim();
+          if (partiesStr.startsWith('```') || partiesStr.startsWith('{')) {
+            console.log('🚨 Detected double-wrapped JSON in summary.parties, attempting to parse...');
+            try {
+              // Try to extract the inner JSON
+              let innerJson = partiesStr;
+              if (innerJson.startsWith('```')) {
+                innerJson = innerJson.replace(/^```(?:json)?\s*\n?/g, '').replace(/\n?```\s*$/g, '');
+              }
+              const innerParsed = JSON.parse(innerJson);
+              // Replace the entire parsed structure with the inner one
+              console.log('✅ Successfully unwrapped double-nested JSON');
+              parsedFromSummary = innerParsed;
+            } catch (innerError) {
+              console.warn('⚠️ Could not parse inner JSON, using outer structure');
+            }
+          }
+        }
+      } catch (error) {
+        console.log('⚠️ Summary is not JSON, will use structured fields');
+      }
+    }
+    
+    // If we successfully parsed JSON from summary, use that directly
+    if (parsedFromSummary) {
+      this.structuredData.set(parsedFromSummary);
+      console.log('✅ Using parsed JSON data:', parsedFromSummary);
+      return;
+    }
+    
+    // Otherwise, check if analysis already has structured data (new format)
     if (analysis.metadata || analysis.omissions || analysis.questions) {
       // Build AIAnalysisResponse from analysis fields
       const structured: AIAnalysisResponse = {
@@ -108,8 +162,8 @@ export class AnalysisDashboard implements OnInit {
         },
         omissions: analysis.omissions?.map(o => ({
           item: o.item,
-          impact: o.importance,  // Map 'importance' to 'impact'
-          priority: 'Medium' as 'High' | 'Medium' | 'Low'  // Default priority
+          impact: o.impact,  // Already has 'impact' field
+          priority: o.priority || ('Medium' as 'High' | 'Medium' | 'Low')  // Use existing priority or default
         })) || [],
         questions: analysis.questions || [],
         contextWarnings: analysis.contextWarnings as any,  // Type cast for now
@@ -117,21 +171,13 @@ export class AnalysisDashboard implements OnInit {
       };
       
       this.structuredData.set(structured);
-      console.log('✅ Successfully built structured data from analysis');
+      console.log('✅ Successfully built structured data from analysis fields');
       return;
     }
     
-    // Fallback: Try to parse summary as JSON (old format)
-    if (typeof analysis.summary === 'string') {
-      try {
-        const parsed = JSON.parse(analysis.summary);
-        this.structuredData.set(parsed);
-        console.log('✅ Successfully parsed JSON from summary string');
-      } catch (error) {
-        console.warn('⚠️ Could not parse JSON, using fallback text format');
-        this.structuredData.set(null);
-      }
-    }
+    // No structured data available
+    console.warn('⚠️ No structured data available in analysis');
+    this.structuredData.set(null);
   }
 
   /**
@@ -278,7 +324,9 @@ export class AnalysisDashboard implements OnInit {
    * Get summary data
    */
   getSummary() {
-    return this.structuredData()?.summary || null;
+    const summary = this.structuredData()?.summary || null;
+    console.log('📊 getSummary() returning:', summary);
+    return summary;
   }
   
   /**
@@ -299,7 +347,9 @@ export class AnalysisDashboard implements OnInit {
    * Get metadata
    */
   getMetadata() {
-    return this.structuredData()?.metadata || null;
+    const metadata = this.structuredData()?.metadata || null;
+    console.log('📋 getMetadata() returning:', metadata);
+    return metadata;
   }
   
   /**
