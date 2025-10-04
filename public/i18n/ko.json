@@ -17,7 +17,6 @@
     "language": {
       "select": "언어 선택",
       "choose": "언어를 선택하세요",
-      "analysisLanguage": "분석 결과는 선택한 언어로 표시됩니다",
       "detected": "다음 언어로 된 계약서를 감지했습니다:",
       "wantAnalysis": "해당 언어로 분석하시겠습니까?",
       "analyzeIn": "분석 언어:",
@@ -35,8 +34,7 @@
       "subtitle": "AI 기반 계약서 분석",
       "home": "홈",
       "howItWorks": "작동 방식",
-      "privacy": "개인정보 보호",
-      "getStarted": "시작하기"
+      "privacy": "개인정보 보호"
     },
     "footer": {
       "about": "Contract Whisperer 소개",

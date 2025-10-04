@@ -17,7 +17,6 @@
     "language": {
       "select": "Sprache auswählen",
       "choose": "Wähle deine Sprache",
-      "analysisLanguage": "Die Analyse wird in deiner bevorzugten Sprache angezeigt",
       "detected": "Vertrag erkannt in",
       "wantAnalysis": "Möchtest du die Analyse in deiner Sprache?",
       "analyzeIn": "Analysieren in",
@@ -35,8 +34,7 @@
       "subtitle": "KI-gestützte Vertragsanalyse",
       "home": "Startseite",
       "howItWorks": "Wie es funktioniert",
-      "privacy": "Datenschutz",
-      "getStarted": "Jetzt starten"
+      "privacy": "Datenschutz"
     },
     "footer": {
       "about": "Über Contract Whisperer",

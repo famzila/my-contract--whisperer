@@ -17,7 +17,6 @@
   "language": {
     "select": "Select Language",
     "choose": "Choose Your Language",
-    "analysisLanguage": "Analysis will be shown in your preferred language",
     "detected": "Contract detected in",
     "wantAnalysis": "Want analysis in your language?",
     "analyzeIn": "Analyze in",
@@ -35,8 +34,7 @@
     "subtitle": "AI-Powered Contract Analysis",
     "home": "Home",
     "howItWorks": "How it Works",
-    "privacy": "Privacy",
-    "getStarted": "Get Started"
+    "privacy": "Privacy"
   },
   "footer": {
     "about": "About Contract Whisperer",

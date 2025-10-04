@@ -11,7 +11,6 @@ import { LanguageStore } from '../../../core/stores/language.store';
   selector: 'app-language-selector',
   imports: [CommonModule, TranslateModule],
   templateUrl: './language-selector.html',
-  styleUrl: './language-selector.css',
 })
 export class LanguageSelector {
   languageStore = inject(LanguageStore);

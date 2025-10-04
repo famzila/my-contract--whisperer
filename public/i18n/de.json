@@ -15,7 +15,6 @@
   "language": {
     "select": "Sprache auswählen",
     "choose": "Wählen Sie Ihre Sprache",
-    "analysisLanguage": "Die Analyse wird in Ihrer bevorzugten Sprache angezeigt",
     "detected": "Vertrag erkannt in",
     "wantAnalysis": "Möchten Sie die Analyse in Ihrer Sprache?",
     "analyzeIn": "Analysieren in"

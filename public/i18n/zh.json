@@ -17,7 +17,6 @@
     "language": {
       "select": "选择语言",
       "choose": "请选择语言",
-      "analysisLanguage": "分析结果将以您选择的语言显示",
       "detected": "检测到合同语言为：",
       "wantAnalysis": "是否希望以您的语言进行分析？",
       "analyzeIn": "分析语言：",
@@ -35,8 +34,7 @@
       "subtitle": "AI 驱动的合同分析",
       "home": "首页",
       "howItWorks": "工作原理",
-      "privacy": "隐私政策",
-      "getStarted": "开始使用"
+      "privacy": "隐私政策"
     },
     "footer": {
       "about": "关于 Contract Whisperer",

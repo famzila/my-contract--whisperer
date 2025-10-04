@@ -17,7 +17,6 @@
     "language": {
       "select": "言語を選択",
       "choose": "言語を選んでください",
-      "analysisLanguage": "分析結果は選択した言語で表示されます",
       "detected": "契約書の言語を検出:",
       "wantAnalysis": "お使いの言語で分析を行いますか？",
       "analyzeIn": "分析言語:",
@@ -35,8 +34,7 @@
       "subtitle": "AIによる契約書分析",
       "home": "ホーム",
       "howItWorks": "使い方",
-      "privacy": "プライバシー",
-      "getStarted": "始める"
+      "privacy": "プライバシー"
     },
     "footer": {
       "about": "Contract Whisperer について",

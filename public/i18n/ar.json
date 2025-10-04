@@ -17,7 +17,6 @@
     "language": {
       "select": "اختر اللغة",
       "choose": "اختر لغتك",
-      "analysisLanguage": "سيتم عرض التحليل بلغتك المفضلة",
       "detected": "تم اكتشاف العقد باللغة",
       "wantAnalysis": "هل ترغب في الحصول على التحليل بلغتك؟",
       "analyzeIn": "تحليل باللغة",
@@ -35,8 +34,7 @@
       "subtitle": "تحليل العقود بالذكاء الاصطناعي",
       "home": "الصفحة الرئيسية",
       "howItWorks": "كيف يعمل",
-      "privacy": "الخصوصية",
-      "getStarted": "ابدأ الآن"
+      "privacy": "الخصوصية"
     },
     "footer": {
       "about": "حول Contract Whisperer",
