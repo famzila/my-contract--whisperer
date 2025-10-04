@@ -56,9 +56,13 @@ export class SummarizerService {
       outputLanguage: 'en', // Specify English output to avoid warnings
       ...options,
       monitor: (m) => {
+        // Track download progress only on first download (not on cached loads)
         m.addEventListener('downloadprogress', (e) => {
           const percent = (e.loaded * 100).toFixed(1);
-          console.log(`📥 Downloading Summarizer model: ${percent}%`);
+          // Only log significant progress milestones to avoid log spam
+          if (e.loaded === 0 || e.loaded === 1 || e.loaded % 0.25 === 0) {
+            console.log(`📥 [AI Model] Summarizer loading: ${percent}%`);
+          }
         });
       },
     };
