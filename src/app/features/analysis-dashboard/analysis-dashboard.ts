@@ -324,9 +324,7 @@ export class AnalysisDashboard implements OnInit {
    * Get summary data
    */
   getSummary() {
-    const summary = this.structuredData()?.summary || null;
-    console.log('📊 getSummary() returning:', summary);
-    return summary;
+    return this.structuredData()?.summary || null;
   }
   
   /**
@@ -347,9 +345,137 @@ export class AnalysisDashboard implements OnInit {
    * Get metadata
    */
   getMetadata() {
-    const metadata = this.structuredData()?.metadata || null;
-    console.log('📋 getMetadata() returning:', metadata);
-    return metadata;
+    return this.structuredData()?.metadata || null;
+  }
+  
+  /**
+   * Get perspective badge info
+   */
+  getPerspectiveBadge() {
+    const metadata = this.getMetadata();
+    const role = metadata?.analyzedForRole;
+    
+    if (!role) return null;
+    
+    const badges: Record<string, { icon: string; text: string; className: string }> = {
+      'employee': {
+        icon: '🧑‍💼',
+        text: 'Employee View',
+        className: 'px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200'
+      },
+      'employer': {
+        icon: '👔',
+        text: 'Employer View',
+        className: 'px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full border border-purple-200'
+      },
+      'contractor': {
+        icon: '🔧',
+        text: 'Contractor View',
+        className: 'px-3 py-1 text-sm font-medium bg-orange-100 text-orange-800 rounded-full border border-orange-200'
+      },
+      'client': {
+        icon: '🏢',
+        text: 'Client View',
+        className: 'px-3 py-1 text-sm font-medium bg-indigo-100 text-indigo-800 rounded-full border border-indigo-200'
+      },
+      'tenant': {
+        icon: '🏠',
+        text: 'Tenant View',
+        className: 'px-3 py-1 text-sm font-medium bg-teal-100 text-teal-800 rounded-full border border-teal-200'
+      },
+      'landlord': {
+        icon: '🔑',
+        text: 'Landlord View',
+        className: 'px-3 py-1 text-sm font-medium bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200'
+      },
+      'partner': {
+        icon: '🤝',
+        text: 'Partner View',
+        className: 'px-3 py-1 text-sm font-medium bg-pink-100 text-pink-800 rounded-full border border-pink-200'
+      },
+      'both_views': {
+        icon: '⚖️',
+        text: 'Both Parties',
+        className: 'px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full border border-green-200'
+      }
+    };
+    
+    return badges[role] || null;
+  }
+  
+  /**
+   * Get perspective context message for summary tab
+   */
+  getPerspectiveContext() {
+    const metadata = this.getMetadata();
+    const role = metadata?.analyzedForRole;
+    
+    if (!role) return null;
+    
+    const contexts: Record<string, { icon: string; title: string; message: string }> = {
+      'employee': {
+        icon: '📊',
+        title: 'Analyzed from Your Perspective as an Employee',
+        message: 'This analysis is tailored to protect your interests as the employee. The risks, obligations, and recommendations focus on what matters to you in this employment relationship.'
+      },
+      'employer': {
+        icon: '📊',
+        title: 'Analyzed from Your Perspective as an Employer',
+        message: 'This analysis is tailored to protect your company\'s interests. The risks, obligations, and recommendations focus on what matters to you as the employer.'
+      },
+      'contractor': {
+        icon: '📊',
+        title: 'Analyzed from Your Perspective as a Contractor',
+        message: 'This analysis is tailored to protect your interests as the contractor. The risks, obligations, and recommendations focus on fair compensation, payment timing, and liability exposure.'
+      },
+      'client': {
+        icon: '📊',
+        title: 'Analyzed from Your Perspective as a Client',
+        message: 'This analysis is tailored to protect your interests as the client. The risks, obligations, and recommendations focus on deliverables, quality, and timelines.'
+      },
+      'tenant': {
+        icon: '📊',
+        title: 'Analyzed from Your Perspective as a Tenant',
+        message: 'This analysis is tailored to protect your interests as the tenant. The risks, obligations, and recommendations focus on your rights, security deposit, and housing costs.'
+      },
+      'landlord': {
+        icon: '📊',
+        title: 'Analyzed from Your Perspective as a Landlord',
+        message: 'This analysis is tailored to protect your property interests. The risks, obligations, and recommendations focus on rent collection and property protection.'
+      },
+      'partner': {
+        icon: '📊',
+        title: 'Analyzed from Your Perspective as a Partner',
+        message: 'This analysis is tailored to your interests as a partner. The risks, obligations, and recommendations focus on equity fairness and exit options.'
+      },
+      'both_views': {
+        icon: '⚖️',
+        title: 'Balanced Analysis - Both Parties\' Perspectives',
+        message: 'This analysis provides a balanced view showing how each clause affects both parties. Risks and obligations are marked to show impact on each side.'
+      }
+    };
+    
+    return contexts[role] || null;
+  }
+  
+  /**
+   * Check if contract is expiring soon (within 30 days)
+   */
+  isContractExpiringSoon(): boolean {
+    const metadata = this.getMetadata();
+    const endDate = metadata?.endDate;
+    
+    if (!endDate) return false;
+    
+    try {
+      const end = new Date(endDate);
+      const now = new Date();
+      const daysUntilExpiry = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      
+      return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
+    } catch (error) {
+      return false;
+    }
   }
   
   /**
@@ -428,11 +554,13 @@ export class AnalysisDashboard implements OnInit {
     if (!data) return;
     
     const questions = data.questions;
-    const employerName = data.metadata.parties.employer.name;
-    const employeeName = data.metadata.parties.employee.name;
+    // Use party1 as the recipient (the other party) and party2 as the sender (you)
+    // Works for all contract types: Employer-Employee, Landlord-Tenant, Client-Contractor, etc.
+    const recipientName = data.metadata.parties.party1?.name || 'the other party';
+    const yourName = data.metadata.parties.party2?.name || 'you';
     
     // Delegate to EmailDraftStore
-    await this.emailStore.draftEmail(questions, employerName, employeeName);
+    await this.emailStore.draftEmail(questions, recipientName, yourName);
   }
   
   /**

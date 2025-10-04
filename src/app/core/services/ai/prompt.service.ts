@@ -22,11 +22,8 @@ export class PromptService {
    */
   async isAvailable(): Promise<boolean> {
     if ('LanguageModel' in window) {
-      console.log('✅ LanguageModel API found');
       return true;
     }
-
-    console.warn('❌ Prompt API not found');
     return false;
   }
 
@@ -84,20 +81,28 @@ Analyze contracts and respond with this exact JSON schema:
 
 {
   "metadata": {
-    "contractType": "Employment Agreement | Service Agreement | etc.",
+    "contractType": "Employment Agreement | Service Agreement | Lease Agreement | etc.",
     "effectiveDate": "October 1, 2025 or null",
+    "endDate": "September 30, 2026 or null",
+    "duration": "12 months or null",
+    "autoRenew": true or false or null,
     "jurisdiction": "California, USA or null",
     "parties": {
-      "employer": { 
-        "name": "Company Name", 
-        "location": "City, State or null"
-      },
-      "employee": { 
-        "name": "Person Name", 
+      "party1": { 
+        "name": "First Party Name (e.g., Company, Landlord, Client)", 
         "location": "City, State or null",
+        "role": "Employer | Landlord | Client | Partner"
+      },
+      "party2": { 
+        "name": "Second Party Name (e.g., Employee, Tenant, Contractor)", 
+        "location": "City, State or null",
+        "role": "Employee | Tenant | Contractor | Partner",
         "position": "Job Title or null"
       }
-    }
+    },
+    "detectedLanguage": "en",
+    "analyzedForRole": "${options?.userRole || 'employee'}",
+    "analyzedInLanguage": "en"
   },
   "summary": {
     "parties": "string describing both parties and their roles",
@@ -184,9 +189,9 @@ Rules:
       },
     };
 
-    console.log('🚀 Creating LanguageModel session with system prompt...');
+    console.log(`\n🤖 [AI] Creating session${options?.userRole ? ` for ${options.userRole} perspective` : ''}...`);
     this.session = await window.LanguageModel.create(createOptions);
-    console.log('✅ LanguageModel session created successfully');
+    console.log('✅ [AI] Session ready\n');
     
     return this.session;
   }
@@ -229,13 +234,10 @@ ${contractText}
 
 Remember: Output ONLY the JSON object, no markdown, no code blocks, no additional text.`;
 
-    console.log('📤 Sending contract analysis request...');
+    console.log(`📤 [AI] Sending analysis request (${contractText.length} chars)...`);
     const result = await this.prompt(prompt);
     
-    console.log('📥 Raw AI Response:');
-    console.log('═'.repeat(80));
-    console.log(result);
-    console.log('═'.repeat(80));
+    console.log(`📥 [AI] Received response (${result.length} chars)`);
     
     // Clean up response in case AI adds markdown code blocks
     let cleanedResult = result.trim();
@@ -249,10 +251,14 @@ Remember: Output ONLY the JSON object, no markdown, no code blocks, no additiona
     
     cleanedResult = cleanedResult.trim();
     
-    console.log('🧹 Cleaned JSON:');
-    console.log('═'.repeat(80));
-    console.log(cleanedResult);
-    console.log('═'.repeat(80));
+    // Only log if JSON parsing fails (for debugging)
+    try {
+      JSON.parse(cleanedResult);
+      console.log('✅ [AI] Valid JSON response received');
+    } catch (e) {
+      console.error('❌ [AI] Invalid JSON response:');
+      console.error(cleanedResult.substring(0, 500) + '...');
+    }
     
     return cleanedResult;
   }

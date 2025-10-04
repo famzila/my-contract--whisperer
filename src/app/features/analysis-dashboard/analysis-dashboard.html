@@ -4,12 +4,18 @@
     <!-- Header with Metadata -->
     <div class="mb-8">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <div>
-          <div class="flex items-center gap-3">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 flex-wrap">
             <h1 class="text-3xl font-bold text-gray-900">Contract Analysis</h1>
             @if (isMockMode) {
               <span class="px-3 py-1 text-sm font-medium bg-amber-100 text-amber-800 rounded-full border border-amber-200">
                 🎭 Mock Mode
+              </span>
+            }
+            <!-- Perspective Badge -->
+            @if (getPerspectiveBadge()) {
+              <span [class]="getPerspectiveBadge()!.className">
+                {{ getPerspectiveBadge()!.icon }} {{ getPerspectiveBadge()!.text }}
               </span>
             }
           </div>
@@ -37,6 +43,17 @@
                   <p class="text-gray-900 font-medium">{{ getMetadata()!.effectiveDate }}</p>
                 </div>
               }
+              @if (getMetadata()!.endDate) {
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-600 mb-1">End Date</h3>
+                  <p class="text-gray-900 font-medium">{{ getMetadata()!.endDate }}</p>
+                  @if (isContractExpiringSoon()) {
+                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded mt-1">
+                      ⚠️ Expiring Soon
+                    </span>
+                  }
+                </div>
+              }
               @if (getMetadata()!.jurisdiction) {
                 <div>
                   <h3 class="text-sm font-semibold text-gray-600 mb-1">Jurisdiction</h3>
@@ -45,8 +62,22 @@
               }
               <div>
                 <h3 class="text-sm font-semibold text-gray-600 mb-1">Parties</h3>
-                <p class="text-gray-900 text-sm">{{ getMetadata()!.parties.employer.name }}</p>
-                <p class="text-gray-900 text-sm">{{ getMetadata()!.parties.employee.name }}</p>
+                @if (getMetadata()!.parties.party1) {
+                  <p class="text-gray-900 text-sm">
+                    {{ getMetadata()!.parties.party1.name }}
+                    @if (getMetadata()!.parties.party1.role) {
+                      <span class="text-gray-500">({{ getMetadata()!.parties.party1.role }})</span>
+                    }
+                  </p>
+                }
+                @if (getMetadata()!.parties.party2) {
+                  <p class="text-gray-900 text-sm">
+                    {{ getMetadata()!.parties.party2.name }}
+                    @if (getMetadata()!.parties.party2.role) {
+                      <span class="text-gray-500">({{ getMetadata()!.parties.party2.role }})</span>
+                    }
+                  </p>
+                }
               </div>
             </div>
           </div>
@@ -128,6 +159,16 @@
                   <span class="text-3xl">📋</span>
                   Contract Summary
                 </h2>
+                
+                <!-- Perspective Context Banner -->
+                @if (getPerspectiveContext()) {
+                  <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+                    <p class="text-sm text-blue-900 leading-relaxed">
+                      <span class="font-semibold">{{ getPerspectiveContext()!.icon }} {{ getPerspectiveContext()!.title }}</span><br/>
+                      {{ getPerspectiveContext()!.message }}
+                    </p>
+                  </div>
+                }
                 
                 <div class="space-y-6">
                   <!-- Parties -->

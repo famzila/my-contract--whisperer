@@ -134,8 +134,24 @@ export class ContractUpload {
   async onSelectRole(role: string | null): Promise<void> {
     if (!role) return;
     
+    // Map party1/party2 to actual roles
+    let actualRole: string = role;
+    const detectedParties = this.onboardingStore.detectedParties();
+    
+    if (role === 'party1' && detectedParties?.parties?.party1) {
+      // Map party1 to its actual role (e.g., 'landlord', 'employer')
+      actualRole = this.mapPartyRoleToUserRole(detectedParties.parties.party1.role);
+      console.log(`👤 [Selection] User selected Party 1 (${detectedParties.parties.party1.name}) → Role: ${actualRole}`);
+    } else if (role === 'party2' && detectedParties?.parties?.party2) {
+      // Map party2 to its actual role (e.g., 'tenant', 'employee')
+      actualRole = this.mapPartyRoleToUserRole(detectedParties.parties.party2.role);
+      console.log(`👤 [Selection] User selected Party 2 (${detectedParties.parties.party2.name}) → Role: ${actualRole}`);
+    } else {
+      console.log(`👤 [Selection] User selected generic role: ${actualRole}`);
+    }
+    
     // Set role in onboarding store
-    this.onboardingStore.setSelectedRole(role as any);
+    this.onboardingStore.setSelectedRole(actualRole as any);
     
     // Get pending contract text
     const pendingText = this.onboardingStore.pendingContractText();
@@ -157,6 +173,27 @@ export class ContractUpload {
     } catch (error) {
       this.uiStore.showToast('Analysis failed', 'error');
     }
+  }
+  
+  /**
+   * Map detected party role to UserRole enum
+   * Party roles from AI: "Landlord", "Tenant", "Employer", "Employee", etc.
+   * UserRole: 'landlord', 'tenant', 'employer', 'employee', etc. (lowercase)
+   */
+  private mapPartyRoleToUserRole(partyRole: string): string {
+    const roleMap: Record<string, string> = {
+      'Landlord': 'landlord',
+      'Tenant': 'tenant',
+      'Employer': 'employer',
+      'Employee': 'employee',
+      'Client': 'client',
+      'Contractor': 'contractor',
+      'Partner': 'partner',
+      'Lessor': 'landlord',
+      'Lessee': 'tenant',
+    };
+    
+    return roleMap[partyRole] || partyRole.toLowerCase();
   }
 
   /**

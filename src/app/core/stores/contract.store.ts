@@ -233,14 +233,14 @@ export const ContractStore = signalStore(
       patchState(store, { isUploading: true, uploadError: null });
 
       try {
-        // Step 1: Parse the file
-        console.log('📄 Parsing file...');
-        const parsedContract = await parserService.parseFile(file);
-        
-        // Step 2: Validate contract
-        console.log('✅ Validating contract...');
-        onboardingStore.setProcessing(true);
-        const validationResult = await validationService.validateContract(parsedContract.text);
+                // Step 1: Parse the file
+                console.log('\n📄 [Upload] Parsing file...');
+                const parsedContract = await parserService.parseFile(file);
+                
+                // Step 2: Validate contract
+                console.log('✅ [Validation] Checking if document is a contract...');
+                onboardingStore.setProcessing(true);
+                const validationResult = await validationService.validateContract(parsedContract.text);
         
         if (!validationResult.isContract) {
           // Not a contract - update onboarding store
@@ -301,11 +301,11 @@ export const ContractStore = signalStore(
 
       try {
         // Step 1: Parse the text
-        console.log('📄 Parsing text...');
+        console.log('\n📄 [Upload] Parsing text...');
         const parsedContract = parserService.parseText(text, source);
         
         // Step 2: Validate contract
-        console.log('✅ Validating contract...');
+        console.log('✅ [Validation] Checking if document is a contract...');
         onboardingStore.setProcessing(true);
         const validationResult = await validationService.validateContract(parsedContract.text);
         

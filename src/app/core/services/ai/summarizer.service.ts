@@ -25,15 +25,11 @@ export class SummarizerService {
     if ('Summarizer' in window && window.Summarizer) {
       try {
         const availability = await window.Summarizer.availability();
-        console.log('📝 Summarizer API availability:', availability);
         return availability !== 'unavailable';
       } catch (error) {
-        console.error('❌ Error checking Summarizer availability:', error);
         return false;
       }
     }
-
-    console.warn('❌ Summarizer API not found');
     return false;
   }
 

@@ -124,25 +124,27 @@ export const LanguageStore = signalStore(
     /**
      * Detect contract language from text
      */
-    detectContractLanguage: (contractText: string) => {
-      try {
-        const detectedLang = translatorService.detectLanguage(contractText);
-        patchState(store, { 
-          detectedContractLanguage: detectedLang,
-          showLanguageBanner: detectedLang !== store.preferredLanguage(),
-        });
-        
-        console.log(`📄 Contract language detected: ${detectedLang}`);
-        return detectedLang;
-      } catch (error) {
-        console.error('Failed to detect language:', error);
-        patchState(store, { 
-          detectedContractLanguage: 'en', // fallback to English
-          showLanguageBanner: false,
-        });
-        return 'en';
-      }
-    },
+          detectContractLanguage: (contractText: string) => {
+            try {
+              const detectedLang = translatorService.detectLanguage(contractText);
+              const userLang = store.preferredLanguage();
+              const needsTranslation = detectedLang !== userLang;
+              
+              patchState(store, { 
+                detectedContractLanguage: detectedLang,
+                showLanguageBanner: needsTranslation,
+              });
+              
+              console.log(`🌍 [Language] Detected: ${detectedLang}${needsTranslation ? ` (user prefers ${userLang})` : ''}`);
+              return detectedLang;
+            } catch (error) {
+              patchState(store, { 
+                detectedContractLanguage: 'en', // fallback to English
+                showLanguageBanner: false,
+              });
+              return 'en';
+            }
+          },
     
     /**
      * Set user's preferred language

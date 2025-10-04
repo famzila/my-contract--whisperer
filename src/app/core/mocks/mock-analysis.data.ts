@@ -12,13 +12,15 @@ export const MOCK_ANALYSIS: AIAnalysisResponse = {
     autoRenew: false,
     jurisdiction: 'California, USA',
     parties: {
-      employer: {
+      party1: {
         name: 'Acme Technologies, Inc.',
         location: 'San Francisco, CA 94105',
+        role: 'Employer',
       },
-      employee: {
+      party2: {
         name: 'Jane Doe',
         location: 'San Jose, CA 95112',
+        role: 'Employee',
         position: 'Senior Software Engineer',
       },
     },

@@ -29,8 +29,11 @@ export interface ContractMetadata {
   autoRenew: boolean | null;         // 👈 Does contract auto-renew?
   jurisdiction: string | null;
   parties: {
-    employer: Party;
-    employee: Party;
+    party1: Party;
+    party2: Party;
+    // Legacy support (deprecated)
+    employer?: Party;
+    employee?: Party;
   };
   
   // Context fields (for perspective-aware analysis)
@@ -42,6 +45,7 @@ export interface ContractMetadata {
 export interface Party {
   name: string;
   location: string | null;
+  role?: string;                     // 👈 Party's role (Employer, Employee, Landlord, Tenant, etc.)
   position?: string | null;
 }
 

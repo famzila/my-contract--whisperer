@@ -25,16 +25,13 @@ export class WriterService {
    */
   async isWriterAvailable(): Promise<boolean> {
     if (!('Writer' in window)) {
-      console.warn('❌ Writer API not found in window');
       return false;
     }
 
     try {
       const availability = await (window as any).Writer.availability();
-      console.log('📝 Writer API availability:', availability);
       return availability === 'available' || availability === 'downloadable' || availability === 'after-download';
     } catch (error) {
-      console.error('❌ Error checking Writer API availability:', error);
       return false;
     }
   }
@@ -44,16 +41,13 @@ export class WriterService {
    */
   async isRewriterAvailable(): Promise<boolean> {
     if (!('Rewriter' in window)) {
-      console.warn('❌ Rewriter API not found in window');
       return false;
     }
 
     try {
       const availability = await (window as any).Rewriter.availability();
-      console.log('🔄 Rewriter API availability:', availability);
       return availability === 'available' || availability === 'downloadable' || availability === 'after-download';
     } catch (error) {
-      console.error('❌ Error checking Rewriter API availability:', error);
       return false;
     }
   }

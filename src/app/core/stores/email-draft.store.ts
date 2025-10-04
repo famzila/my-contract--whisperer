@@ -66,11 +66,14 @@ export const EmailDraftStore = signalStore(
   withMethods((store, writerService = inject(WriterService)) => ({
     /**
      * Draft a professional email using Writer API
+     * @param questions - Array of questions to include in the email
+     * @param recipientName - Name of the party receiving the email (e.g., company name, landlord)
+     * @param senderName - Name of the party sending the email (e.g., your name, employee)
      */
     async draftEmail(
       questions: string[],
-      employerName: string,
-      employeeName: string
+      recipientName: string,
+      senderName: string
     ): Promise<void> {
       if (questions.length === 0) {
         console.warn('No questions to draft email');
@@ -90,7 +93,7 @@ export const EmailDraftStore = signalStore(
         if (!isAvailable || AppConfig.useMockAI) {
           // Use mock email if Writer API not available or in mock mode
           console.log('📧 Using mock email template (Writer API not available or mock mode enabled)');
-          const mockEmail = generateMockEmail(employerName, employeeName, questions);
+          const mockEmail = generateMockEmail(recipientName, senderName, questions);
           
           // Simulate delay for realistic UX
           await new Promise(resolve => setTimeout(resolve, 1000));
@@ -105,11 +108,11 @@ export const EmailDraftStore = signalStore(
         // Use Writer API to generate professional email with streaming
         console.log('✍️ Drafting email with Writer API (streaming)...');
         
-        const prompt = buildEmailPrompt(employerName, employeeName, questions);
+        const prompt = buildEmailPrompt(recipientName, senderName, questions);
         const stream = await writerService.writeStreaming(prompt, {
           tone: 'formal',
           length: 'medium',
-          sharedContext: `This is a professional email from ${employeeName} to ${employerName} regarding an employment agreement.`,
+          sharedContext: `This is a professional email from ${senderName} to ${recipientName} regarding a contract agreement.`,
         });
         
         // Process the stream - Writer API returns an async iterable of text chunks
@@ -129,7 +132,7 @@ export const EmailDraftStore = signalStore(
         const errorMessage = error instanceof Error ? error.message : 'Failed to draft email';
         
         // Fallback to mock email on error
-        const mockEmail = generateMockEmail(employerName, employeeName, questions);
+        const mockEmail = generateMockEmail(recipientName, senderName, questions);
         patchState(store, { 
           draftedEmail: mockEmail,
           draftError: errorMessage,
@@ -273,20 +276,20 @@ export const EmailDraftStore = signalStore(
 /**
  * Helper: Build prompt for Writer API
  */
-function buildEmailPrompt(employerName: string, employeeName: string, questions: string[]): string {
+function buildEmailPrompt(recipientName: string, senderName: string, questions: string[]): string {
   const questionsList = questions.map((q, i) => `${i + 1}. ${q}`).join('\n\n');
   
-  return `Write a professional, polite email from ${employeeName} to ${employerName} asking for clarification on the following points from an employment agreement:
+  return `Write a professional, polite email from ${senderName} to ${recipientName} asking for clarification on the following points from a contract agreement:
 
 ${questionsList}
 
 The email should:
-- Start with "Subject: Clarification on Employment Agreement Terms"
-- Address the recipient as "Dear ${employerName} Team," (ALWAYS use this exact format: company name + "Team,")
-- Express gratitude for receiving the agreement and excitement about the opportunity
+- Start with "Subject: Clarification on Contract Agreement Terms"
+- Address the recipient as "Dear ${recipientName} Team," (ALWAYS use this exact format: recipient name + "Team,")
+- Express gratitude for receiving the agreement
 - List the questions in a numbered format
-- Mention that clarity will help ensure alignment and contribute to a successful working relationship
-- End with "Best regards," followed by ${employeeName}
+- Mention that clarity will help ensure alignment and a successful relationship
+- End with "Best regards," followed by ${senderName}
 - Be professional, courteous, concise but complete
 
 Format the email with proper structure including Subject, Greeting, Body, and Closing.`;
@@ -295,17 +298,17 @@ Format the email with proper structure including Subject, Greeting, Body, and Cl
 /**
  * Helper: Generate mock email when Writer API is not available
  */
-function generateMockEmail(employerName: string, employeeName: string, questions: string[]): string {
+function generateMockEmail(recipientName: string, senderName: string, questions: string[]): string {
   const questionsList = questions
     .slice(0, 5) // Limit to first 5 questions for readability
     .map((q, i) => `${i + 1}. ${q}`)
     .join('\n\n');
   
-  return `Subject: Clarification on Employment Agreement Terms
+  return `Subject: Clarification on Contract Agreement Terms
 
-Dear ${employerName} Team,
+Dear ${recipientName} Team,
 
-Thank you for sending over the Employment Agreement for the position at ${employerName}. I am excited about the opportunity to join your team.
+Thank you for sending over the contract agreement. I have carefully reviewed the document and would like to clarify a few points.
 
 Before I proceed with signing, I would appreciate clarification on the following points to ensure I fully understand the terms:
 
@@ -316,7 +319,7 @@ I believe having clarity on these matters will help ensure we are aligned and wi
 I look forward to your response and appreciate your time in addressing these questions.
 
 Best regards,
-${employeeName}`;
+${senderName}`;
 }
 
 /**
