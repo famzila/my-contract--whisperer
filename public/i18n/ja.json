@@ -1,0 +1,137 @@
+{
+    "common": {
+      "loading": "読み込み中...",
+      "error": "エラー",
+      "success": "成功",
+      "cancel": "キャンセル",
+      "confirm": "確認",
+      "save": "保存",
+      "close": "閉じる",
+      "back": "戻る",
+      "next": "次へ",
+      "previous": "前へ",
+      "done": "完了",
+      "words": "単語",
+      "minRead": "分で読めます"
+    },
+    "language": {
+      "select": "言語を選択",
+      "choose": "言語を選んでください",
+      "analysisLanguage": "分析結果は選択した言語で表示されます",
+      "detected": "契約書の言語を検出:",
+      "wantAnalysis": "お使いの言語で分析を行いますか？",
+      "analyzeIn": "分析言語:",
+      "mismatchDetected": "言語の不一致を検出しました",
+      "mismatchMessage": "契約書は次の言語で書かれています：",
+      "appLanguageSet": "ただし、アプリの言語設定は次のとおりです：",
+      "whichLanguage": "どの言語で分析しますか？",
+      "originalLanguage": "契約書の原文言語で分析する",
+      "preferredLanguage": "選択した言語で分析する",
+      "tipTitle": "ヒント：",
+      "tipMessage": "AI が契約書を分析し、選択した言語で結果を提供します。元の契約書の内容は変更されません。"
+    },
+    "navbar": {
+      "title": "Contract Whisperer",
+      "subtitle": "AIによる契約書分析",
+      "home": "ホーム",
+      "howItWorks": "使い方",
+      "privacy": "プライバシー",
+      "getStarted": "始める"
+    },
+    "footer": {
+      "about": "Contract Whisperer について",
+      "aboutText": "AI を活用した契約書分析で、法律文書をわかりやすく理解できます。",
+      "disclaimer": "重要な決定を行う前に、必ず専門の法律家にご相談ください。本ツールは情報提供のみを目的とした AI 支援分析を提供します。",
+      "quickLinks": "クイックリンク",
+      "privacyPolicy": "プライバシーポリシー",
+      "termsOfService": "利用規約",
+      "contactUs": "お問い合わせ",
+      "poweredBy": "提供：",
+      "chromeAI": "Chrome 組み込み AI (Gemini Nano)",
+      "clientSide": "100％ クライアント側処理",
+      "copyright": "Contract Whisperer. Angular と Chrome AI により構築。"
+    },
+    "upload": {
+      "title": "契約書をアップロード",
+      "subtitle": "AIによる分析を数秒で取得",
+      "uploadFile": "ファイルをアップロード",
+      "pasteText": "テキストを貼り付け",
+      "dropHere": "ここに契約書をドロップ",
+      "orClickBrowse": "またはクリックして選択",
+      "chooseFile": "ファイルを選択",
+      "supportedFormats": "対応形式：TXT、PDF、DOCX（最大 5MB）",
+      "contractText": "契約書本文",
+      "pastePlaceholder": "ここに契約書のテキストを貼り付けてください...",
+      "analyzeContract": "契約書を分析",
+      "processing": "処理中...",
+      "processingContract": "契約書を処理しています...",
+      "analyzedSuccessfully": "契約書の分析が完了しました！",
+      "readyToView": "分析結果の表示準備ができました",
+      "uploadAnother": "別の契約書をアップロード",
+      "needHelp": "お困りですか？",
+      "viewSample": "サンプル契約書を見る",
+      "howItWorks": "使い方",
+      "privacyPolicy": "プライバシーポリシー",
+      "analyzingParties": "契約当事者を分析中",
+      "identifyingParties": "契約に関与している当事者を特定しています..."
+    },
+    "nonContract": {
+      "title": "うーん、これは契約書ではないようです",
+      "analyzed": "ドキュメントを分析したところ、次のような内容のようです：",
+      "whatWeSupport": "Contract Whisperer は以下のような法的契約を専門としています：",
+      "employmentContracts": "雇用契約",
+      "rentalAgreements": "賃貸契約",
+      "ndasFreelance": "秘密保持契約 (NDA) およびフリーランス契約",
+      "serviceAgreements": "業務委託契約",
+      "tipTitle": "ヒント：",
+      "tipMessage": "文書に「契約」「当事者」「義務」「終了」などの語句が含まれていることを確認してください。",
+      "tryAnother": "別のドキュメントを試す",
+      "documentTypes": {
+        "email_or_letter": "メールまたは手紙",
+        "academic_paper": "学術論文またはエッセイ",
+        "story_or_book": "物語または書籍の章",
+        "recipe": "レシピ",
+        "instructions_or_tutorial": "手順書またはチュートリアル",
+        "article": "記事またはブログ投稿",
+        "other": "ドキュメント"
+      }
+    },
+    "analysis": {
+      "title": "契約書の分析",
+      "summary": "概要",
+      "obligations": "義務",
+      "redFlags": "リスクポイント",
+      "compare": "比較",
+      "uploadNew": "新しい契約書をアップロード",
+      "analyzedOn": "分析日",
+      "contractType": "契約書の種類",
+      "effectiveDate": "発効日",
+      "endDate": "終了日",
+      "expiringSoon": "まもなく期限切れ",
+      "jurisdiction": "管轄",
+      "parties": "当事者",
+      "mockMode": "モックモード",
+      "contractSummary": "契約書の概要",
+      "noContract": "まだ契約書がアップロードされていません",
+      "uploadFirst": "分析を開始するには契約書をアップロードしてください"
+    },
+    "settings": {
+      "title": "設定",
+      "language": "言語",
+      "theme": "テーマ",
+      "notifications": "通知",
+      "privacy": "プライバシー"
+    },
+    "partySelector": {
+      "title": "この契約書であなたはどの立場ですか？",
+      "subtitle": "分析結果をあなたの立場に合わせて調整します",
+      "detectedParties": "契約書で検出された当事者：",
+      "proTip": "プロのヒント：",
+      "proTipMessage": "「両方の視点を比較」を選択すると、双方のリスクと義務を確認できます。署名前に全体像を把握するのに役立ちます。",
+      "close": "閉じる"
+    },
+    "modal": {
+      "close": "閉じる"
+    }
+  }
+  

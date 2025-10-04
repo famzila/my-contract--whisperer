@@ -11,25 +11,27 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: white;
-  border: 1px solid rgb(226 232 240);
+  border: 2px solid rgb(203 213 225);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  font-weight: 500;
-  color: rgb(51 65 85);
+  font-weight: 600;
+  color: rgb(15 23 42);
   cursor: pointer;
   transition: all 150ms ease;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
 }
 
 .language-button:hover {
   background: rgb(248 250 252);
-  border-color: rgb(203 213 225);
+  border-color: rgb(148 163 184);
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  color: rgb(2 6 23);
 }
 
 .language-button:focus {
-  outline: 2px solid rgb(37 99 235);
+  outline: 3px solid rgb(37 99 235);
   outline-offset: 2px;
+  border-color: rgb(37 99 235);
 }
 
 .flag {
@@ -38,13 +40,13 @@
 }
 
 .language-name {
-  font-weight: 500;
+  font-weight: 600;
   color: rgb(15 23 42);
 }
 
 .chevron {
   transition: transform 150ms ease;
-  color: rgb(100 116 139);
+  color: rgb(71 85 105);
 }
 
 .chevron.rotate {

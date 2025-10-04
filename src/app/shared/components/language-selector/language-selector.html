@@ -4,8 +4,8 @@
     type="button"
     (click)="toggleDropdown()"
     class="language-button"
-    aria-label="Select language"
-    aria-expanded="isDropdownOpen()"
+    [attr.aria-label]="'language.select' | translate"
+    [attr.aria-expanded]="isDropdownOpen()"
   >
     @if (selectedLanguage()) {
       <span class="flag">{{ selectedLanguage()!.flag }}</span>
@@ -33,8 +33,8 @@
       (click)="closeDropdown()"
     >
       <div class="dropdown-header">
-        <span class="dropdown-title">🌍 Choose Your Language</span>
-        <p class="dropdown-subtitle">Analysis will be shown in your preferred language</p>
+        <span class="dropdown-title">🌍 {{ 'language.choose' | translate }}</span>
+        <p class="dropdown-subtitle">{{ 'language.analysisLanguage' | translate }}</p>
       </div>
       
       <div class="language-list">

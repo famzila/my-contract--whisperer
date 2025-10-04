@@ -4,11 +4,12 @@
  */
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { LanguageStore } from '../../../core/stores/language.store';
 
 @Component({
   selector: 'app-language-banner',
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './language-banner.html',
   styleUrl: './language-banner.css',
 })

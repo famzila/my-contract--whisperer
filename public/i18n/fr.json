@@ -1,0 +1,137 @@
+{
+    "common": {
+      "loading": "Chargement...",
+      "error": "Erreur",
+      "success": "Succès",
+      "cancel": "Annuler",
+      "confirm": "Confirmer",
+      "save": "Enregistrer",
+      "close": "Fermer",
+      "back": "Retour",
+      "next": "Suivant",
+      "previous": "Précédent",
+      "done": "Terminé",
+      "words": "mots",
+      "minRead": "min de lecture"
+    },
+    "language": {
+      "select": "Sélectionner la langue",
+      "choose": "Choisissez votre langue",
+      "analysisLanguage": "L’analyse sera affichée dans votre langue préférée",
+      "detected": "Contrat détecté en",
+      "wantAnalysis": "Souhaitez-vous une analyse dans votre langue ?",
+      "analyzeIn": "Analyser en",
+      "mismatchDetected": "Incohérence de langue détectée",
+      "mismatchMessage": "Votre contrat semble être en",
+      "appLanguageSet": "mais la langue de votre application est définie sur",
+      "whichLanguage": "Quelle langue souhaitez-vous pour l’analyse ?",
+      "originalLanguage": "Analyser dans la langue originale du contrat",
+      "preferredLanguage": "Analyser dans votre langue préférée",
+      "tipTitle": "Astuce :",
+      "tipMessage": "L’IA analysera le contrat et fournira les résultats dans la langue choisie. Le texte original du contrat ne sera pas modifié."
+    },
+    "navbar": {
+      "title": "Contract Whisperer",
+      "subtitle": "Analyse de contrat alimentée par l’IA",
+      "home": "Accueil",
+      "howItWorks": "Comment ça marche",
+      "privacy": "Confidentialité",
+      "getStarted": "Commencer"
+    },
+    "footer": {
+      "about": "À propos de Contract Whisperer",
+      "aboutText": "Analyse de contrat alimentée par l’IA pour vous aider à comprendre les documents juridiques en langage clair.",
+      "disclaimer": "Consultez toujours un professionnel du droit qualifié pour les décisions importantes. Cet outil fournit une analyse assistée par IA à des fins informatives uniquement.",
+      "quickLinks": "Liens rapides",
+      "privacyPolicy": "Politique de confidentialité",
+      "termsOfService": "Conditions d’utilisation",
+      "contactUs": "Nous contacter",
+      "poweredBy": "Propulsé par",
+      "chromeAI": "IA intégrée à Chrome (Gemini Nano)",
+      "clientSide": "Traitement 100 % côté client",
+      "copyright": "Contract Whisperer. Développé avec Angular et Chrome AI."
+    },
+    "upload": {
+      "title": "Téléversez votre contrat",
+      "subtitle": "Obtenez une analyse alimentée par l’IA en quelques secondes",
+      "uploadFile": "Téléverser un fichier",
+      "pasteText": "Coller le texte",
+      "dropHere": "Déposez votre contrat ici",
+      "orClickBrowse": "ou cliquez pour parcourir",
+      "chooseFile": "Choisir un fichier",
+      "supportedFormats": "Formats pris en charge : TXT, PDF, DOCX (max 5 Mo)",
+      "contractText": "Texte du contrat",
+      "pastePlaceholder": "Collez ici le texte de votre contrat...",
+      "analyzeContract": "Analyser le contrat",
+      "processing": "Traitement...",
+      "processingContract": "Traitement de votre contrat...",
+      "analyzedSuccessfully": "Contrat analysé avec succès !",
+      "readyToView": "Prêt à afficher les résultats de l’analyse",
+      "uploadAnother": "Téléverser un autre contrat",
+      "needHelp": "Besoin d’aide ?",
+      "viewSample": "Voir un contrat exemple",
+      "howItWorks": "Comment ça marche",
+      "privacyPolicy": "Politique de confidentialité",
+      "analyzingParties": "Analyse des parties du contrat",
+      "identifyingParties": "Identification des parties impliquées dans cet accord..."
+    },
+    "nonContract": {
+      "title": "Hmm, cela ne ressemble pas à un contrat",
+      "analyzed": "Nous avons analysé votre document et il semble s’agir d’un(e) :",
+      "whatWeSupport": "Contract Whisperer est spécialisé dans les accords juridiques tels que :",
+      "employmentContracts": "Contrats de travail",
+      "rentalAgreements": "Contrats de location",
+      "ndasFreelance": "Accords de confidentialité et contrats de freelance",
+      "serviceAgreements": "Contrats de prestation de services",
+      "tipTitle": "Astuce :",
+      "tipMessage": "Assurez-vous que votre document contient des termes comme « accord », « parties », « obligations » ou « résiliation ».",
+      "tryAnother": "Essayer un autre document",
+      "documentTypes": {
+        "email_or_letter": "E-mail ou lettre",
+        "academic_paper": "Article académique ou essai",
+        "story_or_book": "Histoire ou chapitre de livre",
+        "recipe": "Recette",
+        "instructions_or_tutorial": "Instructions ou tutoriel",
+        "article": "Article ou billet de blog",
+        "other": "Document"
+      }
+    },
+    "analysis": {
+      "title": "Analyse du contrat",
+      "summary": "Résumé",
+      "obligations": "Obligations",
+      "redFlags": "Points d’alerte",
+      "compare": "Comparer",
+      "uploadNew": "Téléverser un nouveau contrat",
+      "analyzedOn": "Analysé le",
+      "contractType": "Type de contrat",
+      "effectiveDate": "Date d’entrée en vigueur",
+      "endDate": "Date de fin",
+      "expiringSoon": "Expire bientôt",
+      "jurisdiction": "Juridiction",
+      "parties": "Parties",
+      "mockMode": "Mode de simulation",
+      "contractSummary": "Résumé du contrat",
+      "noContract": "Aucun contrat téléversé pour le moment",
+      "uploadFirst": "Veuillez téléverser un contrat pour commencer l’analyse"
+    },
+    "settings": {
+      "title": "Paramètres",
+      "language": "Langue",
+      "theme": "Thème",
+      "notifications": "Notifications",
+      "privacy": "Confidentialité"
+    },
+    "partySelector": {
+      "title": "Qui êtes-vous dans ce contrat ?",
+      "subtitle": "Cela nous aide à adapter l’analyse selon votre perspective",
+      "detectedParties": "Nous avons détecté les parties suivantes dans votre contrat :",
+      "proTip": "Astuce de pro :",
+      "proTipMessage": "Choisissez « Comparer les deux perspectives » pour voir les risques et obligations des deux parties. Cela vous aide à comprendre la situation dans son ensemble avant de signer.",
+      "close": "Fermer"
+    },
+    "modal": {
+      "close": "Fermer"
+    }
+  }
+  

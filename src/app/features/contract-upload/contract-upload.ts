@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, signal, inject } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { ContractStore } from '../../core/stores/contract.store';
 import { UiStore } from '../../core/stores/ui.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
@@ -14,7 +15,7 @@ type UploadMode = 'file' | 'text';
 
 @Component({
   selector: 'app-contract-upload',
-  imports: [CommonModule, FormsModule, PartySelectorModal, NonContractError],
+  imports: [CommonModule, FormsModule, TranslateModule, PartySelectorModal, NonContractError],
   templateUrl: './contract-upload.html',
   styleUrl: './contract-upload.css',
   changeDetection: ChangeDetectionStrategy.OnPush

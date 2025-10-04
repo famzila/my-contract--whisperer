@@ -1,0 +1,56 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "save": "Speichern",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Vorherige",
+    "done": "Fertig"
+  },
+  "language": {
+    "select": "Sprache auswählen",
+    "choose": "Wählen Sie Ihre Sprache",
+    "analysisLanguage": "Die Analyse wird in Ihrer bevorzugten Sprache angezeigt",
+    "detected": "Vertrag erkannt in",
+    "wantAnalysis": "Möchten Sie die Analyse in Ihrer Sprache?",
+    "analyzeIn": "Analysieren in"
+  },
+  "navbar": {
+    "title": "Contract Whisperer",
+    "upload": "Vertrag hochladen",
+    "analysis": "Analyse",
+    "settings": "Einstellungen"
+  },
+  "upload": {
+    "title": "Laden Sie Ihren Vertrag hoch",
+    "subtitle": "Laden Sie ein PDF- oder Word-Dokument hoch, um zu beginnen",
+    "dragDrop": "Ziehen Sie Ihre Datei hierher oder klicken Sie zum Durchsuchen",
+    "supportedFormats": "Unterstützte Formate: PDF, DOC, DOCX",
+    "maxSize": "Maximale Dateigröße: 10MB",
+    "uploading": "Hochladen...",
+    "processing": "Vertrag wird verarbeitet...",
+    "error": "Fehler beim Hochladen des Vertrags",
+    "success": "Vertrag erfolgreich hochgeladen"
+  },
+  "analysis": {
+    "title": "Vertragsanalyse",
+    "summary": "Zusammenfassung",
+    "obligations": "Verpflichtungen",
+    "redFlags": "Warnsignale",
+    "compare": "Vergleichen",
+    "noContract": "Noch kein Vertrag hochgeladen",
+    "uploadFirst": "Bitte laden Sie einen Vertrag hoch, um mit der Analyse zu beginnen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "language": "Sprache",
+    "theme": "Design",
+    "notifications": "Benachrichtigungen",
+    "privacy": "Datenschutz"
+  }
+}

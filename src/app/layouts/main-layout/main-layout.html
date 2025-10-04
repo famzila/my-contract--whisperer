@@ -7,16 +7,16 @@
         <div class="flex items-center gap-3">
           <span class="text-3xl">📜</span>
           <div>
-            <h1 class="text-xl font-bold text-gray-900">Contract Whisperer</h1>
-            <p class="text-xs text-gray-500">AI-Powered Contract Analysis</p>
+            <h1 class="text-xl font-bold text-gray-900">{{ 'navbar.title' | translate }}</h1>
+            <p class="text-xs text-gray-500">{{ 'navbar.subtitle' | translate }}</p>
           </div>
         </div>
 
         <!-- Navigation -->
         <nav class="hidden md:flex items-center gap-6">
-          <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">Home</a>
-          <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">How it Works</a>
-          <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">Privacy</a>
+          <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">{{ 'navbar.home' | translate }}</a>
+          <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">{{ 'navbar.howItWorks' | translate }}</a>
+          <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">{{ 'navbar.privacy' | translate }}</a>
         </nav>
 
         <!-- Language Selector & CTA -->
@@ -24,7 +24,7 @@
           <app-language-selector></app-language-selector>
           
           <button class="hidden md:block px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors">
-            Get Started
+            {{ 'navbar.getStarted' | translate }}
           </button>
         </div>
 
@@ -49,39 +49,39 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <!-- About -->
         <div>
-          <h3 class="font-semibold text-gray-900 mb-3">About Contract Whisperer</h3>
+          <h3 class="font-semibold text-gray-900 mb-3">{{ 'footer.about' | translate }}</h3>
           <p class="text-sm text-gray-600">
-            AI-powered contract analysis that helps you understand legal documents in plain language.
+            {{ 'footer.aboutText' | translate }}
           </p>
-          <p class="text-sm text-gray-600">
-            Always consult with a qualified legal professional for important decisions. This tool provides AI-assisted analysis for informational purposes only.
+          <p class="text-sm text-gray-600 mt-2">
+            {{ 'footer.disclaimer' | translate }}
           </p>
         </div>
 
         <!-- Links -->
         <div>
-          <h3 class="font-semibold text-gray-900 mb-3">Quick Links</h3>
+          <h3 class="font-semibold text-gray-900 mb-3">{{ 'footer.quickLinks' | translate }}</h3>
           <ul class="space-y-2 text-sm text-gray-600">
-            <li><a href="#" class="hover:text-gray-900">Privacy Policy</a></li>
-            <li><a href="#" class="hover:text-gray-900">Terms of Service</a></li>
-            <li><a href="#" class="hover:text-gray-900">Contact Us</a></li>
+            <li><a href="#" class="hover:text-gray-900">{{ 'footer.privacyPolicy' | translate }}</a></li>
+            <li><a href="#" class="hover:text-gray-900">{{ 'footer.termsOfService' | translate }}</a></li>
+            <li><a href="#" class="hover:text-gray-900">{{ 'footer.contactUs' | translate }}</a></li>
           </ul>
         </div>
 
         <!-- Tech -->
         <div>
-          <h3 class="font-semibold text-gray-900 mb-3">Powered By</h3>
+          <h3 class="font-semibold text-gray-900 mb-3">{{ 'footer.poweredBy' | translate }}</h3>
           <p class="text-sm text-gray-600 mb-2">
-            🤖 Chrome Built-in AI (Gemini Nano)
+            🤖 {{ 'footer.chromeAI' | translate }}
           </p>
           <p class="text-sm text-gray-600">
-            🔒 100% Client-side Processing
+            🔒 {{ 'footer.clientSide' | translate }}
           </p>
         </div>
       </div>
 
       <div class="mt-8 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
-        © {{ currentYear }} Contract Whisperer. Built with Angular & Chrome AI.
+        © {{ currentYear }} {{ 'footer.copyright' | translate }}
       </div>
     </div>
   </footer>

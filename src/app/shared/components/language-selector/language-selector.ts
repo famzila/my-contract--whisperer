@@ -4,16 +4,18 @@
  */
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageStore } from '../../../core/stores/language.store';
 
 @Component({
   selector: 'app-language-selector',
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './language-selector.html',
   styleUrl: './language-selector.css',
 })
 export class LanguageSelector {
   languageStore = inject(LanguageStore);
+  translateService = inject(TranslateService);
   
   // Local UI state
   isDropdownOpen = signal(false);

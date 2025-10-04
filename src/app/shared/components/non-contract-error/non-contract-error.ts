@@ -4,10 +4,11 @@
  */
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-non-contract-error',
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './non-contract-error.html',
   styleUrl: './non-contract-error.css',
 })

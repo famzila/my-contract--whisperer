@@ -4,6 +4,7 @@
  */
 import { Component, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import type { PartyDetectionResult, UserRole } from '../../../core/stores/onboarding.store';
 
 interface PartyOption {
@@ -15,7 +16,7 @@ interface PartyOption {
 
 @Component({
   selector: 'app-party-selector-modal',
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './party-selector-modal.html',
   styleUrl: './party-selector-modal.css',
 })

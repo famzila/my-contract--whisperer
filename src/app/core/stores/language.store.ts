@@ -6,7 +6,9 @@
 import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals';
 import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
+import { TranslateService } from '@ngx-translate/core';
 import { TranslatorService } from '../services/ai/translator.service';
+import { LANGUAGES, DEFAULT_LANGUAGE, isRTL } from '../constants/languages';
 
 /**
  * Supported languages for the app
@@ -53,21 +55,49 @@ interface LanguageState {
  * Supported languages configuration
  */
 const SUPPORTED_LANGUAGES: Language[] = [
-  { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
-  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
-  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
-  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
-  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
-  { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
-  { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
+  { code: LANGUAGES.ENGLISH, name: 'English', nativeName: 'English', flag: '🇬🇧' },
+  { code: LANGUAGES.FRENCH, name: 'French', nativeName: 'Français', flag: '🇫🇷' },
+  { code: LANGUAGES.SPANISH, name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
+  { code: LANGUAGES.ARABIC, name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
+  { code: LANGUAGES.GERMAN, name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
+  { code: LANGUAGES.JAPANESE, name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
+  { code: LANGUAGES.CHINESE, name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
 ];
+
+/**
+ * LocalStorage key for language preference
+ */
+const LANGUAGE_STORAGE_KEY = 'contract-whisperer-language';
+
+/**
+ * Get saved language from localStorage
+ */
+function getSavedLanguage(): string {
+  try {
+    const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    return saved && SUPPORTED_LANGUAGES.some(lang => lang.code === saved) ? saved : DEFAULT_LANGUAGE;
+  } catch {
+    return DEFAULT_LANGUAGE;
+  }
+}
+
+/**
+ * Save language to localStorage
+ */
+function saveLanguage(languageCode: string): void {
+  try {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, languageCode);
+  } catch (error) {
+    console.warn('Failed to save language preference to localStorage:', error);
+  }
+}
 
 /**
  * Initial state
  */
 const initialState: LanguageState = {
   detectedContractLanguage: null,
-  preferredLanguage: 'en',
+  preferredLanguage: getSavedLanguage(), // Load from localStorage
   availableLanguages: SUPPORTED_LANGUAGES,
   isTranslating: false,
   translationError: null,
@@ -115,12 +145,12 @@ export const LanguageStore = signalStore(
      */
     isRTL: computed(() => {
       const code = preferredLanguage();
-      return code === 'ar' || code === 'he' || code === 'fa';
+      return isRTL(code);
     }),
   })),
   
   // Methods
-  withMethods((store, translatorService = inject(TranslatorService)) => ({
+  withMethods((store, translatorService = inject(TranslatorService), translateService = inject(TranslateService)) => ({
     /**
      * Detect contract language from text
      */
@@ -139,10 +169,10 @@ export const LanguageStore = signalStore(
               return detectedLang;
             } catch (error) {
               patchState(store, { 
-                detectedContractLanguage: 'en', // fallback to English
+                detectedContractLanguage: DEFAULT_LANGUAGE, // fallback to English
                 showLanguageBanner: false,
               });
-              return 'en';
+              return DEFAULT_LANGUAGE;
             }
           },
     
@@ -162,14 +192,20 @@ export const LanguageStore = signalStore(
         showLanguageBanner: false, // hide banner after selection
       });
       
+      // Save to localStorage
+      saveLanguage(languageCode);
+      
       // Apply RTL if needed
-      if (languageCode === 'ar' || languageCode === 'he' || languageCode === 'fa') {
+      if (isRTL(languageCode)) {
         document.documentElement.setAttribute('dir', 'rtl');
       } else {
         document.documentElement.setAttribute('dir', 'ltr');
       }
       
-      console.log(`🗣️ Preferred language set to: ${languageCode}`);
+      // Update translation service language
+      translateService.use(languageCode);
+      
+      console.log(`🗣️ Preferred language set to: ${languageCode} (saved to localStorage)`);
     },
     
     /**
@@ -281,13 +317,40 @@ export const LanguageStore = signalStore(
       return store.availableLanguages().find(lang => lang.code === code);
     },
     
+    
     /**
      * Reset store to initial state
      */
     reset: () => {
       patchState(store, initialState);
       document.documentElement.setAttribute('dir', 'ltr');
+      // Clear localStorage
+      try {
+        localStorage.removeItem(LANGUAGE_STORAGE_KEY);
+      } catch (error) {
+        console.warn('Failed to clear language preference from localStorage:', error);
+      }
     },
   }))
 );
+
+/**
+ * Initialize the language store with saved language preference
+ * This should be called when the app starts
+ */
+export function initializeLanguageStore(translateService: TranslateService): void {
+  const savedLanguage = getSavedLanguage();
+  
+  // Set the initial language in TranslateService
+  translateService.use(savedLanguage);
+  
+  // Apply RTL if needed
+  if (isRTL(savedLanguage)) {
+    document.documentElement.setAttribute('dir', 'rtl');
+  } else {
+    document.documentElement.setAttribute('dir', 'ltr');
+  }
+  
+  console.log(`🔄 Language store initialized with: ${savedLanguage}`);
+}
 

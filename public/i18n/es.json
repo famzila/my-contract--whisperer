@@ -1,0 +1,137 @@
+{
+    "common": {
+      "loading": "Wird geladen...",
+      "error": "Fehler",
+      "success": "Erfolg",
+      "cancel": "Abbrechen",
+      "confirm": "Bestätigen",
+      "save": "Speichern",
+      "close": "Schließen",
+      "back": "Zurück",
+      "next": "Weiter",
+      "previous": "Zurück",
+      "done": "Fertig",
+      "words": "Wörter",
+      "minRead": "Min. Lesezeit"
+    },
+    "language": {
+      "select": "Sprache auswählen",
+      "choose": "Wähle deine Sprache",
+      "analysisLanguage": "Die Analyse wird in deiner bevorzugten Sprache angezeigt",
+      "detected": "Vertrag erkannt in",
+      "wantAnalysis": "Möchtest du die Analyse in deiner Sprache?",
+      "analyzeIn": "Analysieren in",
+      "mismatchDetected": "Sprachinkonsistenz erkannt",
+      "mismatchMessage": "Dein Vertrag scheint auf",
+      "appLanguageSet": "aber die App-Sprache ist eingestellt auf",
+      "whichLanguage": "Welche Sprache möchtest du für die Analyse?",
+      "originalLanguage": "In der Originalsprache des Vertrags analysieren",
+      "preferredLanguage": "In deiner bevorzugten Sprache analysieren",
+      "tipTitle": "Tipp:",
+      "tipMessage": "Die KI analysiert den Vertrag und zeigt die Ergebnisse in der gewählten Sprache an. Der Originaltext des Vertrags wird nicht verändert."
+    },
+    "navbar": {
+      "title": "Contract Whisperer",
+      "subtitle": "KI-gestützte Vertragsanalyse",
+      "home": "Startseite",
+      "howItWorks": "Wie es funktioniert",
+      "privacy": "Datenschutz",
+      "getStarted": "Jetzt starten"
+    },
+    "footer": {
+      "about": "Über Contract Whisperer",
+      "aboutText": "KI-gestützte Vertragsanalyse, die dir hilft, juristische Dokumente in klarer Sprache zu verstehen.",
+      "disclaimer": "Konsultiere immer einen qualifizierten Rechtsberater, bevor du wichtige Entscheidungen triffst. Dieses Tool bietet eine KI-gestützte Analyse ausschließlich zu Informationszwecken.",
+      "quickLinks": "Schnellzugriff",
+      "privacyPolicy": "Datenschutzrichtlinie",
+      "termsOfService": "Nutzungsbedingungen",
+      "contactUs": "Kontakt",
+      "poweredBy": "Bereitgestellt von",
+      "chromeAI": "Chrome Integrierte KI (Gemini Nano)",
+      "clientSide": "100 % clientseitige Verarbeitung",
+      "copyright": "Contract Whisperer. Erstellt mit Angular & Chrome KI."
+    },
+    "upload": {
+      "title": "Lade deinen Vertrag hoch",
+      "subtitle": "Erhalte eine KI-gestützte Analyse in Sekunden",
+      "uploadFile": "Datei hochladen",
+      "pasteText": "Text einfügen",
+      "dropHere": "Ziehe deinen Vertrag hierher",
+      "orClickBrowse": "oder klicke zum Durchsuchen",
+      "chooseFile": "Datei auswählen",
+      "supportedFormats": "Unterstützte Formate: TXT, PDF, DOCX (max. 5 MB)",
+      "contractText": "Vertragstext",
+      "pastePlaceholder": "Füge hier den Vertragstext ein...",
+      "analyzeContract": "Vertrag analysieren",
+      "processing": "Verarbeitung läuft...",
+      "processingContract": "Dein Vertrag wird verarbeitet...",
+      "analyzedSuccessfully": "Vertrag erfolgreich analysiert!",
+      "readyToView": "Analyseergebnisse sind bereit zur Ansicht",
+      "uploadAnother": "Weiteren Vertrag hochladen",
+      "needHelp": "Brauchst du Hilfe?",
+      "viewSample": "Beispielvertrag ansehen",
+      "howItWorks": "Wie es funktioniert",
+      "privacyPolicy": "Datenschutzrichtlinie",
+      "analyzingParties": "Vertragsparteien werden analysiert",
+      "identifyingParties": "Beteiligte Parteien werden identifiziert..."
+    },
+    "nonContract": {
+      "title": "Hmm, das sieht nicht wie ein Vertrag aus",
+      "analyzed": "Wir haben dein Dokument analysiert und es scheint zu sein:",
+      "whatWeSupport": "Contract Whisperer ist auf juristische Vereinbarungen spezialisiert wie:",
+      "employmentContracts": "Arbeitsverträge",
+      "rentalAgreements": "Mietverträge",
+      "ndasFreelance": "Geheimhaltungsvereinbarungen & Freelancer-Verträge",
+      "serviceAgreements": "Dienstleistungsverträge",
+      "tipTitle": "Tipp:",
+      "tipMessage": "Stelle sicher, dass dein Dokument Begriffe wie „Vereinbarung“, „Parteien“, „Verpflichtungen“ oder „Kündigung“ enthält.",
+      "tryAnother": "Anderes Dokument ausprobieren",
+      "documentTypes": {
+        "email_or_letter": "E-Mail oder Brief",
+        "academic_paper": "Wissenschaftliche Arbeit oder Essay",
+        "story_or_book": "Geschichte oder Buchkapitel",
+        "recipe": "Rezept",
+        "instructions_or_tutorial": "Anleitung oder Tutorial",
+        "article": "Artikel oder Blogbeitrag",
+        "other": "Dokument"
+      }
+    },
+    "analysis": {
+      "title": "Vertragsanalyse",
+      "summary": "Zusammenfassung",
+      "obligations": "Verpflichtungen",
+      "redFlags": "Risikopunkte",
+      "compare": "Vergleichen",
+      "uploadNew": "Neuen Vertrag hochladen",
+      "analyzedOn": "Analysiert am",
+      "contractType": "Vertragstyp",
+      "effectiveDate": "Gültig ab",
+      "endDate": "Enddatum",
+      "expiringSoon": "Läuft bald ab",
+      "jurisdiction": "Gerichtsbarkeit",
+      "parties": "Parteien",
+      "mockMode": "Simulationsmodus",
+      "contractSummary": "Vertragszusammenfassung",
+      "noContract": "Noch kein Vertrag hochgeladen",
+      "uploadFirst": "Bitte lade einen Vertrag hoch, um die Analyse zu starten"
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "language": "Sprache",
+      "theme": "Design",
+      "notifications": "Benachrichtigungen",
+      "privacy": "Datenschutz"
+    },
+    "partySelector": {
+      "title": "Wer bist du in diesem Vertrag?",
+      "subtitle": "Dies hilft uns, die Analyse aus deiner Perspektive anzupassen",
+      "detectedParties": "Wir haben folgende Parteien in deinem Vertrag erkannt:",
+      "proTip": "Profi-Tipp:",
+      "proTipMessage": "Wähle „Beide Perspektiven vergleichen“, um Risiken und Verpflichtungen aus Sicht beider Parteien zu sehen. So erhältst du ein vollständiges Bild, bevor du unterschreibst.",
+      "close": "Schließen"
+    },
+    "modal": {
+      "close": "Schließen"
+    }
+  }
+  

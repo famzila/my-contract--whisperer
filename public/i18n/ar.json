@@ -1,0 +1,137 @@
+{
+    "common": {
+      "loading": "جارٍ التحميل...",
+      "error": "خطأ",
+      "success": "تم بنجاح",
+      "cancel": "إلغاء",
+      "confirm": "تأكيد",
+      "save": "حفظ",
+      "close": "إغلاق",
+      "back": "رجوع",
+      "next": "التالي",
+      "previous": "السابق",
+      "done": "تم",
+      "words": "كلمات",
+      "minRead": "دقيقة قراءة"
+    },
+    "language": {
+      "select": "اختر اللغة",
+      "choose": "اختر لغتك",
+      "analysisLanguage": "سيتم عرض التحليل بلغتك المفضلة",
+      "detected": "تم اكتشاف العقد باللغة",
+      "wantAnalysis": "هل ترغب في الحصول على التحليل بلغتك؟",
+      "analyzeIn": "تحليل باللغة",
+      "mismatchDetected": "تم اكتشاف اختلاف في اللغة",
+      "mismatchMessage": "يبدو أن عقدك مكتوب باللغة",
+      "appLanguageSet": "لكن لغة التطبيق مضبوطة على",
+      "whichLanguage": "أي لغة تفضل للتحليل؟",
+      "originalLanguage": "تحليل بلغة العقد الأصلية",
+      "preferredLanguage": "تحليل بلغتك المفضلة",
+      "tipTitle": "نصيحة:",
+      "tipMessage": "سيقوم الذكاء الاصطناعي بتحليل العقد وتقديم النتائج باللغة التي تختارها. لن يتم تعديل نص العقد الأصلي."
+    },
+    "navbar": {
+      "title": "Contract Whisperer",
+      "subtitle": "تحليل العقود بالذكاء الاصطناعي",
+      "home": "الصفحة الرئيسية",
+      "howItWorks": "كيف يعمل",
+      "privacy": "الخصوصية",
+      "getStarted": "ابدأ الآن"
+    },
+    "footer": {
+      "about": "حول Contract Whisperer",
+      "aboutText": "تحليل عقود مدعوم بالذكاء الاصطناعي يساعدك على فهم المستندات القانونية بلغة بسيطة وواضحة.",
+      "disclaimer": "يجب دائمًا استشارة مختص قانوني مؤهل قبل اتخاذ القرارات المهمة. هذا الأداة توفر تحليلًا بمساعدة الذكاء الاصطناعي لأغراض إعلامية فقط.",
+      "quickLinks": "روابط سريعة",
+      "privacyPolicy": "سياسة الخصوصية",
+      "termsOfService": "شروط الخدمة",
+      "contactUs": "اتصل بنا",
+      "poweredBy": "مدعوم من",
+      "chromeAI": "الذكاء الاصطناعي المدمج في Chrome (Gemini Nano)",
+      "clientSide": "معالجة 100٪ على جانب العميل",
+      "copyright": "Contract Whisperer. تم إنشاؤه باستخدام Angular و Chrome AI."
+    },
+    "upload": {
+      "title": "قم برفع عقدك",
+      "subtitle": "احصل على تحليل مدعوم بالذكاء الاصطناعي في ثوانٍ",
+      "uploadFile": "رفع ملف",
+      "pasteText": "لصق النص",
+      "dropHere": "أسقط عقدك هنا",
+      "orClickBrowse": "أو انقر للاستعراض",
+      "chooseFile": "اختر ملفًا",
+      "supportedFormats": "الصيغ المدعومة: TXT، PDF، DOCX (بحد أقصى 5 ميغابايت)",
+      "contractText": "نص العقد",
+      "pastePlaceholder": "الصق نص عقدك هنا...",
+      "analyzeContract": "تحليل العقد",
+      "processing": "جارٍ المعالجة...",
+      "processingContract": "جارٍ معالجة عقدك...",
+      "analyzedSuccessfully": "تم تحليل العقد بنجاح!",
+      "readyToView": "جاهز لعرض نتائج التحليل",
+      "uploadAnother": "رفع عقد آخر",
+      "needHelp": "هل تحتاج إلى مساعدة؟",
+      "viewSample": "عرض عقد نموذجي",
+      "howItWorks": "كيف يعمل",
+      "privacyPolicy": "سياسة الخصوصية",
+      "analyzingParties": "تحليل أطراف العقد",
+      "identifyingParties": "جارٍ تحديد الأطراف المشاركة في هذا الاتفاق..."
+    },
+    "nonContract": {
+      "title": "همم، لا يبدو أن هذا عقد",
+      "analyzed": "قمنا بتحليل مستندك ويبدو أنه:",
+      "whatWeSupport": "Contract Whisperer متخصص في العقود القانونية مثل:",
+      "employmentContracts": "عقود العمل",
+      "rentalAgreements": "عقود الإيجار",
+      "ndasFreelance": "اتفاقيات السرية وعقود العمل الحر",
+      "serviceAgreements": "عقود تقديم الخدمات",
+      "tipTitle": "نصيحة:",
+      "tipMessage": "تأكد من أن المستند يحتوي على مصطلحات مثل \"اتفاق\" أو \"الأطراف\" أو \"الالتزامات\" أو \"الإنهاء\".",
+      "tryAnother": "جرّب مستندًا آخر",
+      "documentTypes": {
+        "email_or_letter": "بريد إلكتروني أو رسالة",
+        "academic_paper": "ورقة أكاديمية أو مقال",
+        "story_or_book": "قصة أو فصل من كتاب",
+        "recipe": "وصفة",
+        "instructions_or_tutorial": "تعليمات أو دليل تعليمي",
+        "article": "مقال أو منشور مدونة",
+        "other": "مستند"
+      }
+    },
+    "analysis": {
+      "title": "تحليل العقد",
+      "summary": "الملخص",
+      "obligations": "الالتزامات",
+      "redFlags": "نقاط الخطر",
+      "compare": "مقارنة",
+      "uploadNew": "رفع عقد جديد",
+      "analyzedOn": "تم التحليل في",
+      "contractType": "نوع العقد",
+      "effectiveDate": "تاريخ السريان",
+      "endDate": "تاريخ الانتهاء",
+      "expiringSoon": "سينتهي قريبًا",
+      "jurisdiction": "الاختصاص القضائي",
+      "parties": "الأطراف",
+      "mockMode": "وضع المحاكاة",
+      "contractSummary": "ملخص العقد",
+      "noContract": "لم يتم رفع أي عقد بعد",
+      "uploadFirst": "يرجى رفع عقد لبدء التحليل"
+    },
+    "settings": {
+      "title": "الإعدادات",
+      "language": "اللغة",
+      "theme": "المظهر",
+      "notifications": "الإشعارات",
+      "privacy": "الخصوصية"
+    },
+    "partySelector": {
+      "title": "من أنت في هذا العقد؟",
+      "subtitle": "يساعدنا هذا على تخصيص التحليل وفقًا لوجهة نظرك",
+      "detectedParties": "لقد اكتشفنا الأطراف التالية في عقدك:",
+      "proTip": "نصيحة احترافية:",
+      "proTipMessage": "اختر «مقارنة بين وجهتي النظر» لرؤية المخاطر والالتزامات من منظور الطرفين. يساعدك ذلك على فهم الصورة الكاملة قبل التوقيع.",
+      "close": "إغلاق"
+    },
+    "modal": {
+      "close": "إغلاق"
+    }
+  }
+  

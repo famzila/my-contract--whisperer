@@ -3,10 +3,10 @@
     <!-- Header -->
     <div class="text-center mb-8">
       <h2 class="text-3xl font-bold text-gray-900 mb-2">
-        Upload Your Contract
+        {{ 'upload.title' | translate }}
       </h2>
       <p class="text-lg text-gray-600">
-        Get AI-powered analysis in seconds
+        {{ 'upload.subtitle' | translate }}
       </p>
     </div>
 
@@ -21,7 +21,7 @@
           [class.text-gray-600]="mode() !== 'file'"
           class="px-6 py-2 rounded-md font-medium transition-all"
         >
-          📄 Upload File
+          📄 {{ 'upload.uploadFile' | translate }}
         </button>
         <button
           (click)="setMode('text')"
@@ -31,7 +31,7 @@
           [class.text-gray-600]="mode() !== 'text'"
           class="px-6 py-2 rounded-md font-medium transition-all"
         >
-          ✏️ Paste Text
+          ✏️ {{ 'upload.pasteText' | translate }}
         </button>
       </div>
     </div>
@@ -42,7 +42,7 @@
         <div class="flex items-start">
           <span class="text-2xl mr-3">⚠️</span>
           <div>
-            <h3 class="font-semibold text-error mb-1">Error</h3>
+            <h3 class="font-semibold text-error mb-1">{{ 'common.error' | translate }}</h3>
             <p class="text-sm text-gray-700">{{ contractStore.uploadError() || contractStore.analysisError() }}</p>
           </div>
         </div>
@@ -63,17 +63,17 @@
           @if (contractStore.isLoading()) {
             <div class="py-8">
               <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
-              <p class="mt-4 text-gray-600">Processing your contract...</p>
+              <p class="mt-4 text-gray-600">{{ 'upload.processingContract' | translate }}</p>
             </div>
           } @else {
             <div class="space-y-4">
               <div class="text-6xl">📤</div>
               <div>
                 <p class="text-lg font-medium text-gray-900 mb-2">
-                  Drop your contract here
+                  {{ 'upload.dropHere' | translate }}
                 </p>
                 <p class="text-sm text-gray-500 mb-4">
-                  or click to browse
+                  {{ 'upload.orClickBrowse' | translate }}
                 </p>
               </div>
               <input
@@ -87,10 +87,10 @@
                 (click)="fileInput.click()"
                 class="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
               >
-                Choose File
+                {{ 'upload.chooseFile' | translate }}
               </button>
               <p class="text-xs text-gray-400 mt-4">
-                Supported formats: TXT, PDF, DOCX (max 5MB)
+                {{ 'upload.supportedFormats' | translate }}
               </p>
             </div>
           }
@@ -104,14 +104,14 @@
         <form (ngSubmit)="onTextSubmit()">
           <div class="mb-4">
             <label for="contract-text" class="block text-sm font-medium text-gray-700 mb-2">
-              Contract Text
+              {{ 'upload.contractText' | translate }}
             </label>
             <textarea
               id="contract-text"
               [(ngModel)]="contractText"
               name="contractText"
               rows="15"
-              placeholder="Paste your contract text here..."
+              [placeholder]="'upload.pastePlaceholder' | translate"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
               [disabled]="contractStore.isLoading()"
             ></textarea>
@@ -122,11 +122,11 @@
             <div class="flex gap-6 mb-6 text-sm text-gray-600">
               <div class="flex items-center gap-2">
                 <span class="font-semibold">📊</span>
-                <span>{{ wordCount }} words</span>
+                <span>{{ wordCount }} {{ 'common.words' | translate }}</span>
               </div>
               <div class="flex items-center gap-2">
                 <span class="font-semibold">⏱️</span>
-                <span>~{{ readingTime }} min read</span>
+                <span>~{{ readingTime }} {{ 'common.minRead' | translate }}</span>
               </div>
             </div>
           }
@@ -140,10 +140,10 @@
             @if (contractStore.isLoading()) {
               <span class="flex items-center justify-center gap-2">
                 <span class="inline-block animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
-                Processing...
+                {{ 'upload.processing' | translate }}
               </span>
             } @else {
-              Analyze Contract
+              {{ 'upload.analyzeContract' | translate }}
             }
           </button>
         </form>
@@ -156,15 +156,15 @@
         <div class="flex items-start">
           <span class="text-2xl mr-3">✅</span>
           <div class="flex-1">
-            <h3 class="font-semibold text-success mb-2">Contract Analyzed Successfully!</h3>
+            <h3 class="font-semibold text-success mb-2">{{ 'upload.analyzedSuccessfully' | translate }}</h3>
             <p class="text-sm text-gray-700 mb-3">
-              Ready to view analysis results
+              {{ 'upload.readyToView' | translate }}
             </p>
             <button
               (click)="reset()"
               class="text-sm text-gray-600 hover:text-gray-900 underline"
             >
-              Upload another contract
+              {{ 'upload.uploadAnother' | translate }}
             </button>
           </div>
         </div>
@@ -173,16 +173,16 @@
 
     <!-- Help Section -->
     <div class="mt-12 text-center">
-      <h3 class="text-sm font-medium text-gray-700 mb-3">Need help?</h3>
+      <h3 class="text-sm font-medium text-gray-700 mb-3">{{ 'upload.needHelp' | translate }}</h3>
       <div class="flex justify-center gap-6 text-sm text-gray-500">
         <button class="hover:text-gray-900 transition-colors">
-          📖 View Sample Contract
+          📖 {{ 'upload.viewSample' | translate }}
         </button>
         <button class="hover:text-gray-900 transition-colors">
-          ❓ How it works
+          ❓ {{ 'upload.howItWorks' | translate }}
         </button>
         <button class="hover:text-gray-900 transition-colors">
-          🔒 Privacy Policy
+          🔒 {{ 'upload.privacyPolicy' | translate }}
         </button>
       </div>
     </div>
@@ -205,17 +205,17 @@
       <div class="text-center mb-6">
         <div class="text-5xl mb-4">🌍</div>
         <h2 class="text-2xl font-bold text-gray-900 mb-2">
-          Language Mismatch Detected
+          {{ 'language.mismatchDetected' | translate }}
         </h2>
         <p class="text-gray-600">
-          Your contract appears to be in <strong>{{ getLanguageName(onboardingStore.detectedLanguage()) }}</strong>,
-          but your app language is set to <strong>{{ getLanguageName(languageStore.preferredLanguage()) }}</strong>.
+          {{ 'language.mismatchMessage' | translate }} <strong>{{ getLanguageName(onboardingStore.detectedLanguage()) }}</strong>,
+          {{ 'language.appLanguageSet' | translate }} <strong>{{ getLanguageName(languageStore.preferredLanguage()) }}</strong>.
         </p>
       </div>
       
       <div class="space-y-3">
         <p class="text-sm font-medium text-gray-700 mb-3">
-          Which language would you like for the analysis?
+          {{ 'language.whichLanguage' | translate }}
         </p>
         
         <!-- Contract Language Option -->
@@ -229,7 +229,7 @@
               {{ getLanguageName(onboardingStore.detectedLanguage()) }}
             </div>
             <div class="text-sm text-gray-600">
-              Analyze in the contract's original language
+              {{ 'language.originalLanguage' | translate }}
             </div>
           </div>
           <span class="text-2xl">{{ getLanguageFlag(onboardingStore.detectedLanguage()) }}</span>
@@ -246,7 +246,7 @@
               {{ getLanguageName(languageStore.preferredLanguage()) }}
             </div>
             <div class="text-sm text-gray-600">
-              Analyze in your preferred language
+              {{ 'language.preferredLanguage' | translate }}
             </div>
           </div>
           <span class="text-2xl">{{ getLanguageFlag(languageStore.preferredLanguage()) }}</span>
@@ -255,8 +255,7 @@
       
       <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p class="text-xs text-blue-900">
-          💡 <strong>Tip:</strong> The AI will analyze the contract and provide results in your chosen language.
-          The original contract text will not be modified.
+          💡 <strong>{{ 'language.tipTitle' | translate }}</strong> {{ 'language.tipMessage' | translate }}
         </p>
       </div>
     </div>
@@ -272,10 +271,10 @@
     <div class="bg-white rounded-2xl shadow-2xl p-8 text-center">
       <div class="text-6xl mb-4 animate-bounce">🔍</div>
       <h2 class="text-2xl font-bold text-gray-900 mb-2">
-        Analyzing Contract Parties
+        {{ 'upload.analyzingParties' | translate }}
       </h2>
       <p class="text-gray-600 mb-4">
-        Identifying who's involved in this agreement...
+        {{ 'upload.identifyingParties' | translate }}
       </p>
       <div class="flex items-center justify-center gap-2">
         <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>

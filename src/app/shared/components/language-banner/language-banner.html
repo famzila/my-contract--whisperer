@@ -9,11 +9,11 @@
       <!-- Message -->
       <div class="banner-message">
         <p class="banner-title">
-          📄 Contract detected in 
+          📄 {{ 'language.detected' | translate }} 
           <strong>{{ detectedLanguage()!.flag }} {{ detectedLanguage()!.name }}</strong>
         </p>
         <p class="banner-subtitle">
-          Want analysis in <strong>your language</strong>?
+          {{ 'language.wantAnalysis' | translate }}
         </p>
       </div>
       
@@ -24,7 +24,7 @@
             type="button"
             (click)="selectLanguage(lang.code)"
             class="lang-quick-btn"
-            [title]="'Analyze in ' + lang.name"
+            [title]="('language.analyzeIn' | translate) + ' ' + lang.name"
           >
             <span class="lang-flag-lg">{{ lang.flag }}</span>
             <span class="lang-label">{{ lang.nativeName }}</span>

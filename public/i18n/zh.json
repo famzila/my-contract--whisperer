@@ -1,0 +1,137 @@
+{
+    "common": {
+      "loading": "加载中...",
+      "error": "错误",
+      "success": "成功",
+      "cancel": "取消",
+      "confirm": "确认",
+      "save": "保存",
+      "close": "关闭",
+      "back": "返回",
+      "next": "下一步",
+      "previous": "上一步",
+      "done": "完成",
+      "words": "字词",
+      "minRead": "分钟阅读"
+    },
+    "language": {
+      "select": "选择语言",
+      "choose": "请选择语言",
+      "analysisLanguage": "分析结果将以您选择的语言显示",
+      "detected": "检测到合同语言为：",
+      "wantAnalysis": "是否希望以您的语言进行分析？",
+      "analyzeIn": "分析语言：",
+      "mismatchDetected": "检测到语言不匹配",
+      "mismatchMessage": "合同似乎使用以下语言编写：",
+      "appLanguageSet": "但您的应用语言设置为：",
+      "whichLanguage": "您希望使用哪种语言进行分析？",
+      "originalLanguage": "以合同原文语言分析",
+      "preferredLanguage": "以您的首选语言分析",
+      "tipTitle": "提示：",
+      "tipMessage": "AI 将分析合同并以您选择的语言显示结果。原始合同文本不会被修改。"
+    },
+    "navbar": {
+      "title": "Contract Whisperer",
+      "subtitle": "AI 驱动的合同分析",
+      "home": "首页",
+      "howItWorks": "工作原理",
+      "privacy": "隐私政策",
+      "getStarted": "开始使用"
+    },
+    "footer": {
+      "about": "关于 Contract Whisperer",
+      "aboutText": "基于 AI 的合同分析，帮助您以通俗语言理解法律文件。",
+      "disclaimer": "在做出重要决策之前，请务必咨询专业法律人士。本工具仅提供基于 AI 的信息性分析。",
+      "quickLinks": "快速链接",
+      "privacyPolicy": "隐私政策",
+      "termsOfService": "服务条款",
+      "contactUs": "联系我们",
+      "poweredBy": "技术支持：",
+      "chromeAI": "Chrome 内置 AI（Gemini Nano）",
+      "clientSide": "100% 客户端处理",
+      "copyright": "Contract Whisperer. 由 Angular 与 Chrome AI 构建。"
+    },
+    "upload": {
+      "title": "上传您的合同",
+      "subtitle": "几秒钟内获取 AI 分析结果",
+      "uploadFile": "上传文件",
+      "pasteText": "粘贴文本",
+      "dropHere": "将合同拖拽到此处",
+      "orClickBrowse": "或点击浏览",
+      "chooseFile": "选择文件",
+      "supportedFormats": "支持格式：TXT、PDF、DOCX（最大 5MB）",
+      "contractText": "合同文本",
+      "pastePlaceholder": "请在此粘贴您的合同文本...",
+      "analyzeContract": "分析合同",
+      "processing": "处理中...",
+      "processingContract": "正在处理您的合同...",
+      "analyzedSuccessfully": "合同分析成功！",
+      "readyToView": "分析结果已准备就绪",
+      "uploadAnother": "上传另一份合同",
+      "needHelp": "需要帮助？",
+      "viewSample": "查看示例合同",
+      "howItWorks": "工作原理",
+      "privacyPolicy": "隐私政策",
+      "analyzingParties": "正在分析合同各方",
+      "identifyingParties": "正在识别合同参与方..."
+    },
+    "nonContract": {
+      "title": "嗯，这似乎不是一份合同",
+      "analyzed": "我们已分析您的文档，结果显示它似乎是一份：",
+      "whatWeSupport": "Contract Whisperer 专注于以下类型的法律合同：",
+      "employmentContracts": "雇佣合同",
+      "rentalAgreements": "租赁协议",
+      "ndasFreelance": "保密协议（NDA）与自由职业合同",
+      "serviceAgreements": "服务协议",
+      "tipTitle": "提示：",
+      "tipMessage": "请确保文档中包含诸如“协议”、“当事方”、“义务”或“终止”等术语。",
+      "tryAnother": "尝试其他文档",
+      "documentTypes": {
+        "email_or_letter": "电子邮件或信件",
+        "academic_paper": "学术论文或随笔",
+        "story_or_book": "故事或书籍章节",
+        "recipe": "食谱",
+        "instructions_or_tutorial": "说明书或教程",
+        "article": "文章或博客帖子",
+        "other": "文档"
+      }
+    },
+    "analysis": {
+      "title": "合同分析",
+      "summary": "摘要",
+      "obligations": "义务",
+      "redFlags": "风险提示",
+      "compare": "对比",
+      "uploadNew": "上传新合同",
+      "analyzedOn": "分析日期",
+      "contractType": "合同类型",
+      "effectiveDate": "生效日期",
+      "endDate": "结束日期",
+      "expiringSoon": "即将到期",
+      "jurisdiction": "管辖权",
+      "parties": "当事方",
+      "mockMode": "模拟模式",
+      "contractSummary": "合同摘要",
+      "noContract": "尚未上传合同",
+      "uploadFirst": "请先上传合同以开始分析"
+    },
+    "settings": {
+      "title": "设置",
+      "language": "语言",
+      "theme": "主题",
+      "notifications": "通知",
+      "privacy": "隐私"
+    },
+    "partySelector": {
+      "title": "您在此合同中的角色是什么？",
+      "subtitle": "我们将根据您的立场定制分析结果",
+      "detectedParties": "系统检测到合同中的以下当事方：",
+      "proTip": "专业提示：",
+      "proTipMessage": "选择“比较双方视角”即可查看双方的风险与义务，有助于您在签署前全面了解情况。",
+      "close": "关闭"
+    },
+    "modal": {
+      "close": "关闭"
+    }
+  }
+  

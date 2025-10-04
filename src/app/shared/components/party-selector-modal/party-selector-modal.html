@@ -17,10 +17,10 @@
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-2xl font-bold text-gray-900 mb-1">
-              Who Are You in This Contract?
+              {{ 'partySelector.title' | translate }}
             </h2>
             <p class="text-sm text-gray-600">
-              This helps us tailor the analysis to your perspective
+              {{ 'partySelector.subtitle' | translate }}
             </p>
           </div>
           
@@ -28,7 +28,7 @@
             type="button"
             (click)="onClose()"
             class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Close"
+            [attr.aria-label]="'partySelector.close' | translate"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -44,7 +44,7 @@
           <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p class="text-sm font-medium text-blue-900 flex items-center gap-2">
               <span class="text-lg">✨</span>
-              We detected the following parties in your contract:
+              {{ 'partySelector.detectedParties' | translate }}
             </p>
           </div>
         }
@@ -93,8 +93,7 @@
           <p class="text-sm text-gray-700 flex items-start gap-2">
             <span class="text-lg flex-shrink-0">💡</span>
             <span>
-              <strong>Pro Tip:</strong> Choose "Compare Both Perspectives" to see risks and obligations from 
-              both parties' viewpoints. This helps you understand the full picture before signing.
+              <strong>{{ 'partySelector.proTip' | translate }}</strong> {{ 'partySelector.proTipMessage' | translate }}
             </span>
           </p>
         </div>
