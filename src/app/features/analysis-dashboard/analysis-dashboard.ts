@@ -349,58 +349,63 @@ export class AnalysisDashboard implements OnInit {
   }
   
   /**
-   * Get perspective badge info
+   * Get perspective badge info - shows party name, not role
    */
   getPerspectiveBadge() {
     const metadata = this.getMetadata();
     const role = metadata?.analyzedForRole;
     
-    if (!role) return null;
-    
-    const badges: Record<string, { icon: string; text: string; className: string }> = {
-      'employee': {
-        icon: '🧑‍💼',
-        text: 'Employee View',
-        className: 'px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200'
-      },
-      'employer': {
-        icon: '👔',
-        text: 'Employer View',
-        className: 'px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full border border-purple-200'
-      },
-      'contractor': {
-        icon: '🔧',
-        text: 'Contractor View',
-        className: 'px-3 py-1 text-sm font-medium bg-orange-100 text-orange-800 rounded-full border border-orange-200'
-      },
-      'client': {
-        icon: '🏢',
-        text: 'Client View',
-        className: 'px-3 py-1 text-sm font-medium bg-indigo-100 text-indigo-800 rounded-full border border-indigo-200'
-      },
-      'tenant': {
-        icon: '🏠',
-        text: 'Tenant View',
-        className: 'px-3 py-1 text-sm font-medium bg-teal-100 text-teal-800 rounded-full border border-teal-200'
-      },
-      'landlord': {
-        icon: '🔑',
-        text: 'Landlord View',
-        className: 'px-3 py-1 text-sm font-medium bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200'
-      },
-      'partner': {
-        icon: '🤝',
-        text: 'Partner View',
-        className: 'px-3 py-1 text-sm font-medium bg-pink-100 text-pink-800 rounded-full border border-pink-200'
-      },
-      'both_views': {
+    if (!role || role === 'both_views') {
+      return role === 'both_views' ? {
         icon: '⚖️',
         text: 'Both Parties',
         className: 'px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full border border-green-200'
-      }
+      } : null;
+    }
+    
+    // Find which party matches the selected role
+    const parties = metadata?.parties;
+    let partyName = '';
+    let partyRole = '';
+    
+    if (parties?.party1?.role?.toLowerCase() === role.toLowerCase()) {
+      partyName = parties.party1.name;
+      partyRole = parties.party1.role || role;
+    } else if (parties?.party2?.role?.toLowerCase() === role.toLowerCase()) {
+      partyName = parties.party2.name;
+      partyRole = parties.party2.role || role;
+    }
+    
+    // Icon based on role
+    const iconMap: Record<string, string> = {
+      'employee': '🧑‍💼',
+      'employer': '👔',
+      'contractor': '🔧',
+      'client': '🏢',
+      'tenant': '🏠',
+      'landlord': '🔑',
+      'partner': '🤝',
     };
     
-    return badges[role] || null;
+    // Color based on role
+    const colorMap: Record<string, string> = {
+      'employee': 'bg-blue-100 text-blue-800 border-blue-200',
+      'employer': 'bg-purple-100 text-purple-800 border-purple-200',
+      'contractor': 'bg-orange-100 text-orange-800 border-orange-200',
+      'client': 'bg-indigo-100 text-indigo-800 border-indigo-200',
+      'tenant': 'bg-teal-100 text-teal-800 border-teal-200',
+      'landlord': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      'partner': 'bg-pink-100 text-pink-800 border-pink-200',
+    };
+    
+    const icon = iconMap[role] || '👤';
+    const colorClass = colorMap[role] || 'bg-gray-100 text-gray-800 border-gray-200';
+    
+    return {
+      icon,
+      text: `Analyzing as ${partyName}`,
+      className: `px-3 py-1 text-sm font-medium ${colorClass} rounded-full border`
+    };
   }
   
   /**
@@ -479,6 +484,33 @@ export class AnalysisDashboard implements OnInit {
   }
   
   /**
+   * Check if the current user perspective is the contract provider
+   * Contract providers typically don't need to ask questions about their own contract
+   * 
+   * @returns true if user is likely the contract provider (hide email draft feature)
+   */
+  isContractProvider(): boolean {
+    const metadata = this.getMetadata();
+    const role = metadata?.analyzedForRole?.toLowerCase();
+    
+    if (!role) return false;
+    
+    // These roles typically PROVIDE the contract (they wrote it, so they don't need to ask questions)
+    const providerRoles = ['employer', 'landlord', 'client'];
+    
+    // These roles typically RECEIVE the contract (they need clarification)
+    // const receiverRoles = ['employee', 'tenant', 'contractor'];
+    
+    // Special cases:
+    // - 'partner': Could be either, so ALLOW email drafting
+    // - 'both_views': Not a real perspective, so HIDE email drafting
+    if (role === 'both_views') return true; // Hide for both views
+    if (role === 'partner') return false; // Allow for partners
+    
+    return providerRoles.includes(role);
+  }
+  
+  /**
    * Get high priority risks
    */
   getHighRisks() {
@@ -554,13 +586,37 @@ export class AnalysisDashboard implements OnInit {
     if (!data) return;
     
     const questions = data.questions;
-    // Use party1 as the recipient (the other party) and party2 as the sender (you)
-    // Works for all contract types: Employer-Employee, Landlord-Tenant, Client-Contractor, etc.
-    const recipientName = data.metadata.parties.party1?.name || 'the other party';
-    const yourName = data.metadata.parties.party2?.name || 'you';
+    const selectedRole = data.metadata.analyzedForRole;
+    const parties = data.metadata.parties;
+    
+    // Determine who is the sender (you) and who is the recipient (them)
+    // If viewing as party1 (e.g., landlord), YOU are party1, THEY are party2
+    // If viewing as party2 (e.g., tenant), YOU are party2, THEY are party1
+    let senderName = 'you';
+    let recipientName = 'the other party';
+    let senderRole = '';
+    let recipientRole = '';
+    
+    if (parties?.party1 && parties?.party2) {
+      if (parties.party1.role?.toLowerCase() === selectedRole?.toLowerCase()) {
+        // Viewing as party1 - you ARE party1, email TO party2
+        senderName = parties.party1.name;
+        recipientName = parties.party2.name;
+        senderRole = parties.party1.role || '';
+        recipientRole = parties.party2.role || '';
+      } else if (parties.party2.role?.toLowerCase() === selectedRole?.toLowerCase()) {
+        // Viewing as party2 - you ARE party2, email TO party1
+        senderName = parties.party2.name;
+        recipientName = parties.party1.name;
+        senderRole = parties.party2.role || '';
+        recipientRole = parties.party1.role || '';
+      }
+    }
+    
+    console.log(`✉️ [Email] Drafting from ${senderName} (${senderRole}) TO ${recipientName} (${recipientRole})`);
     
     // Delegate to EmailDraftStore
-    await this.emailStore.draftEmail(questions, recipientName, yourName);
+    await this.emailStore.draftEmail(questions, recipientName, senderName, senderRole, recipientRole);
   }
   
   /**

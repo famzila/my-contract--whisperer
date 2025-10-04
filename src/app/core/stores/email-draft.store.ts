@@ -69,11 +69,15 @@ export const EmailDraftStore = signalStore(
      * @param questions - Array of questions to include in the email
      * @param recipientName - Name of the party receiving the email (e.g., company name, landlord)
      * @param senderName - Name of the party sending the email (e.g., your name, employee)
+     * @param senderRole - Role of the sender (e.g., 'Landlord', 'Tenant', 'Employer')
+     * @param recipientRole - Role of the recipient (e.g., 'Tenant', 'Landlord', 'Employee')
      */
     async draftEmail(
       questions: string[],
       recipientName: string,
-      senderName: string
+      senderName: string,
+      senderRole: string = '',
+      recipientRole: string = ''
     ): Promise<void> {
       if (questions.length === 0) {
         console.warn('No questions to draft email');
@@ -93,7 +97,7 @@ export const EmailDraftStore = signalStore(
         if (!isAvailable || AppConfig.useMockAI) {
           // Use mock email if Writer API not available or in mock mode
           console.log('📧 Using mock email template (Writer API not available or mock mode enabled)');
-          const mockEmail = generateMockEmail(recipientName, senderName, questions);
+          const mockEmail = generateMockEmail(recipientName, senderName, senderRole, recipientRole, questions);
           
           // Simulate delay for realistic UX
           await new Promise(resolve => setTimeout(resolve, 1000));
@@ -108,7 +112,7 @@ export const EmailDraftStore = signalStore(
         // Use Writer API to generate professional email with streaming
         console.log('✍️ Drafting email with Writer API (streaming)...');
         
-        const prompt = buildEmailPrompt(recipientName, senderName, questions);
+        const prompt = buildEmailPrompt(recipientName, senderName, senderRole, recipientRole, questions);
         const stream = await writerService.writeStreaming(prompt, {
           tone: 'formal',
           length: 'medium',
@@ -132,7 +136,7 @@ export const EmailDraftStore = signalStore(
         const errorMessage = error instanceof Error ? error.message : 'Failed to draft email';
         
         // Fallback to mock email on error
-        const mockEmail = generateMockEmail(recipientName, senderName, questions);
+        const mockEmail = generateMockEmail(recipientName, senderName, senderRole, recipientRole, questions);
         patchState(store, { 
           draftedEmail: mockEmail,
           draftError: errorMessage,
@@ -276,17 +280,26 @@ export const EmailDraftStore = signalStore(
 /**
  * Helper: Build prompt for Writer API
  */
-function buildEmailPrompt(recipientName: string, senderName: string, questions: string[]): string {
+function buildEmailPrompt(
+  recipientName: string, 
+  senderName: string, 
+  senderRole: string, 
+  recipientRole: string, 
+  questions: string[]
+): string {
   const questionsList = questions.map((q, i) => `${i + 1}. ${q}`).join('\n\n');
   
-  return `Write a professional, polite email from ${senderName} to ${recipientName} asking for clarification on the following points from a contract agreement:
+  // Context-aware greeting based on roles
+  const contextIntro = getContextualIntro(senderRole, recipientRole);
+  
+  return `Write a professional, polite email from ${senderName} (${senderRole}) to ${recipientName} (${recipientRole}) asking for clarification on the following points from a contract agreement:
 
 ${questionsList}
 
 The email should:
 - Start with "Subject: Clarification on Contract Agreement Terms"
-- Address the recipient as "Dear ${recipientName} Team," (ALWAYS use this exact format: recipient name + "Team,")
-- Express gratitude for receiving the agreement
+- Address the recipient as "Dear ${recipientName},"
+${contextIntro}
 - List the questions in a numbered format
 - Mention that clarity will help ensure alignment and a successful relationship
 - End with "Best regards," followed by ${senderName}
@@ -296,19 +309,46 @@ Format the email with proper structure including Subject, Greeting, Body, and Cl
 }
 
 /**
+ * Get context-aware introduction based on sender/recipient roles
+ */
+function getContextualIntro(senderRole: string, recipientRole: string): string {
+  const rolePair = `${senderRole.toLowerCase()}-${recipientRole.toLowerCase()}`;
+  
+  const intros: Record<string, string> = {
+    'tenant-landlord': '- Express appreciation for the lease opportunity and mention review of the agreement',
+    'landlord-tenant': '- Acknowledge the lease application and mention discussion of terms',
+    'employee-employer': '- Express excitement about the position and mention review of the employment agreement',
+    'employer-employee': '- Acknowledge the candidate and mention clarification on employment terms',
+    'contractor-client': '- Express appreciation for the project opportunity and mention review of the service agreement',
+    'client-contractor': '- Acknowledge the proposal and mention discussion of project terms',
+  };
+  
+  return intros[rolePair] || '- Express appreciation for the opportunity and mention review of the agreement';
+}
+
+/**
  * Helper: Generate mock email when Writer API is not available
  */
-function generateMockEmail(recipientName: string, senderName: string, questions: string[]): string {
+function generateMockEmail(
+  recipientName: string, 
+  senderName: string,
+  senderRole: string,
+  recipientRole: string,
+  questions: string[]
+): string {
   const questionsList = questions
     .slice(0, 5) // Limit to first 5 questions for readability
     .map((q, i) => `${i + 1}. ${q}`)
     .join('\n\n');
   
+  // Context-aware opening based on roles
+  const opening = getMockEmailOpening(senderRole, recipientRole, recipientName);
+  
   return `Subject: Clarification on Contract Agreement Terms
 
 Dear ${recipientName} Team,
 
-Thank you for sending over the contract agreement. I have carefully reviewed the document and would like to clarify a few points.
+${opening}
 
 Before I proceed with signing, I would appreciate clarification on the following points to ensure I fully understand the terms:
 
@@ -320,6 +360,24 @@ I look forward to your response and appreciate your time in addressing these que
 
 Best regards,
 ${senderName}`;
+}
+
+/**
+ * Get context-aware email opening based on roles
+ */
+function getMockEmailOpening(senderRole: string, recipientRole: string, recipientName: string): string {
+  const rolePair = `${senderRole.toLowerCase()}-${recipientRole.toLowerCase()}`;
+  
+  const openings: Record<string, string> = {
+    'tenant-landlord': `Thank you for providing the lease agreement for the property. I have carefully reviewed the terms and am excited about the opportunity to rent from you.`,
+    'landlord-tenant': `Thank you for your interest in the property. I have reviewed your application and would like to clarify a few terms in the lease agreement.`,
+    'employee-employer': `Thank you for the employment offer at ${recipientName}. I am excited about the opportunity to join your team and have carefully reviewed the employment agreement.`,
+    'employer-employee': `We are pleased to offer you a position with our organization. Before finalizing the agreement, I would like to clarify a few terms.`,
+    'contractor-client': `Thank you for the opportunity to work on this project. I have reviewed the service agreement and would like to clarify a few points.`,
+    'client-contractor': `We appreciate your proposal and are interested in moving forward. Before finalizing the agreement, I have a few questions about the terms.`,
+  };
+  
+  return openings[rolePair] || `Thank you for the contract agreement. I have carefully reviewed the document and would like to clarify a few points.`;
 }
 
 /**
