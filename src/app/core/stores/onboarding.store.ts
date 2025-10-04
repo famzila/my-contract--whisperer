@@ -68,6 +68,7 @@ interface OnboardingState {
   // Language detection
   detectedLanguage: string | null;
   selectedLanguage: string | null;
+  userPreferredLanguage: string;        // User's app language (default 'en')
   
   // Party detection
   detectedParties: PartyDetectionResult | null;
@@ -92,6 +93,7 @@ const initialState: OnboardingState = {
   documentType: null,
   detectedLanguage: null,
   selectedLanguage: null,
+  userPreferredLanguage: 'en',  // Default to English
   detectedParties: null,
   selectedRole: null,
   pendingContractText: null,
@@ -109,7 +111,7 @@ export const OnboardingStore = signalStore(
   withState(initialState),
   
   // Computed values
-  withComputed(({ currentStep, isValidContract, detectedLanguage, selectedLanguage, selectedRole, detectedParties }) => ({
+  withComputed(({ currentStep, isValidContract, detectedLanguage, selectedLanguage, userPreferredLanguage, selectedRole, detectedParties }) => ({
     /**
      * Get progress percentage (0-100)
      */
@@ -121,13 +123,12 @@ export const OnboardingStore = signalStore(
     
     /**
      * Check if language selection is needed
-     * Show modal if:
-     * 1. Language has been detected from contract
-     * 2. User hasn't selected a language yet (selectedLanguage is null OR different from detected)
+     * Show modal ONLY if there's an actual language mismatch
      */
     needsLanguageSelection: computed(() => {
       const detected = detectedLanguage();
       const selected = selectedLanguage();
+      const preferred = userPreferredLanguage();
       
       // If no language detected yet, don't show modal
       if (!detected) return false;
@@ -135,7 +136,13 @@ export const OnboardingStore = signalStore(
       // If user already selected a language, don't show modal
       if (selected) return false;
       
-      // Show modal if we have a detected language but no selection yet
+      // CRITICAL: Only show modal if detected language is DIFFERENT from user's preferred language
+      if (detected === preferred) {
+        console.log(`✅ Language match: detected "${detected}" === preferred "${preferred}" - No modal needed`);
+        return false;
+      }
+      
+      console.log(`🌍 Language mismatch: detected "${detected}" !== preferred "${preferred}" - Show modal`);
       return true;
     }),
     
@@ -232,6 +239,13 @@ export const OnboardingStore = signalStore(
         validationError: error || null,
         currentStep: isValid ? 'languageSelect' : 'upload',
       });
+    },
+    
+    /**
+     * Set user's preferred app language
+     */
+    setUserPreferredLanguage: (language: string) => {
+      patchState(store, { userPreferredLanguage: language });
     },
     
     /**

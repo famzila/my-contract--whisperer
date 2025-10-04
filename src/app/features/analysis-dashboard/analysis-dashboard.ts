@@ -72,7 +72,7 @@ export class AnalysisDashboard implements OnInit {
         console.log('✅ Parsed JSON from summary string');
         
         // CRITICAL FIX: Check if summary.parties is ALSO a JSON string (double-wrapped)
-        if (parsedFromSummary.summary && typeof parsedFromSummary.summary.parties === 'string') {
+        if (parsedFromSummary && parsedFromSummary.summary && typeof parsedFromSummary.summary.parties === 'string') {
           const partiesStr = parsedFromSummary.summary.parties.trim();
           if (partiesStr.startsWith('```') || partiesStr.startsWith('{')) {
             console.log('🚨 Detected double-wrapped JSON in summary.parties, attempting to parse...');

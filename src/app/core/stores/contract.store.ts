@@ -263,12 +263,19 @@ export const ContractStore = signalStore(
         console.log('🌍 Detecting contract language...');
         const detectedLang = languageStore.detectContractLanguage(parsedContract.text);
         onboardingStore.setDetectedLanguage(detectedLang);
+        onboardingStore.setUserPreferredLanguage(languageStore.preferredLanguage());
         
         // Step 4: Extract parties
         console.log('👥 Extracting parties...');
         const partyResult = await partyExtractionService.extractParties(parsedContract.text);
         onboardingStore.setDetectedParties(partyResult);
         onboardingStore.setProcessing(false);
+        
+        // CRITICAL FIX: If language matches, auto-select to skip modal
+        if (detectedLang === languageStore.preferredLanguage()) {
+          console.log(`✅ Language auto-match: ${detectedLang} - Auto-selecting`);
+          onboardingStore.setSelectedLanguage(detectedLang);
+        }
         
         // Step 5: Store parsed contract and wait for user to select language/role
         onboardingStore.setPendingContract(parsedContract.text);
@@ -323,12 +330,19 @@ export const ContractStore = signalStore(
         console.log('🌍 Detecting contract language...');
         const detectedLang = languageStore.detectContractLanguage(parsedContract.text);
         onboardingStore.setDetectedLanguage(detectedLang);
+        onboardingStore.setUserPreferredLanguage(languageStore.preferredLanguage());
         
         // Step 4: Extract parties
         console.log('👥 Extracting parties...');
         const partyResult = await partyExtractionService.extractParties(parsedContract.text);
         onboardingStore.setDetectedParties(partyResult);
         onboardingStore.setProcessing(false);
+        
+        // CRITICAL FIX: If language matches, auto-select to skip modal
+        if (detectedLang === languageStore.preferredLanguage()) {
+          console.log(`✅ Language auto-match: ${detectedLang} - Auto-selecting`);
+          onboardingStore.setSelectedLanguage(detectedLang);
+        }
         
         // Step 5: Store parsed contract and wait for user to select language/role
         onboardingStore.setPendingContract(parsedContract.text);
