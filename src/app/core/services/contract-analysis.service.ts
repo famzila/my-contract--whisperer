@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { AiOrchestratorService } from './ai/ai-orchestrator.service';
 import { ContractParserService, type ParsedContract } from './contract-parser.service';
+import { TranslationOrchestratorService } from './translation-orchestrator.service';
 import type { Contract, ContractAnalysis, ContractClause, Obligation, RiskLevel } from '../models/contract.model';
 import type { AIAnalysisResponse } from '../models/ai-analysis.model';
 import { AppConfig } from '../config/app.config';
@@ -23,6 +24,7 @@ import { DEFAULT_ANALYSIS_CONTEXT } from '../models/analysis-context.model';
 export class ContractAnalysisService {
   private aiOrchestrator = inject(AiOrchestratorService);
   private parser = inject(ContractParserService);
+  private translationOrchestrator = inject(TranslationOrchestratorService);
 
   /**
    * Analyze a contract from parsed input with optional context
@@ -114,6 +116,31 @@ export class ContractAnalysisService {
         console.warn('⚠️ AI response is not valid JSON, falling back to text parsing');
       }
 
+      // 🌍 TRANSLATION LOGIC
+      // Store original (untranslated) version
+      const originalStructuredAnalysis = structuredAnalysis;
+      
+      // Check if translation is needed
+      const needsTranslation = this.translationOrchestrator.needsTranslation(
+        analysisContext.contractLanguage,
+        analysisContext.analyzedInLanguage
+      );
+      
+      if (needsTranslation && structuredAnalysis) {
+        console.log(`🌍 [Translation] Translation needed: ${analysisContext.contractLanguage} → ${analysisContext.analyzedInLanguage}`);
+        
+        // Translate the analysis output
+        structuredAnalysis = await this.translationOrchestrator.translateAnalysis(
+          structuredAnalysis,
+          analysisContext.contractLanguage,
+          analysisContext.analyzedInLanguage
+        );
+        
+        console.log(`✅ [Translation] Translation completed`);
+      } else if (structuredAnalysis) {
+        console.log(`✅ [Translation] No translation needed (same language: ${analysisContext.contractLanguage})`);
+      }
+
       // Parse AI results and create structured analysis
       const clauses = structuredAnalysis 
         ? this.parseClausesFromJSON(structuredAnalysis)
@@ -125,14 +152,20 @@ export class ContractAnalysisService {
         
       const riskScore = this.calculateRiskScore(clauses);
 
-      // Store structured JSON for UI display if available
+      // Store structured JSON for UI display (translated if needed)
       const summaryText = structuredAnalysis 
         ? JSON.stringify(structuredAnalysis, null, 2)
         : aiAnalysis.clauses;
+      
+      // Store original (untranslated) summary for reference
+      const originalSummaryText = needsTranslation && originalStructuredAnalysis
+        ? JSON.stringify(originalStructuredAnalysis, null, 2)
+        : undefined;
 
       const analysis: ContractAnalysis = {
         id: contract.id,
         summary: summaryText || 'Unable to generate summary',
+        originalSummary: originalSummaryText,  // 👈 NEW: Original for toggle
         clauses,
         riskScore,
         obligations,
@@ -142,6 +175,14 @@ export class ContractAnalysisService {
         contextWarnings: structuredAnalysis?.contextWarnings,
         disclaimer: structuredAnalysis?.disclaimer,
         analyzedAt: new Date(),
+        
+        // 👇 NEW: Translation metadata
+        translationInfo: needsTranslation ? {
+          wasTranslated: true,
+          sourceLanguage: analysisContext.contractLanguage,
+          targetLanguage: analysisContext.analyzedInLanguage,
+          translatedAt: new Date(),
+        } : undefined,
       };
 
       console.log('✅ Analysis complete:', {

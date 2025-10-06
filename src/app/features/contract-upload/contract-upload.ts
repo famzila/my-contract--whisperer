@@ -198,26 +198,26 @@ export class ContractUpload {
   }
 
   /**
-   * Handle language selection - use contract language
+   * Handle language selection - use contract language (no translation)
    */
   selectContractLanguage(): void {
     const detectedLang = this.onboardingStore.detectedLanguage();
-    console.log('👤 User selected contract language:', detectedLang);
+    console.log('👤 [Language Choice] User selected: Keep original', detectedLang);
     if (detectedLang) {
       this.onboardingStore.setSelectedLanguage(detectedLang);
-      this.languageStore.setPreferredLanguage(detectedLang);
-      console.log('✅ Language set to contract language:', detectedLang);
+      // Note: Do NOT change user's app language preference - only analysis output language
+      console.log('✅ [Language Choice] Analysis will be in original language (no translation)');
     }
   }
 
   /**
-   * Handle language selection - use user's preferred language
+   * Handle language selection - use user's preferred language (with translation)
    */
   selectUserLanguage(): void {
     const userLang = this.languageStore.preferredLanguage();
-    console.log('👤 User selected their preferred language:', userLang);
+    console.log('👤 [Language Choice] User selected:', userLang, '(will translate from', this.onboardingStore.detectedLanguage(), ')');
     this.onboardingStore.setSelectedLanguage(userLang);
-    console.log('✅ Language set to user preferred language:', userLang);
+    console.log('✅ [Language Choice] Analysis will be translated to user preferred language');
   }
 
   /**
