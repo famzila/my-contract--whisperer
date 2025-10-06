@@ -145,14 +145,25 @@ export interface AIRewriterCreateOptions {
   length?: AIWriterLength;
 }
 
-export interface Translation {
-  canTranslate(sourceLanguage: string, targetLanguage: string): Promise<AICapabilities>;
-  createTranslator(options: TranslatorCreateOptions): Promise<Translator>;
-}
-
 export interface TranslatorCreateOptions {
   sourceLanguage: string;
   targetLanguage: string;
+  monitor?: (m: AICreateMonitor) => void;
+}
+
+// Language Detector API
+export interface LanguageDetector {
+  detect(text: string): Promise<LanguageDetectionResult[]>;
+  destroy(): void;
+}
+
+export interface LanguageDetectionResult {
+  detectedLanguage: string;  // BCP 47 language code (e.g., 'en', 'fr', 'ar')
+  confidence: number;        // 0.0 to 1.0
+}
+
+export interface LanguageDetectorCreateOptions {
+  monitor?: (m: AICreateMonitor) => void;
 }
 
 // Extend Window interface for Chrome Built-in AI APIs
@@ -174,7 +185,17 @@ declare global {
       create(options?: AISummarizerCreateOptions): Promise<AISummarizer>;
     };
     
-    translation?: Translation;
+    // Translator API (new format)
+    Translator?: {
+      availability(options: TranslatorCreateOptions): Promise<AICapabilities>;
+      create(options: TranslatorCreateOptions): Promise<Translator>;
+    };
+    
+    // Language Detector API
+    LanguageDetector?: {
+      availability(): Promise<'available' | 'downloadable' | 'downloading' | 'unavailable'>;
+      create(options?: LanguageDetectorCreateOptions): Promise<LanguageDetector>;
+    };
   }
 }
 

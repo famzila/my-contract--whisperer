@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { PromptService } from './prompt.service';
 import { SummarizerService } from './summarizer.service';
 import { TranslatorService } from './translator.service';
+import { LanguageDetectorService } from './language-detector.service';
 import { WriterService } from './writer.service';
 
 /**
@@ -11,6 +12,7 @@ export interface AIServicesStatus {
   prompt: boolean;
   summarizer: boolean;
   translator: boolean;
+  languageDetector: boolean;
   writer: boolean;
   rewriter: boolean;
   allAvailable: boolean;
@@ -27,6 +29,7 @@ export class AiOrchestratorService {
   private promptService = inject(PromptService);
   private summarizerService = inject(SummarizerService);
   private translatorService = inject(TranslatorService);
+  private languageDetectorService = inject(LanguageDetectorService);
   private writerService = inject(WriterService);
 
   private servicesStatus: AIServicesStatus | null = null;
@@ -35,10 +38,11 @@ export class AiOrchestratorService {
    * Check availability of all AI services
    */
   async checkAvailability(): Promise<AIServicesStatus> {
-    const [prompt, summarizer, translator, writer, rewriter] = await Promise.all([
+    const [prompt, summarizer, translator, languageDetector, writer, rewriter] = await Promise.all([
       this.promptService.isAvailable(),
       this.summarizerService.isAvailable(),
       this.translatorService.isAvailable(),
+      this.languageDetectorService.isAvailable(),
       this.writerService.isWriterAvailable(),
       this.writerService.isRewriterAvailable(),
     ]);
@@ -47,6 +51,7 @@ export class AiOrchestratorService {
       prompt,
       summarizer,
       translator,
+      languageDetector,
       writer,
       rewriter,
       allAvailable: prompt && summarizer && translator && writer && rewriter,

@@ -17,33 +17,39 @@ export class TranslatorService {
 
   /**
    * Check if Translation API is available
+   * Per official docs: https://developer.chrome.com/docs/ai/translator-api
    */
   async isAvailable(): Promise<boolean> {
-    return !!window.translation;
+    return 'Translator' in window;
   }
 
   /**
    * Check if translation between two languages is available
+   * Uses Translator.availability() per official docs
    */
   async canTranslate(
     sourceLanguage: string,
     targetLanguage: string
   ): Promise<AICapabilities> {
-    if (!window.translation) {
+    if (!window.Translator) {
       return { available: 'no' };
     }
 
-    return await window.translation.canTranslate(sourceLanguage, targetLanguage);
+    return await window.Translator.availability({
+      sourceLanguage,
+      targetLanguage,
+    });
   }
 
   /**
    * Create a translator for a language pair
+   * Uses Translator.create() per official docs
    */
   async createTranslator(
     options: TranslatorCreateOptions
   ): Promise<Translator> {
-    if (!window.translation) {
-      throw new Error('Translation API not available');
+    if (!window.Translator) {
+      throw new Error('Translator API not available');
     }
 
     const key = `${options.sourceLanguage}-${options.targetLanguage}`;
@@ -65,9 +71,29 @@ export class TranslatorService {
       );
     }
 
+    // Log download status
+    if (capabilities.available === 'downloadable') {
+      console.log(`📥 [Translator] Language pack ${options.sourceLanguage}→${options.targetLanguage} needs download...`);
+    }
+
+    // Create translator with monitor for download progress
+    const createOptions: TranslatorCreateOptions = {
+      ...options,
+      monitor: (m) => {
+        m.addEventListener('downloadprogress', (e) => {
+          const percent = (e.loaded * 100).toFixed(1);
+          // Only log significant progress milestones
+          if (e.loaded === 0 || e.loaded === 1 || e.loaded % 0.25 === 0) {
+            console.log(`📥 [Translator] Loading ${options.sourceLanguage}→${options.targetLanguage}: ${percent}%`);
+          }
+        });
+      },
+    };
+
     // Create and cache translator
-    const translator = await window.translation.createTranslator(options);
+    const translator = await window.Translator.create(createOptions);
     this.translators.set(key, translator);
+    console.log(`✅ [Translator] Created ${options.sourceLanguage}→${options.targetLanguage}`);
     return translator;
   }
 

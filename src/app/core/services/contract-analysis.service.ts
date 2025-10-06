@@ -73,6 +73,7 @@ export class ContractAnalysisService {
     console.log('🤖 AI Services Status:', {
       prompt: aiStatus.prompt,
       summarizer: aiStatus.summarizer,
+      languageDetector: aiStatus.languageDetector,
       translator: aiStatus.translator,
       writer: aiStatus.writer,
       rewriter: aiStatus.rewriter,

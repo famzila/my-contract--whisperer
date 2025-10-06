@@ -259,21 +259,27 @@ export const ContractStore = signalStore(
         // Valid contract!
         onboardingStore.setValidationResult(true, validationResult.documentType || 'Contract');
         
-        // Step 3: Detect contract language
-        console.log('🌍 Detecting contract language...');
-        const detectedLang = languageStore.detectContractLanguage(parsedContract.text);
-        onboardingStore.setDetectedLanguage(detectedLang);
+        // Step 3 & 4: Run language detection and party extraction IN PARALLEL for speed
+        console.log('🚀 [Onboarding] Running language detection and party extraction in parallel...');
+        
+        // Set user's preferred language in onboarding store BEFORE detecting contract language
         onboardingStore.setUserPreferredLanguage(languageStore.preferredLanguage());
         
-        // Step 4: Extract parties
-        console.log('👥 Extracting parties...');
-        const partyResult = await partyExtractionService.extractParties(parsedContract.text);
+        const [detectedLang, partyResult] = await Promise.all([
+          languageStore.detectContractLanguage(parsedContract.text),
+          partyExtractionService.extractParties(parsedContract.text)
+        ]);
+        
+        console.log('✅ [Onboarding] Parallel tasks completed:', { detectedLang, partyResult });
+        
+        // Update stores with results
+        onboardingStore.setDetectedLanguage(detectedLang);
         onboardingStore.setDetectedParties(partyResult);
         onboardingStore.setProcessing(false);
         
-        // CRITICAL FIX: If language matches, auto-select to skip modal
+        // CRITICAL: If language matches, auto-select to skip modal
         if (detectedLang === languageStore.preferredLanguage()) {
-          console.log(`✅ Language auto-match: ${detectedLang} - Auto-selecting`);
+          console.log(`✅ [Onboarding] Language auto-match: ${detectedLang} - Auto-selecting`);
           onboardingStore.setSelectedLanguage(detectedLang);
         }
         
@@ -326,21 +332,27 @@ export const ContractStore = signalStore(
         // Valid contract!
         onboardingStore.setValidationResult(true, validationResult.documentType || 'Contract');
         
-        // Step 3: Detect contract language
-        console.log('🌍 Detecting contract language...');
-        const detectedLang = languageStore.detectContractLanguage(parsedContract.text);
-        onboardingStore.setDetectedLanguage(detectedLang);
+        // Step 3 & 4: Run language detection and party extraction IN PARALLEL for speed
+        console.log('🚀 [Onboarding] Running language detection and party extraction in parallel...');
+        
+        // Set user's preferred language in onboarding store BEFORE detecting contract language
         onboardingStore.setUserPreferredLanguage(languageStore.preferredLanguage());
         
-        // Step 4: Extract parties
-        console.log('👥 Extracting parties...');
-        const partyResult = await partyExtractionService.extractParties(parsedContract.text);
+        const [detectedLang, partyResult] = await Promise.all([
+          languageStore.detectContractLanguage(parsedContract.text),
+          partyExtractionService.extractParties(parsedContract.text)
+        ]);
+        
+        console.log('✅ [Onboarding] Parallel tasks completed:', { detectedLang, partyResult });
+        
+        // Update stores with results
+        onboardingStore.setDetectedLanguage(detectedLang);
         onboardingStore.setDetectedParties(partyResult);
         onboardingStore.setProcessing(false);
         
-        // CRITICAL FIX: If language matches, auto-select to skip modal
+        // CRITICAL: If language matches, auto-select to skip modal
         if (detectedLang === languageStore.preferredLanguage()) {
-          console.log(`✅ Language auto-match: ${detectedLang} - Auto-selecting`);
+          console.log(`✅ [Onboarding] Language auto-match: ${detectedLang} - Auto-selecting`);
           onboardingStore.setSelectedLanguage(detectedLang);
         }
         

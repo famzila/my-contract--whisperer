@@ -28,6 +28,9 @@ export class AnalysisDashboard implements OnInit {
   // Parsed structured data from AI JSON response
   structuredData = signal<AIAnalysisResponse | null>(null);
   
+  // 🌍 Translation state
+  showingOriginal = signal(false);  // Toggle between translated and original
+  
   // Check if mock mode is enabled
   isMockMode = AppConfig.useMockAI;
 
@@ -43,24 +46,66 @@ export class AnalysisDashboard implements OnInit {
   }
 
   /**
+   * Check if analysis was translated
+   */
+  wasTranslated = (): boolean => {
+    return this.contractStore.analysis()?.translationInfo?.wasTranslated ?? false;
+  };
+  
+  /**
+   * Get source language name for display
+   */
+  getSourceLanguageName(): string {
+    const code = this.contractStore.analysis()?.translationInfo?.sourceLanguage;
+    const languages: Record<string, string> = {
+      'en': 'English',
+      'fr': 'French',
+      'ar': 'Arabic',
+      'es': 'Spanish',
+      'de': 'German',
+      'ja': 'Japanese',
+      'zh': 'Chinese',
+      'ko': 'Korean',
+    };
+    return languages[code || 'en'] || code?.toUpperCase() || 'Unknown';
+  }
+  
+  /**
+   * Toggle between translated and original content
+   */
+  toggleOriginal(): void {
+    this.showingOriginal.update(v => !v);
+    console.log(`🌍 [Translation Toggle] Showing: ${this.showingOriginal() ? 'Original' : 'Translated'}`);
+    
+    // Re-parse AI response to show original or translated
+    this.parseAIResponse();
+  }
+  
+  /**
    * Parse AI response - build structured data from analysis object
    */
   private parseAIResponse(): void {
     const analysis = this.contractStore.analysis();
     if (!analysis) return;
     
+    // 🌍 Check if we should use original or translated
+    const useOriginal = this.showingOriginal() && analysis.originalSummary;
+    const summaryToUse = useOriginal ? analysis.originalSummary : analysis.summary;
+    
     console.log('🔍 Parsing analysis:', { 
       hasMetadata: !!analysis.metadata, 
       hasOmissions: !!analysis.omissions,
-      summaryType: typeof analysis.summary
+      summaryType: typeof summaryToUse,
+      useOriginal,
+      wasTranslated: this.wasTranslated(),
     });
     
     // First, try to parse summary as JSON if it's a string
     let parsedFromSummary: AIAnalysisResponse | null = null;
-    if (typeof analysis.summary === 'string') {
+    if (typeof summaryToUse === 'string') {
       try {
         // Clean up markdown code blocks if present
-        let cleanedSummary = analysis.summary.trim();
+        let cleanedSummary = summaryToUse.trim();
         
         // Remove markdown code blocks (```json ... ``` or ``` ... ```)
         if (cleanedSummary.startsWith('```')) {

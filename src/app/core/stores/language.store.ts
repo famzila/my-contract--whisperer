@@ -8,6 +8,7 @@ import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslatorService } from '../services/ai/translator.service';
+import { LanguageDetectorService } from '../services/ai/language-detector.service';
 import { LANGUAGES, DEFAULT_LANGUAGE, isRTL } from '../constants/languages';
 
 /**
@@ -150,31 +151,44 @@ export const LanguageStore = signalStore(
   })),
   
   // Methods
-  withMethods((store, translatorService = inject(TranslatorService), translateService = inject(TranslateService)) => ({
+  withMethods((store, translatorService = inject(TranslatorService), translateService = inject(TranslateService), languageDetectorService = inject(LanguageDetectorService)) => ({
     /**
-     * Detect contract language from text
+     * Detect contract language from text using Chrome Language Detector API
      */
-          detectContractLanguage: (contractText: string) => {
-            try {
-              const detectedLang = translatorService.detectLanguage(contractText);
-              const userLang = store.preferredLanguage();
-              const needsTranslation = detectedLang !== userLang;
-              
-              patchState(store, { 
-                detectedContractLanguage: detectedLang,
-                showLanguageBanner: needsTranslation,
-              });
-              
-              console.log(`🌍 [Language] Detected: ${detectedLang}${needsTranslation ? ` (user prefers ${userLang})` : ''}`);
-              return detectedLang;
-            } catch (error) {
-              patchState(store, { 
-                detectedContractLanguage: DEFAULT_LANGUAGE, // fallback to English
-                showLanguageBanner: false,
-              });
-              return DEFAULT_LANGUAGE;
-            }
-          },
+    detectContractLanguage: async (contractText: string): Promise<string> => {
+      try {
+        // Use Chrome Language Detector API
+        const detectedLang = await languageDetectorService.detect(contractText);
+        const userLang = store.preferredLanguage();
+        
+        if (detectedLang) {
+          const needsTranslation = detectedLang !== userLang;
+          
+          patchState(store, { 
+            detectedContractLanguage: detectedLang,
+            showLanguageBanner: needsTranslation,
+          });
+          
+          console.log(`🌍 [Language] Detected: ${detectedLang}${needsTranslation ? ` (user prefers ${userLang})` : ''}`);
+          return detectedLang;
+        }
+        
+        // Fallback if detection returns null
+        console.warn('⚠️ [Language] Detection returned null, using default');
+        patchState(store, { 
+          detectedContractLanguage: DEFAULT_LANGUAGE,
+          showLanguageBanner: false,
+        });
+        return DEFAULT_LANGUAGE;
+      } catch (error) {
+        console.error('❌ [Language] Detection error:', error);
+        patchState(store, { 
+          detectedContractLanguage: DEFAULT_LANGUAGE, // fallback to English
+          showLanguageBanner: false,
+        });
+        return DEFAULT_LANGUAGE;
+      }
+    },
     
     /**
      * Set user's preferred language
