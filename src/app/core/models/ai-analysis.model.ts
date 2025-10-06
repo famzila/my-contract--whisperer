@@ -57,6 +57,9 @@ export interface ContractSummary {
   benefits: string[];
   termination: Termination;
   restrictions: Restrictions;
+  fromYourPerspective?: string;  // Summary from selected perspective
+  keyBenefits?: string[];        // Key benefits from selected perspective
+  keyConcerns?: string[];        // Key concerns from selected perspective
 }
 
 export interface Compensation {
@@ -95,6 +98,9 @@ export interface RiskFlag {
 export interface Obligations {
   employer: StructuredObligation[];
   employee: StructuredObligation[];
+  // Perspective-aware fields (will replace employer/employee)
+  yours?: StructuredObligation[];   // Your obligations (based on selected role)
+  theirs?: StructuredObligation[];  // Their obligations (other party)
 }
 
 export interface StructuredObligation {

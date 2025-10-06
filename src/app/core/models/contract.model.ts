@@ -18,7 +18,8 @@ export interface Contract {
  */
 export interface ContractAnalysis {
   id: string;  // Changed from contractId to match usage
-  summary: string | any;  // Can be string OR AIAnalysisResponse object
+  summary: string | any;  // Can be string OR AIAnalysisResponse object (translated if needed)
+  originalSummary?: string | any;  // Original (untranslated) summary for reference
   clauses: ContractClause[];
   riskScore: number;
   obligations: Obligation[];
@@ -30,6 +31,14 @@ export interface ContractAnalysis {
   metadata?: any;  // ContractMetadata from AIAnalysisResponse
   contextWarnings?: Array<{ type: string; severity: string; message: string; }>;  // NEW: Context warnings
   disclaimer?: string;  // NEW: Legal disclaimer
+  
+  // Translation metadata
+  translationInfo?: {
+    wasTranslated: boolean;       // Whether analysis output was translated
+    sourceLanguage: string;       // Original contract language (e.g., "en")
+    targetLanguage: string;       // Translated to language (e.g., "ar")
+    translatedAt?: Date;          // When translation occurred
+  };
 }
 
 /**

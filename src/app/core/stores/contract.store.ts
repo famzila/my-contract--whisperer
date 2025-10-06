@@ -378,6 +378,7 @@ export const ContractStore = signalStore(
         const analysisContext = {
           contractLanguage: languageStore.detectedContractLanguage() || 'en',
           userPreferredLanguage: languageStore.preferredLanguage(),
+          analyzedInLanguage: onboardingStore.selectedLanguage() || languageStore.preferredLanguage(),  // User's choice or default
           userRole: onboardingStore.selectedRole(),
           detectedParties: detectedParties?.parties && detectedParties.parties.party1 && detectedParties.parties.party2
             ? { 

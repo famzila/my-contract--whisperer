@@ -403,7 +403,7 @@ export class AnalysisDashboard implements OnInit {
     
     return {
       icon,
-      text: `Analyzing as ${partyName}`,
+      text: `From ${partyName} perspective`,
       className: `px-3 py-1 text-sm font-medium ${colorClass} rounded-full border`
     };
   }

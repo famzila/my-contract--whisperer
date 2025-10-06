@@ -19,8 +19,9 @@ export type UserRole =
  */
 export interface AnalysisContext {
   // Language context
-  contractLanguage: string;           // Detected contract language
-  userPreferredLanguage: string;      // User's preferred output language
+  contractLanguage: string;           // Detected contract language (e.g., "en", "fr")
+  userPreferredLanguage: string;      // User's app UI language preference (e.g., "ar", "en")
+  analyzedInLanguage: string;         // Language for analysis output - user's choice (e.g., "ar", "en")
   
   // Party context
   userRole: UserRole;                 // Which party the user represents
@@ -40,6 +41,7 @@ export interface AnalysisContext {
 export const DEFAULT_ANALYSIS_CONTEXT: AnalysisContext = {
   contractLanguage: 'en',
   userPreferredLanguage: 'en',
+  analyzedInLanguage: 'en',  // Default: no translation
   userRole: 'employee',
 };
 
