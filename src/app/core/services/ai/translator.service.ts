@@ -110,7 +110,15 @@ export class TranslatorService {
       targetLanguage,
     });
 
-    return await translator.translate(text);
+    const preview = text.length > 100 ? text.substring(0, 100) + '...' : text;
+    console.log(`  🔄 [Translator] Translating: "${preview}" (${sourceLanguage} → ${targetLanguage})`);
+    
+    const result = await translator.translate(text);
+    
+    const resultPreview = result.length > 100 ? result.substring(0, 100) + '...' : result;
+    console.log(`  ✅ [Translator] Result: "${resultPreview}"`);
+    
+    return result;
   }
 
   /**

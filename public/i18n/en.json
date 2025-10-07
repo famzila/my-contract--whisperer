@@ -21,13 +21,13 @@
     "wantAnalysis": "Want analysis in your language?",
     "analyzeIn": "Analyze in",
     "mismatchDetected": "Language Mismatch Detected",
-    "mismatchMessage": "Your contract appears to be in",
+    "mismatchMessage": "This contract is in",
     "appLanguageSet": "but your app language is set to",
-    "whichLanguage": "Which language would you like for the analysis?",
+    "whichLanguage": "Choose your preferred language for the analysis results:",
     "originalLanguage": "Analyze in the contract's original language",
-    "preferredLanguage": "Analyze in your preferred language",
-    "tipTitle": "Tip:",
-    "tipMessage": "The AI will analyze the contract and provide results in your chosen language. The original contract text will not be modified."
+    "preferredLanguage": "Show in My Language (translated for easier understanding)",
+    "tipTitle": "Note:",
+    "tipMessage": "The contract will be analyzed in its original language to preserve legal accuracy. We'll translate the results to your chosen language."
   },
   "navbar": {
     "title": "Contract Whisperer",
@@ -96,8 +96,6 @@
   },
   "analysis": {
     "title": "Contract Analysis",
-    "summary": "Summary",
-    "obligations": "Obligations",
     "redFlags": "Red Flags",
     "compare": "Compare",
     "uploadNew": "Upload New Contract",
@@ -111,7 +109,100 @@
     "mockMode": "Mock Mode",
     "contractSummary": "Contract Summary",
     "noContract": "No contract uploaded yet",
-    "uploadFirst": "Please upload a contract to begin analysis"
+    "uploadFirst": "Please upload a contract to begin analysis",
+    "translatedFrom": "Translated from",
+    "showTranslated": "Show Translated",
+    "showOriginal": "Show Original",
+    "tabs": {
+      "summary": "Summary",
+      "risks": "Risks",
+      "obligations": "Obligations",
+      "omissions": "Omissions",
+      "questions": "Questions",
+      "disclaimer": "Disclaimer"
+    },
+    "summary": {
+      "title": "Contract Summary",
+      "parties": "Parties",
+      "roleRelationship": "Role/Relationship",
+      "keyResponsibilities": "Key Responsibilities",
+      "compensationBenefits": "Compensation & Benefits",
+      "baseSalary": "Base Salary",
+      "bonus": "Bonus",
+      "equity": "Equity",
+      "other": "Other",
+      "terminationConditions": "Termination Conditions",
+      "atWill": "At-Will",
+      "forCause": "For Cause",
+      "severance": "Severance",
+      "restrictions": "Restrictions",
+      "confidentiality": "Confidentiality",
+      "nonCompete": "Non-Compete",
+      "nonSolicitation": "Non-Solicitation"
+    },
+    "risks": {
+      "title": "Risk Flags",
+      "subtitle": "Prioritized by severity - High risks first",
+      "highPriority": "High Priority Risks",
+      "mediumPriority": "Medium Priority Risks",
+      "lowPriority": "Low Priority Risks",
+      "impact": "Impact",
+      "noRisks": "No significant risks identified in this contract."
+    },
+    "obligations": {
+      "title": "Obligations",
+      "subtitle": "What each party is responsible for - structured and actionable",
+      "employer": "Employer / Company",
+      "employee": "Employee / Individual",
+      "starts": "Starts",
+      "duration": "Duration"
+    },
+    "omissions": {
+      "title": "What's Missing",
+      "subtitle": "Prioritized by importance - High priority first",
+      "highPriority": "High Priority Omissions",
+      "mediumPriority": "Medium Priority Omissions",
+      "lowPriority": "Low Priority Omissions",
+      "whyMatters": "Why this matters",
+      "noOmissions": "All important details appear to be covered in this contract."
+    },
+    "questions": {
+      "title": "Questions You Should Ask",
+      "subtitle": "Clarify these points before signing",
+      "needToAsk": "Need to ask these questions?",
+      "generateEmail": "Generate a professional email ready to send",
+      "draftEmail": "Draft Professional Email",
+      "drafting": "Drafting...",
+      "copy": "Copy",
+      "noQuestions": "No specific questions identified for this contract.",
+      "emailUnavailable": "Email Drafting Unavailable",
+      "emailUnavailableMessage": "This feature is designed for contract recipients who need clarification. You're currently viewing as the contract provider or from both perspectives (the party who likely created this contract). Switch to the other party's perspective to draft clarification emails."
+    },
+    "disclaimer": {
+      "title": "Legal Disclaimer"
+    },
+    "email": {
+      "modalTitle": "Professional Email Draft",
+      "modalSubtitle": "Ready to copy and send",
+      "showRewriteOptions": "Show Rewrite Options",
+      "hideRewriteOptions": "Hide Rewrite Options",
+      "customizeStyle": "Customize Email Style",
+      "tone": "Tone",
+      "tones": {
+        "formal": "Formal",
+        "neutral": "Neutral",
+        "casual": "Casual"
+      },
+      "length": "Length",
+      "lengths": {
+        "short": "Short",
+        "medium": "Medium",
+        "long": "Long"
+      },
+      "applyChanges": "Apply Changes",
+      "rewriting": "Rewriting...",
+      "copyToClipboard": "Copy to Clipboard"
+    }
   },
   "settings": {
     "title": "Settings",

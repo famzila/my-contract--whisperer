@@ -110,37 +110,93 @@ export class ContractAnalysisService {
       // Try to parse JSON response from AI
       let structuredAnalysis: AIAnalysisResponse | null = null;
       
+      console.log('\n📋 [JSON Parsing] Attempting to parse AI response...');
+      console.log('📄 [JSON Parsing] Raw AI response (first 500 chars):', aiAnalysis.clauses.substring(0, 500));
+      
+      // 🔧 CRITICAL FIX: Clean up markdown code blocks that AI sometimes adds
+      let cleanedResponse = aiAnalysis.clauses.trim();
+      
+      // Remove markdown code blocks if present
+      if (cleanedResponse.startsWith('```json')) {
+        console.log('🧹 [JSON Parsing] Removing markdown ```json code blocks...');
+        cleanedResponse = cleanedResponse.replace(/```json\n?/g, '').replace(/```\n?$/g, '');
+      } else if (cleanedResponse.startsWith('```')) {
+        console.log('🧹 [JSON Parsing] Removing markdown ``` code blocks...');
+        cleanedResponse = cleanedResponse.replace(/```\n?/g, '');
+      }
+      
+      cleanedResponse = cleanedResponse.trim();
+      
+      console.log('📄 [JSON Parsing] Cleaned response (first 200 chars):', cleanedResponse.substring(0, 200));
+      
       try {
-        structuredAnalysis = JSON.parse(aiAnalysis.clauses);
-        console.log('✅ Successfully parsed structured JSON response');
+        structuredAnalysis = JSON.parse(cleanedResponse);
+        console.log('✅ [JSON Parsing] Successfully parsed structured JSON response');
+        console.log('📊 [JSON Parsing] Parsed object keys:', structuredAnalysis ? Object.keys(structuredAnalysis) : []);
       } catch (jsonError) {
-        console.warn('⚠️ AI response is not valid JSON, falling back to text parsing');
+        console.error('❌ [JSON Parsing] Failed to parse JSON:', jsonError);
+        console.error('📄 [JSON Parsing] Cleaned response that still failed:', cleanedResponse.substring(0, 500));
+        console.warn('⚠️ [JSON Parsing] AI response is not valid JSON even after cleaning, falling back to text parsing');
+        console.warn('💡 [JSON Parsing] This means translation will NOT work - AI must return valid JSON!');
       }
 
       // 🌍 TRANSLATION LOGIC
       // Store original (untranslated) version
       const originalStructuredAnalysis = structuredAnalysis;
       
-      // Check if translation is needed
+      console.log('\n🌍 [Translation] === TRANSLATION FLOW DEBUG ===');
+      console.log('📋 [Translation] Analysis Context:', {
+        contractLanguage: analysisContext.contractLanguage,
+        userPreferredLanguage: analysisContext.userPreferredLanguage,
+        analyzedInLanguage: analysisContext.analyzedInLanguage,  // Should always match contractLanguage now
+        userRole: analysisContext.userRole,
+      });
+      
+      // 🔑 KEY FIX: Check if we need to translate OUTPUT to user's preferred language
+      // We analyze in contract language, then translate output if user wants different language
+      const userSelectedOutputLanguage = analysisContext.userPreferredLanguage;  // User's chosen output language
       const needsTranslation = this.translationOrchestrator.needsTranslation(
-        analysisContext.contractLanguage,
-        analysisContext.analyzedInLanguage
+        analysisContext.contractLanguage,  // Source: contract language (e.g., "en")
+        userSelectedOutputLanguage         // Target: user's preferred output (e.g., "fr")
       );
       
-      if (needsTranslation && structuredAnalysis) {
-        console.log(`🌍 [Translation] Translation needed: ${analysisContext.contractLanguage} → ${analysisContext.analyzedInLanguage}`);
+      console.log(`🔍 [Translation] Analysis done in: ${analysisContext.contractLanguage}`);
+      console.log(`🔍 [Translation] User wants output in: ${userSelectedOutputLanguage}`);
+      console.log(`🔍 [Translation] needsTranslation(${analysisContext.contractLanguage} → ${userSelectedOutputLanguage}):`, needsTranslation);
+      console.log(`🔍 [Translation] structuredAnalysis exists:`, !!structuredAnalysis);
+      console.log(`🔍 [Translation] originalStructuredAnalysis exists:`, !!originalStructuredAnalysis);
+      
+      if (needsTranslation && structuredAnalysis && originalStructuredAnalysis) {
+        console.log(`🚀 [Translation] Starting translation: ${analysisContext.contractLanguage} → ${userSelectedOutputLanguage}`);
+        console.log('📊 [Translation] Original analysis sample (in contract language):', {
+          summaryParties: originalStructuredAnalysis.summary.parties.substring(0, 100) + '...',
+          firstRiskTitle: originalStructuredAnalysis.risks[0]?.title,
+          firstObligationDuty: originalStructuredAnalysis.obligations.employer[0]?.duty,
+        });
         
-        // Translate the analysis output
+        // Translate the analysis output to user's preferred language
         structuredAnalysis = await this.translationOrchestrator.translateAnalysis(
           structuredAnalysis,
-          analysisContext.contractLanguage,
-          analysisContext.analyzedInLanguage
+          analysisContext.contractLanguage,    // Source: contract language
+          userSelectedOutputLanguage          // Target: user's preferred output
         );
         
-        console.log(`✅ [Translation] Translation completed`);
-      } else if (structuredAnalysis) {
-        console.log(`✅ [Translation] No translation needed (same language: ${analysisContext.contractLanguage})`);
+        console.log('✅ [Translation] Translation completed');
+        console.log('📊 [Translation] Translated analysis sample (in user\'s language):', {
+          summaryParties: structuredAnalysis.summary.parties.substring(0, 100) + '...',
+          firstRiskTitle: structuredAnalysis.risks[0]?.title,
+          firstObligationDuty: structuredAnalysis.obligations.employer[0]?.duty,
+        });
+      } else {
+        if (!structuredAnalysis) {
+          console.error('❌ [Translation] CANNOT TRANSLATE: AI did not return valid JSON!');
+          console.error('💡 [Translation] The AI MUST return valid JSON for translation to work.');
+          console.error('📋 [Translation] Check the Prompt API system prompt and AI response format.');
+        } else {
+          console.log(`⏭️  [Translation] No translation needed (user wants ${userSelectedOutputLanguage}, contract is ${analysisContext.contractLanguage})`);
+        }
       }
+      console.log('🌍 [Translation] === END TRANSLATION FLOW ===\n');
 
       // Parse AI results and create structured analysis
       const clauses = structuredAnalysis 
@@ -180,8 +236,8 @@ export class ContractAnalysisService {
         // 👇 NEW: Translation metadata
         translationInfo: needsTranslation ? {
           wasTranslated: true,
-          sourceLanguage: analysisContext.contractLanguage,
-          targetLanguage: analysisContext.analyzedInLanguage,
+          sourceLanguage: analysisContext.contractLanguage,     // Original contract language
+          targetLanguage: userSelectedOutputLanguage,           // User's chosen output language
           translatedAt: new Date(),
         } : undefined,
       };
@@ -245,8 +301,17 @@ export class ContractAnalysisService {
   private parseObligationsFromJSON(aiResponse: AIAnalysisResponse): Obligation[] {
     console.log('📝 Parsing obligations from JSON response...');
     
-    const obligations: Obligation[] = [
-      ...aiResponse.obligations.employer.map(obl => {
+    // Check if obligations exist and have the expected structure
+    if (!aiResponse.obligations || typeof aiResponse.obligations !== 'object') {
+      console.warn('⚠️ No obligations found in AI response');
+      return [];
+    }
+    
+    const obligations: Obligation[] = [];
+    
+    // Parse employer obligations (safe access with optional chaining)
+    if (Array.isArray(aiResponse.obligations.employer)) {
+      obligations.push(...aiResponse.obligations.employer.map(obl => {
         let description = `Employer: ${obl.duty}`;
         if (obl.amount) description += ` ($${obl.amount})`;
         if (obl.frequency) description += ` - ${obl.frequency}`;
@@ -260,8 +325,14 @@ export class ContractAnalysisService {
           completed: false,
           priority: 'medium' as const,
         };
-      }),
-      ...aiResponse.obligations.employee.map(obl => {
+      }));
+    } else {
+      console.warn('⚠️ employer obligations is not an array:', aiResponse.obligations.employer);
+    }
+    
+    // Parse employee obligations (safe access with optional chaining)
+    if (Array.isArray(aiResponse.obligations.employee)) {
+      obligations.push(...aiResponse.obligations.employee.map(obl => {
         let description = `Employee: ${obl.duty}`;
         if (obl.scope) description += ` (${obl.scope})`;
         
@@ -273,8 +344,10 @@ export class ContractAnalysisService {
           completed: false,
           priority: 'medium' as const,
         };
-      }),
-    ];
+      }));
+    } else {
+      console.warn('⚠️ employee obligations is not an array:', aiResponse.obligations.employee);
+    }
     
     console.log(`✅ Parsed ${obligations.length} obligations from JSON`);
     return obligations;

@@ -75,29 +75,35 @@ export class PromptService {
 
 ${perspectivePrompt}
 
-**CRITICAL: You must respond ONLY with valid JSON. No markdown, no code blocks, no extra text. Just raw JSON.**
+**CRITICAL INSTRUCTIONS:**
+1. You must respond ONLY with valid JSON
+2. NO markdown code blocks (no \`\`\`json)
+3. NO extra text or explanations
+4. Use null for missing values (not "null" or "or null")
+5. Use actual boolean values: true or false (not "true or false")
+6. Just raw, parseable JSON
 
-Analyze contracts and respond with this exact JSON schema:
+Analyze contracts and respond with this EXACT JSON structure:
 
 {
   "metadata": {
-    "contractType": "Employment Agreement | Service Agreement | Lease Agreement | etc.",
-    "effectiveDate": "October 1, 2025 or null",
-    "endDate": "September 30, 2026 or null",
-    "duration": "12 months or null",
-    "autoRenew": true or false or null,
-    "jurisdiction": "California, USA or null",
+    "contractType": "Employment Agreement",
+    "effectiveDate": "October 1, 2025",
+    "endDate": "September 30, 2026",
+    "duration": "12 months",
+    "autoRenew": true,
+    "jurisdiction": "California, USA",
     "parties": {
       "party1": { 
-        "name": "First Party Name (e.g., Company, Landlord, Client)", 
-        "location": "City, State or null",
-        "role": "Employer | Landlord | Client | Partner"
+        "name": "Acme Corporation", 
+        "location": "San Francisco, CA",
+        "role": "Employer"
       },
       "party2": { 
-        "name": "Second Party Name (e.g., Employee, Tenant, Contractor)", 
-        "location": "City, State or null",
-        "role": "Employee | Tenant | Contractor | Partner",
-        "position": "Job Title or null"
+        "name": "John Smith", 
+        "location": "San Francisco, CA",
+        "role": "Employee",
+        "position": "Senior Software Engineer"
       }
     },
     "detectedLanguage": "en",
@@ -105,44 +111,44 @@ Analyze contracts and respond with this exact JSON schema:
     "analyzedInLanguage": "en"
   },
   "summary": {
-    "parties": "string describing both parties and their roles",
-    "role": "string describing the relationship type",
-    "responsibilities": ["array", "of", "key", "duties"],
+    "parties": "Acme Corporation (employer) and John Smith (employee)",
+    "role": "Full-time employment",
+    "responsibilities": ["Develop software", "Code reviews", "Team collaboration"],
     "compensation": {
-      "baseSalary": number or null,
-      "bonus": "string description or null",
-      "equity": "string description or null",
-      "other": "string for other compensation or null"
+      "baseSalary": 150000,
+      "bonus": "Annual performance bonus up to 20%",
+      "equity": "100,000 stock options vesting over 4 years",
+      "other": null
     },
-    "benefits": ["array", "of", "benefits"],
+    "benefits": ["Health insurance", "401k matching", "Unlimited PTO"],
     "termination": {
-      "atWill": "string describing at-will terms or null",
-      "forCause": "string describing cause termination or null",
-      "severance": "string describing severance or null"
+      "atWill": "Either party may terminate with 2 weeks notice",
+      "forCause": "Immediate termination for material breach or misconduct",
+      "severance": "4 weeks base salary"
     },
     "restrictions": {
-      "confidentiality": "string or null",
-      "nonCompete": "string with duration/scope or null",
-      "nonSolicitation": "string or null",
-      "other": "string for other restrictions or null"
+      "confidentiality": "Must protect company confidential information indefinitely",
+      "nonCompete": "12 months within 50-mile radius",
+      "nonSolicitation": "Cannot solicit employees or clients for 18 months",
+      "other": "All work product belongs to company"
     }
   },
   "risks": [
     {
-      "title": "Risk Name",
-      "severity": "High | Medium | Low",
-      "emoji": "🚨 | ⚠️ | ℹ️",
-      "description": "What this clause says in plain English",
-      "impact": "Specific negative consequences for the person signing"
+      "title": "At-Will Employment",
+      "severity": "Medium",
+      "emoji": "⚠️",
+      "description": "Company can terminate employment at any time for any reason",
+      "impact": "No job security, could lose income suddenly"
     }
   ],
   "obligations": {
     "employer": [
       {
-        "duty": "Short description",
-        "amount": number or null,
-        "frequency": "bi-weekly | monthly | quarterly | null",
-        "startDate": "date or null",
+        "duty": "Pay Salary",
+        "amount": 150000,
+        "frequency": "bi-weekly",
+        "startDate": "October 1, 2025",
         "duration": "duration or null",
         "scope": "additional details or null"
       }

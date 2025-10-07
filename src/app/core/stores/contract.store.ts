@@ -387,10 +387,18 @@ export const ContractStore = signalStore(
         
         // Step 2: Build analysis context from onboarding and language stores
         const detectedParties = onboardingStore.detectedParties();
+        const contractLang = languageStore.detectedContractLanguage() || 'en';
+        
+        console.log('\n📋 [Analysis Context] Building context...');
+        console.log('  📄 Contract language:', contractLang);
+        console.log('  👤 User preferred language:', languageStore.preferredLanguage());
+        console.log('  🎯 User selected output language:', onboardingStore.selectedOutputLanguage());
+        
         const analysisContext = {
-          contractLanguage: languageStore.detectedContractLanguage() || 'en',
+          contractLanguage: contractLang,
           userPreferredLanguage: languageStore.preferredLanguage(),
-          analyzedInLanguage: onboardingStore.selectedLanguage() || languageStore.preferredLanguage(),  // User's choice or default
+          // 🔑 KEY FIX: ALWAYS analyze in contract's language to preserve nuances
+          analyzedInLanguage: contractLang,  // ✅ Analyze in contract language (not user's choice!)
           userRole: onboardingStore.selectedRole(),
           detectedParties: detectedParties?.parties && detectedParties.parties.party1 && detectedParties.parties.party2
             ? { 
@@ -399,6 +407,9 @@ export const ContractStore = signalStore(
               }
             : undefined,
         };
+        
+        console.log('  ✅ Analysis will be done in:', analysisContext.analyzedInLanguage);
+        console.log('📋 [Analysis Context] Context ready\n');
         
         console.log('📊 Analysis Context:', analysisContext);
         

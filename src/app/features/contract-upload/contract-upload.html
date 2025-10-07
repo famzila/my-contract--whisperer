@@ -265,7 +265,7 @@
 <!-- Loading State: Extracting Parties -->
 @if (onboardingStore.isValidContract() === true && 
      !onboardingStore.needsLanguageSelection() && 
-     onboardingStore.selectedLanguage() !== null &&
+     onboardingStore.selectedOutputLanguage() !== null &&
      onboardingStore.detectedParties() === null) {
   <div class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-2xl p-8 text-center">

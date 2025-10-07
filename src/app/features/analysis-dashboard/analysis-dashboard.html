@@ -6,10 +6,10 @@
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
         <div class="flex-1">
           <div class="flex items-center gap-3 flex-wrap">
-            <h1 class="text-3xl font-bold text-gray-900">Contract Analysis</h1>
+            <h1 class="text-3xl font-bold text-gray-900">{{ translate.instant('analysis.title') }}</h1>
             @if (isMockMode) {
               <span class="px-3 py-1 text-sm font-medium bg-amber-100 text-amber-800 rounded-full border border-amber-200">
-                🎭 Mock Mode
+                🎭 {{ translate.instant('analysis.mockMode') }}
               </span>
             }
             <!-- Perspective Badge -->
@@ -21,12 +21,12 @@
             <!-- 🌍 Translation Badge -->
             @if (wasTranslated()) {
               <span class="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200">
-                🌍 Translated from {{ getSourceLanguageName() }}
+                🌍 {{ translate.instant('analysis.translatedFrom') }} {{ getSourceLanguageName() }}
               </span>
             }
           </div>
           @if (contractStore.contract()?.text) {
-            <p class="text-gray-600 mt-2">Analyzed on {{ formatDate(contractStore.analysis()?.analyzedAt) }}</p>
+            <p class="text-gray-600 mt-2">{{ translate.instant('analysis.analyzedOn') }} {{ formatDate(contractStore.analysis()?.analyzedAt) }}</p>
           }
         </div>
         
@@ -36,14 +36,14 @@
           @if (wasTranslated()) {
             <app-button (click)="toggleOriginal()" variant="secondary" size="md">
               @if (showingOriginal()) {
-                🔄 Show Translated
+                🔄 {{ translate.instant('analysis.showTranslated') }}
               } @else {
-                📝 Show Original {{ getSourceLanguageName() }}
+                📝 {{ translate.instant('analysis.showOriginal') }} {{ getSourceLanguageName() }}
               }
             </app-button>
           }
           <app-button (click)="uploadNew()" variant="secondary" size="md">
-            Upload New Contract
+            {{ translate.instant('analysis.uploadNew') }}
           </app-button>
         </div>
       </div>
@@ -54,34 +54,34 @@
           <div class="p-6 bg-gradient-to-br from-indigo-50 to-white">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <h3 class="text-sm font-semibold text-gray-600 mb-1">Contract Type</h3>
+                <h3 class="text-sm font-semibold text-gray-600 mb-1">{{ translate.instant('analysis.contractType') }}</h3>
                 <p class="text-gray-900 font-medium">{{ getMetadata()!.contractType }}</p>
               </div>
               @if (getMetadata()!.effectiveDate) {
                 <div>
-                  <h3 class="text-sm font-semibold text-gray-600 mb-1">Effective Date</h3>
+                  <h3 class="text-sm font-semibold text-gray-600 mb-1">{{ translate.instant('analysis.effectiveDate') }}</h3>
                   <p class="text-gray-900 font-medium">{{ getMetadata()!.effectiveDate }}</p>
                 </div>
               }
               @if (getMetadata()!.endDate) {
                 <div>
-                  <h3 class="text-sm font-semibold text-gray-600 mb-1">End Date</h3>
+                  <h3 class="text-sm font-semibold text-gray-600 mb-1">{{ translate.instant('analysis.endDate') }}</h3>
                   <p class="text-gray-900 font-medium">{{ getMetadata()!.endDate }}</p>
                   @if (isContractExpiringSoon()) {
                     <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded mt-1">
-                      ⚠️ Expiring Soon
+                      ⚠️ {{ translate.instant('analysis.expiringSoon') }}
                     </span>
                   }
                 </div>
               }
               @if (getMetadata()!.jurisdiction) {
                 <div>
-                  <h3 class="text-sm font-semibold text-gray-600 mb-1">Jurisdiction</h3>
+                  <h3 class="text-sm font-semibold text-gray-600 mb-1">{{ translate.instant('analysis.jurisdiction') }}</h3>
                   <p class="text-gray-900 font-medium">{{ getMetadata()!.jurisdiction }}</p>
                 </div>
               }
               <div>
-                <h3 class="text-sm font-semibold text-gray-600 mb-1">Parties</h3>
+                <h3 class="text-sm font-semibold text-gray-600 mb-1">{{ translate.instant('analysis.parties') }}</h3>
                 @if (getMetadata()!.parties.party1) {
                   <p class="text-gray-900 text-sm">
                     {{ getMetadata()!.parties.party1.name }}
@@ -122,7 +122,7 @@
               ? 'border-b-3 border-primary text-primary bg-primary/5' 
               : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
             class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
-            📋 Summary
+            📋 {{ translate.instant('analysis.tabs.summary') }}
           </button>
           <button
             (click)="selectTab('risks')"
@@ -130,7 +130,7 @@
               ? 'border-b-3 border-error text-error bg-error/5' 
               : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
             class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
-            🚨 Risks
+            🚨 {{ translate.instant('analysis.tabs.risks') }}
           </button>
           <button
             (click)="selectTab('obligations')"
@@ -138,7 +138,7 @@
               ? 'border-b-3 border-info text-info bg-info/5' 
               : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
             class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
-            📅 Obligations
+            📅 {{ translate.instant('analysis.tabs.obligations') }}
           </button>
           <button
             (click)="selectTab('omissions')"
@@ -146,7 +146,7 @@
               ? 'border-b-3 border-warning text-warning bg-warning/5' 
               : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
             class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
-            🚧 Omissions
+            🚧 {{ translate.instant('analysis.tabs.omissions') }}
           </button>
           <button
             (click)="selectTab('questions')"
@@ -154,7 +154,7 @@
               ? 'border-b-3 border-accent text-accent bg-accent/5' 
               : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
             class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
-            ❓ Questions
+            ❓ {{ translate.instant('analysis.tabs.questions') }}
           </button>
           <button
             (click)="selectTab('disclaimer')"
@@ -162,7 +162,7 @@
               ? 'border-b-3 border-gray-500 text-gray-700 bg-gray-100' 
               : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
             class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
-            ⚖️ Disclaimer
+            ⚖️ {{ translate.instant('analysis.tabs.disclaimer') }}
           </button>
         </div>
       </div>
@@ -177,7 +177,7 @@
               <div class="p-8">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                   <span class="text-3xl">📋</span>
-                  Contract Summary
+                  {{ translate.instant('analysis.summary.title') }}
                 </h2>
                 
                 <!-- Perspective Context Banner -->
@@ -193,20 +193,20 @@
                 <div class="space-y-6">
                   <!-- Parties -->
                   <div>
-                    <h3 class="font-semibold text-lg text-gray-800 mb-2">👥 Parties</h3>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2">👥 {{ translate.instant('analysis.summary.parties') }}</h3>
                     <p class="text-gray-700">{{ getSummary()!.parties }}</p>
                   </div>
                   
                   <!-- Role -->
                   <div>
-                    <h3 class="font-semibold text-lg text-gray-800 mb-2">💼 Role/Relationship</h3>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2">💼 {{ translate.instant('analysis.summary.roleRelationship') }}</h3>
                     <p class="text-gray-700">{{ getSummary()!.role }}</p>
                   </div>
                   
                   <!-- Responsibilities -->
                   @if (getSummary()!.responsibilities.length > 0) {
                     <div>
-                      <h3 class="font-semibold text-lg text-gray-800 mb-2">📋 Key Responsibilities</h3>
+                      <h3 class="font-semibold text-lg text-gray-800 mb-2">📋 {{ translate.instant('analysis.summary.keyResponsibilities') }}</h3>
                       <ul class="list-disc list-inside space-y-1 text-gray-700">
                         @for (resp of getSummary()!.responsibilities; track $index) {
                           <li>{{ resp }}</li>
@@ -217,22 +217,22 @@
                   
                   <!-- Compensation -->
                   <div>
-                    <h3 class="font-semibold text-lg text-gray-800 mb-2">💰 Compensation & Benefits</h3>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2">💰 {{ translate.instant('analysis.summary.compensationBenefits') }}</h3>
                     <div class="space-y-2 text-gray-700">
                       @if (getSummary()!.compensation.baseSalary) {
-                        <p><strong>Base Salary:</strong> ${{ getSummary()!.compensation.baseSalary }}</p>
+                        <p><strong>{{ translate.instant('analysis.summary.baseSalary') }}:</strong> ${{ getSummary()!.compensation.baseSalary }}</p>
                       }
                       @if (getSummary()!.compensation.bonus) {
-                        <p><strong>Bonus:</strong> {{ getSummary()!.compensation.bonus }}</p>
+                        <p><strong>{{ translate.instant('analysis.summary.bonus') }}:</strong> {{ getSummary()!.compensation.bonus }}</p>
                       }
                       @if (getSummary()!.compensation.equity) {
-                        <p><strong>Equity:</strong> {{ getSummary()!.compensation.equity }}</p>
+                        <p><strong>{{ translate.instant('analysis.summary.equity') }}:</strong> {{ getSummary()!.compensation.equity }}</p>
                       }
                       @if (getSummary()!.compensation.other) {
-                        <p><strong>Other:</strong> {{ getSummary()!.compensation.other }}</p>
+                        <p><strong>{{ translate.instant('analysis.summary.other') }}:</strong> {{ getSummary()!.compensation.other }}</p>
                       }
                     </div>
-                    @if (getSummary()!.benefits.length > 0) {
+                    @if (getSummary()!.benefits && getSummary()!.benefits.length > 0) {
                       <ul class="list-disc list-inside space-y-1 text-gray-700 mt-3">
                         @for (benefit of getSummary()!.benefits; track $index) {
                           <li>{{ benefit }}</li>
@@ -243,16 +243,16 @@
                   
                   <!-- Termination -->
                   <div>
-                    <h3 class="font-semibold text-lg text-gray-800 mb-2">🚪 Termination Conditions</h3>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2">🚪 {{ translate.instant('analysis.summary.terminationConditions') }}</h3>
                     <div class="space-y-2 text-gray-700">
                       @if (getSummary()!.termination.atWill) {
-                        <p><strong>At-Will:</strong> {{ getSummary()!.termination.atWill }}</p>
+                        <p><strong>{{ translate.instant('analysis.summary.atWill') }}:</strong> {{ getSummary()!.termination.atWill }}</p>
                       }
                       @if (getSummary()!.termination.forCause) {
-                        <p><strong>For Cause:</strong> {{ getSummary()!.termination.forCause }}</p>
+                        <p><strong>{{ translate.instant('analysis.summary.forCause') }}:</strong> {{ getSummary()!.termination.forCause }}</p>
                       }
                       @if (getSummary()!.termination.severance) {
-                        <p><strong>Severance:</strong> {{ getSummary()!.termination.severance }}</p>
+                        <p><strong>{{ translate.instant('analysis.summary.severance') }}:</strong> {{ getSummary()!.termination.severance }}</p>
                       }
                     </div>
                   </div>

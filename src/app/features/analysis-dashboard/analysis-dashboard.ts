@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { ContractStore, EmailDraftStore } from '../../core/stores';
 import { Card, LoadingSpinner, Button } from '../../shared/components';
 import type { ContractClause } from '../../core/models/contract.model';
@@ -20,6 +21,9 @@ export class AnalysisDashboard implements OnInit {
   // Stores
   contractStore = inject(ContractStore);
   emailStore = inject(EmailDraftStore);
+  
+  // Services
+  translate = inject(TranslateService);
   
   // Local UI state only
   selectedTab = signal<'summary' | 'risks' | 'obligations' | 'omissions' | 'questions' | 'disclaimer'>('summary');

@@ -6,6 +6,7 @@
 import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals';
 import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
+import { TranslatorService } from '../services/ai/translator.service';
 
 /**
  * Onboarding steps
@@ -66,9 +67,9 @@ interface OnboardingState {
   documentType: string | null;          // If not a contract, what is it?
   
   // Language detection
-  detectedLanguage: string | null;
-  selectedLanguage: string | null;
-  userPreferredLanguage: string;        // User's app language (default 'en')
+  detectedLanguage: string | null;              // Contract's detected language (e.g., "en", "fr")
+  selectedOutputLanguage: string | null;        // User's choice for analysis OUTPUT language
+  userPreferredLanguage: string;                // User's UI language preference (default 'en')
   
   // Party detection
   detectedParties: PartyDetectionResult | null;
@@ -92,7 +93,7 @@ const initialState: OnboardingState = {
   validationError: null,
   documentType: null,
   detectedLanguage: null,
-  selectedLanguage: null,
+  selectedOutputLanguage: null,
   userPreferredLanguage: 'en',  // Default to English
   detectedParties: null,
   selectedRole: null,
@@ -111,7 +112,7 @@ export const OnboardingStore = signalStore(
   withState(initialState),
   
   // Computed values
-  withComputed(({ currentStep, isValidContract, detectedLanguage, selectedLanguage, userPreferredLanguage, selectedRole, detectedParties }) => ({
+  withComputed(({ currentStep, isValidContract, detectedLanguage, selectedOutputLanguage, userPreferredLanguage, selectedRole, detectedParties }) => ({
     /**
      * Get progress percentage (0-100)
      */
@@ -127,7 +128,7 @@ export const OnboardingStore = signalStore(
      */
     needsLanguageSelection: computed(() => {
       const detected = detectedLanguage();
-      const selected = selectedLanguage();
+      const selected = selectedOutputLanguage();
       const preferred = userPreferredLanguage();
       
       // If no language detected yet, don't show modal
@@ -156,7 +157,7 @@ export const OnboardingStore = signalStore(
      */
     needsPartySelection: computed(() => {
       const valid = isValidContract() === true;
-      const languageSelected = selectedLanguage() !== null;
+      const languageSelected = selectedOutputLanguage() !== null;
       const partiesDetected = detectedParties() !== null;
       const noRoleSelected = !selectedRole();
       
@@ -195,14 +196,14 @@ export const OnboardingStore = signalStore(
     readyToAnalyze: computed(() => {
       return (
         isValidContract() === true &&
-        selectedLanguage() !== null &&
+        selectedOutputLanguage() !== null &&
         selectedRole() !== null
       );
     }),
   })),
   
   // Methods
-  withMethods((store) => ({
+  withMethods((store, translatorService = inject(TranslatorService)) => ({
     /**
      * Move to next step
      */
@@ -256,13 +257,37 @@ export const OnboardingStore = signalStore(
     },
     
     /**
-     * Set selected language
+     * Set selected language and pre-create translator (requires user gesture)
      */
-    setSelectedLanguage: (language: string) => {
+    setSelectedLanguage: async (language: string) => {
+      console.log(`\n🌍 [Onboarding] User selected output language: "${language}"`);
+      console.log(`📋 [Onboarding] Context:`, {
+        detectedContractLanguage: store.detectedLanguage(),
+        userPreferredLanguage: store.userPreferredLanguage(),
+        selectedOutputLanguage: language,
+      });
+      
+      // 🔑 KEY FIX: Pre-create translator during user gesture to download language pack
+      const contractLang = store.detectedLanguage();
+      if (contractLang && contractLang !== language) {
+        console.log(`📥 [Onboarding] Pre-creating translator: ${contractLang} → ${language}`);
+        try {
+          await translatorService.createTranslator({
+            sourceLanguage: contractLang,
+            targetLanguage: language,
+          });
+          console.log(`✅ [Onboarding] Translator pre-created successfully`);
+        } catch (error) {
+          console.error(`❌ [Onboarding] Failed to pre-create translator:`, error);
+        }
+      }
+      
       patchState(store, { 
-        selectedLanguage: language,
+        selectedOutputLanguage: language,
         currentStep: 'partySelect',
       });
+      
+      console.log(`✅ [Onboarding] Language selection saved, moving to party selection\n`);
     },
     
     /**

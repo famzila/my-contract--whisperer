@@ -51,6 +51,11 @@ export class TranslationOrchestratorService {
     }
     
     try {
+      console.log(`\n🌍 [Translation Orchestrator] === STARTING TRANSLATION ===`);
+      console.log(`📋 [Translation Orchestrator] Source: ${sourceLanguage} → Target: ${targetLanguage}`);
+      console.log(`📊 [Translation Orchestrator] FULL Original Analysis (${sourceLanguage}):`);
+      console.log(JSON.stringify(analysis, null, 2));
+      
       // Translate all sections in parallel for performance
       const [
         translatedRisks,
@@ -66,10 +71,10 @@ export class TranslationOrchestratorService {
         this.translateSummary(analysis.summary, sourceLanguage, targetLanguage),
       ]);
       
-      console.log('✅ [Translation] All sections translated successfully');
+      console.log('✅ [Translation Orchestrator] All sections translated successfully');
       
       // Return translated analysis
-      return {
+      const result = {
         ...analysis,
         risks: translatedRisks,
         obligations: translatedObligations,
@@ -81,6 +86,11 @@ export class TranslationOrchestratorService {
           analyzedInLanguage: targetLanguage,  // Update metadata to reflect translation
         },
       };
+      
+      console.log(`📊 [Translation Orchestrator] FULL Translated Analysis (${targetLanguage}):`);
+      console.log(JSON.stringify(result, null, 2));
+      console.log(`🌍 [Translation Orchestrator] === TRANSLATION COMPLETE ===\n`);
+      return result;
     } catch (error) {
       console.error('❌ [Translation] Translation failed:', error);
       // Return original on error
@@ -105,16 +115,30 @@ export class TranslationOrchestratorService {
     sourceLanguage: string,
     targetLanguage: string
   ): Promise<RiskFlag[]> {
-    console.log(`  📋 [Translation] Translating ${risks.length} risks...`);
+    console.log(`\n  📋 [Translation] Translating ${risks.length} risks...`);
+    console.log(`  📄 [Translation] Original first risk:`, {
+      title: risks[0]?.title,
+      description: risks[0]?.description.substring(0, 100) + '...',
+      impact: risks[0]?.impact?.substring(0, 100) + '...'
+    });
     
-    return Promise.all(
+    const translated = await Promise.all(
       risks.map(async (risk) => ({
         ...risk,
         title: await this.translator.translate(risk.title, sourceLanguage, targetLanguage),
         description: await this.translator.translate(risk.description, sourceLanguage, targetLanguage),
+        impact: await this.translator.translate(risk.impact, sourceLanguage, targetLanguage),  // 👈 FIX: Translate impact too!
         // Preserve: severity, emoji, impactOn, contextWarning (no translation needed)
       }))
     );
+    
+    console.log(`  ✅ [Translation] Translated first risk:`, {
+      title: translated[0]?.title,
+      description: translated[0]?.description.substring(0, 100) + '...',
+      impact: translated[0]?.impact?.substring(0, 100) + '...'
+    });
+    
+    return translated;
   }
   
   /**
@@ -265,7 +289,8 @@ export class TranslationOrchestratorService {
     sourceLanguage: string,
     targetLanguage: string
   ): Promise<ContractSummary> {
-    console.log(`  📋 [Translation] Translating summary...`);
+    console.log(`\n  📋 [Translation] Translating summary...`);
+    console.log(`  📄 [Translation] Original summary.parties:`, summary.parties.substring(0, 100) + '...');
     
     // Translate all text fields in parallel
     const [
@@ -299,6 +324,8 @@ export class TranslationOrchestratorService {
           ))
         : Promise.resolve(undefined),
     ]);
+    
+    console.log(`  ✅ [Translation] Translated summary.parties:`, parties.substring(0, 100) + '...');
     
     return {
       ...summary,
