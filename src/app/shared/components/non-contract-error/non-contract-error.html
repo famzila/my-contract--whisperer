@@ -1,13 +1,14 @@
 <div class="flex justify-center items-center min-h-[400px] p-8">
   <div class="max-w-2xl w-full bg-white rounded-2xl p-12 shadow-lg text-center animate-[slideUp_300ms_ease]">
     <!-- Icon -->
-    <div class="text-6xl mb-4 leading-none">
-      {{ documentEmoji }}
+    <div class="flex justify-center mb-4">
+      <lucide-icon [img]="documentIcon" class="w-16 h-16 text-gray-600"></lucide-icon>
     </div>
     
     <!-- Title -->
-    <h2 class="text-2xl font-bold text-gray-900 mb-3">
-      🤔 {{ 'nonContract.title' | translate }}
+    <h2 class="text-2xl font-bold text-gray-900 mb-3 flex items-center justify-center gap-2">
+      <lucide-icon [img]="HelpCircleIcon" class="w-6 h-6 text-gray-600"></lucide-icon>
+      {{ 'nonContract.title' | translate }}
     </h2>
     
     <!-- Document Type -->
@@ -34,19 +35,19 @@
       
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200">
-          <span class="text-2xl leading-none">👔</span>
+          <lucide-icon [img]="BriefcaseIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
           <span class="text-sm font-medium text-gray-700">{{ 'nonContract.employmentContracts' | translate }}</span>
         </div>
         <div class="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200">
-          <span class="text-2xl leading-none">🏠</span>
+          <lucide-icon [img]="HomeIcon" class="w-5 h-5 text-green-600"></lucide-icon>
           <span class="text-sm font-medium text-gray-700">{{ 'nonContract.rentalAgreements' | translate }}</span>
         </div>
         <div class="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200">
-          <span class="text-2xl leading-none">🤝</span>
+          <lucide-icon [img]="HandshakeIcon" class="w-5 h-5 text-purple-600"></lucide-icon>
           <span class="text-sm font-medium text-gray-700">{{ 'nonContract.ndasFreelance' | translate }}</span>
         </div>
         <div class="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200">
-          <span class="text-2xl leading-none">📋</span>
+          <lucide-icon [img]="ClipboardIcon" class="w-5 h-5 text-orange-600"></lucide-icon>
           <span class="text-sm font-medium text-gray-700">{{ 'nonContract.serviceAgreements' | translate }}</span>
         </div>
       </div>
@@ -54,7 +55,10 @@
     
     <!-- Tips -->
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 text-left">
-      <p class="text-sm font-semibold text-blue-900 mb-2">💡 {{ 'nonContract.tipTitle' | translate }}</p>
+      <p class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-1">
+        <lucide-icon [img]="LightbulbIcon" class="w-4 h-4 text-amber-600"></lucide-icon>
+        {{ 'nonContract.tipTitle' | translate }}
+      </p>
       <p class="text-sm text-blue-800 leading-relaxed">
         {{ 'nonContract.tipMessage' | translate }}
       </p>
@@ -66,7 +70,8 @@
       (click)="onTryAgain()"
       class="w-full px-6 py-3.5 bg-primary text-white border-none rounded-lg text-base font-semibold cursor-pointer shadow-sm hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition-all duration-150"
     >
-      ← {{ 'nonContract.tryAnother' | translate }}
+      <lucide-icon [img]="ArrowLeftIcon" class="w-4 h-4 mr-2"></lucide-icon>
+      {{ 'nonContract.tryAnother' | translate }}
     </button>
   </div>
 </div>

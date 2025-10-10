@@ -30,9 +30,7 @@
             class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             [attr.aria-label]="'partySelector.close' | translate"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <lucide-icon [img]="XIcon" class="w-6 h-6"></lucide-icon>
           </button>
         </div>
       </div>
@@ -43,7 +41,7 @@
         @if (detectedParties()?.confidence === 'high' && detectedParties()?.parties) {
           <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p class="text-sm font-medium text-blue-900 flex items-center gap-2">
-              <span class="text-lg">✨</span>
+              <lucide-icon [img]="SparklesIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
               {{ 'partySelector.detectedParties' | translate }}
             </p>
           </div>
@@ -59,8 +57,8 @@
               [class.col-span-full]="option.value === 'both_views'"
             >
               <!-- Icon -->
-              <div class="flex-shrink-0 text-4xl leading-none mt-1 group-hover:scale-110 transition-transform duration-150">
-                {{ option.icon }}
+              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-150">
+                <lucide-icon [img]="option.icon" class="w-8 h-8 text-gray-600 group-hover:text-primary"></lucide-icon>
               </div>
               
               <!-- Content -->
@@ -91,7 +89,7 @@
         <!-- Info Box -->
         <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <p class="text-sm text-gray-700 flex items-start gap-2">
-            <span class="text-lg flex-shrink-0">💡</span>
+            <lucide-icon [img]="LightbulbIcon" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></lucide-icon>
             <span>
               <strong>{{ 'partySelector.proTip' | translate }}</strong> {{ 'partySelector.proTipMessage' | translate }}
             </span>

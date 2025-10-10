@@ -3,13 +3,14 @@
     <div class="banner-content">
       <!-- Icon -->
       <div class="banner-icon">
-        🌍
+        <lucide-icon [img]="GlobeIcon" class="w-6 h-6 text-blue-600"></lucide-icon>
       </div>
       
       <!-- Message -->
       <div class="banner-message">
         <p class="banner-title">
-          📄 {{ 'language.detected' | translate }} 
+          <lucide-icon [img]="FileTextIcon" class="w-4 h-4 mr-1 inline"></lucide-icon>
+          {{ 'language.detected' | translate }} 
           <strong>{{ detectedLanguage()!.flag }} {{ detectedLanguage()!.name }}</strong>
         </p>
         <p class="banner-subtitle">
@@ -39,18 +40,7 @@
         class="banner-close"
         aria-label="Dismiss"
       >
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          width="20" 
-          height="20" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          stroke-width="2"
-        >
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
+        <lucide-icon [img]="XIcon" class="w-5 h-5"></lucide-icon>
       </button>
     </div>
   </div>

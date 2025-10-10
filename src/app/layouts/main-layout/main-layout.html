@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between">
         <!-- Logo & Title -->
         <div class="flex items-center gap-3">
-          <span class="text-3xl">📜</span>
+          <lucide-icon [img]="FileTextIcon" class="w-8 h-8 text-blue-600"></lucide-icon>
           <div>
             <h1 class="text-xl font-bold text-gray-900">{{ 'navbar.title' | translate }}</h1>
             <p class="text-xs text-gray-500">{{ 'navbar.subtitle' | translate }}</p>
@@ -26,9 +26,7 @@
 
         <!-- Mobile Menu Button -->
         <button class="md:hidden p-2 text-gray-600">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <lucide-icon [img]="MenuIcon" class="w-6 h-6"></lucide-icon>
         </button>
       </div>
     </div>
@@ -67,11 +65,13 @@
         <!-- Tech -->
         <div>
           <h3 class="font-semibold text-gray-900 mb-3">{{ 'footer.poweredBy' | translate }}</h3>
-          <p class="text-sm text-gray-600 mb-2">
-            🤖 {{ 'footer.chromeAI' | translate }}
+          <p class="text-sm text-gray-600 mb-2 flex items-center gap-2">
+            <lucide-icon [img]="BotIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+            {{ 'footer.chromeAI' | translate }}
           </p>
-          <p class="text-sm text-gray-600">
-            🔒 {{ 'footer.clientSide' | translate }}
+          <p class="text-sm text-gray-600 flex items-center gap-2">
+            <lucide-icon [img]="ShieldIcon" class="w-4 h-4 text-green-600"></lucide-icon>
+            {{ 'footer.clientSide' | translate }}
           </p>
         </div>
       </div>

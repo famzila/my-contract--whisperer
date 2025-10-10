@@ -5,16 +5,23 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { LucideAngularModule } from 'lucide-angular';
+import { Globe, FileText, X } from '../../icons/lucide-icons';
 import { LanguageStore } from '../../../core/stores/language.store';
 
 @Component({
   selector: 'app-language-banner',
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, LucideAngularModule],
   templateUrl: './language-banner.html',
   styleUrl: './language-banner.css',
 })
 export class LanguageBanner {
   languageStore = inject(LanguageStore);
+  
+  // Lucide icons
+  readonly GlobeIcon = Globe;
+  readonly FileTextIcon = FileText;
+  readonly XIcon = X;
   
   // Computed values
   showBanner = computed(() => this.languageStore.showLanguageBanner());

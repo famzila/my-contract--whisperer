@@ -19,9 +19,10 @@
           [class.shadow]="mode() === 'file'"
           [class.text-gray-900]="mode() === 'file'"
           [class.text-gray-600]="mode() !== 'file'"
-          class="px-6 py-2 rounded-md font-medium transition-all"
+          class="px-6 py-2 rounded-md font-medium transition-all flex items-center gap-2"
         >
-          📄 {{ 'upload.uploadFile' | translate }}
+          <lucide-icon [img]="FileTextIcon" class="w-4 h-4"></lucide-icon>
+          {{ 'upload.uploadFile' | translate }}
         </button>
         <button
           (click)="setMode('text')"
@@ -29,9 +30,10 @@
           [class.shadow]="mode() === 'text'"
           [class.text-gray-900]="mode() === 'text'"
           [class.text-gray-600]="mode() !== 'text'"
-          class="px-6 py-2 rounded-md font-medium transition-all"
+          class="px-6 py-2 rounded-md font-medium transition-all flex items-center gap-2"
         >
-          ✏️ {{ 'upload.pasteText' | translate }}
+          <lucide-icon [img]="EditIcon" class="w-4 h-4"></lucide-icon>
+          {{ 'upload.pasteText' | translate }}
         </button>
       </div>
     </div>
@@ -40,7 +42,7 @@
     @if (contractStore.uploadError() || contractStore.analysisError()) {
       <div class="mb-6 p-4 bg-error/10 border border-error rounded-lg">
         <div class="flex items-start">
-          <span class="text-2xl mr-3">⚠️</span>
+          <lucide-icon [img]="AlertTriangleIcon" class="w-6 h-6 text-error mr-3 flex-shrink-0"></lucide-icon>
           <div>
             <h3 class="font-semibold text-error mb-1">{{ 'common.error' | translate }}</h3>
             <p class="text-sm text-gray-700">{{ contractStore.uploadError() || contractStore.analysisError() }}</p>
@@ -67,7 +69,9 @@
             </div>
           } @else {
             <div class="space-y-4">
-              <div class="text-6xl">📤</div>
+              <div class="flex justify-center">
+                <lucide-icon [img]="UploadIcon" class="w-16 h-16 text-gray-400"></lucide-icon>
+              </div>
               <div>
                 <p class="text-lg font-medium text-gray-900 mb-2">
                   {{ 'upload.dropHere' | translate }}
@@ -121,11 +125,11 @@
           @if (contractText()) {
             <div class="flex gap-6 mb-6 text-sm text-gray-600">
               <div class="flex items-center gap-2">
-                <span class="font-semibold">📊</span>
+                <lucide-icon [img]="BarChart3Icon" class="w-4 h-4 text-gray-500"></lucide-icon>
                 <span>{{ wordCount }} {{ 'common.words' | translate }}</span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="font-semibold">⏱️</span>
+                <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-gray-500"></lucide-icon>
                 <span>~{{ readingTime }} {{ 'common.minRead' | translate }}</span>
               </div>
             </div>
@@ -154,7 +158,7 @@
     @if (contractStore.hasContract() && contractStore.hasAnalysis()) {
       <div class="mt-6 p-6 bg-success/10 border border-success rounded-lg">
         <div class="flex items-start">
-          <span class="text-2xl mr-3">✅</span>
+          <lucide-icon [img]="CheckCircleIcon" class="w-6 h-6 text-success mr-3 flex-shrink-0"></lucide-icon>
           <div class="flex-1">
             <h3 class="font-semibold text-success mb-2">{{ 'upload.analyzedSuccessfully' | translate }}</h3>
             <p class="text-sm text-gray-700 mb-3">
@@ -175,14 +179,17 @@
     <div class="mt-12 text-center">
       <h3 class="text-sm font-medium text-gray-700 mb-3">{{ 'upload.needHelp' | translate }}</h3>
       <div class="flex justify-center gap-6 text-sm text-gray-500">
-        <button class="hover:text-gray-900 transition-colors">
-          📖 {{ 'upload.viewSample' | translate }}
+        <button class="hover:text-gray-900 transition-colors flex items-center gap-2">
+          <lucide-icon [img]="BookOpenIcon" class="w-4 h-4"></lucide-icon>
+          {{ 'upload.viewSample' | translate }}
         </button>
-        <button class="hover:text-gray-900 transition-colors">
-          ❓ {{ 'upload.howItWorks' | translate }}
+        <button class="hover:text-gray-900 transition-colors flex items-center gap-2">
+          <lucide-icon [img]="HelpCircleIcon" class="w-4 h-4"></lucide-icon>
+          {{ 'upload.howItWorks' | translate }}
         </button>
-        <button class="hover:text-gray-900 transition-colors">
-          🔒 {{ 'upload.privacyPolicy' | translate }}
+        <button class="hover:text-gray-900 transition-colors flex items-center gap-2">
+          <lucide-icon [img]="ShieldIcon" class="w-4 h-4"></lucide-icon>
+          {{ 'upload.privacyPolicy' | translate }}
         </button>
       </div>
     </div>
@@ -203,7 +210,9 @@
   <div class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl p-8 animate-[slideUp_300ms_ease]">
       <div class="text-center mb-6">
-        <div class="text-5xl mb-4">🌍</div>
+        <div class="flex justify-center mb-4">
+          <lucide-icon [img]="GlobeIcon" class="w-12 h-12 text-blue-600"></lucide-icon>
+        </div>
         <h2 class="text-2xl font-bold text-gray-900 mb-2">
           {{ 'language.mismatchDetected' | translate }}
         </h2>
@@ -254,8 +263,9 @@
       </div>
       
       <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p class="text-xs text-blue-900">
-          💡 <strong>{{ 'language.tipTitle' | translate }}</strong> {{ 'language.tipMessage' | translate }}
+        <p class="text-xs text-blue-900 flex items-start gap-2">
+          <lucide-icon [img]="LightbulbIcon" class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5"></lucide-icon>
+          <span><strong>{{ 'language.tipTitle' | translate }}</strong> {{ 'language.tipMessage' | translate }}</span>
         </p>
       </div>
     </div>
@@ -269,7 +279,9 @@
      onboardingStore.detectedParties() === null) {
   <div class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-2xl p-8 text-center">
-      <div class="text-6xl mb-4 animate-bounce">🔍</div>
+      <div class="flex justify-center mb-4">
+        <lucide-icon [img]="SearchIcon" class="w-16 h-16 text-blue-600 animate-bounce"></lucide-icon>
+      </div>
       <h2 class="text-2xl font-bold text-gray-900 mb-2">
         {{ 'upload.analyzingParties' | translate }}
       </h2>

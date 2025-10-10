@@ -5,18 +5,33 @@
 import { Component, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { LucideAngularModule } from 'lucide-angular';
+import { 
+  Building2, 
+  User, 
+  Briefcase, 
+  Wrench, 
+  Home, 
+  Key, 
+  Handshake, 
+  FileText, 
+  Sparkles, 
+  Lightbulb, 
+  Eye,
+  X
+} from '../../../shared/icons/lucide-icons';
 import type { PartyDetectionResult, UserRole } from '../../../core/stores/onboarding.store';
 
 interface PartyOption {
   value: UserRole;
   label: string;
-  icon: string;
+  icon: any; // Lucide icon component
   description?: string;
 }
 
 @Component({
   selector: 'app-party-selector-modal',
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, LucideAngularModule],
   templateUrl: './party-selector-modal.html',
   styleUrl: './party-selector-modal.css',
 })
@@ -28,6 +43,20 @@ export class PartySelectorModal {
   // Outputs
   selectRole = output<UserRole>();
   close = output<void>();
+
+  // Lucide icons
+  readonly Building2Icon = Building2;
+  readonly UserIcon = User;
+  readonly BriefcaseIcon = Briefcase;
+  readonly WrenchIcon = Wrench;
+  readonly HomeIcon = Home;
+  readonly KeyIcon = Key;
+  readonly HandshakeIcon = Handshake;
+  readonly FileTextIcon = FileText;
+  readonly SparklesIcon = Sparkles;
+  readonly LightbulbIcon = Lightbulb;
+  readonly EyeIcon = Eye;
+  readonly XIcon = X;
   
   /**
    * Get party options based on detection confidence
@@ -57,7 +86,7 @@ export class PartySelectorModal {
         {
           value: 'both_views' as UserRole,
           label: 'Compare Both Perspectives',
-          icon: '👀',
+          icon: this.EyeIcon,
           description: 'See analysis from both parties\' viewpoints',
         },
       ];
@@ -89,43 +118,43 @@ export class PartySelectorModal {
       {
         value: 'employer',
         label: 'Employer / Company',
-        icon: '🏢',
+        icon: this.Building2Icon,
         description: 'I\'m hiring or engaging services',
       },
       {
         value: 'employee',
         label: 'Employee / Worker',
-        icon: '🧑‍💻',
+        icon: this.UserIcon,
         description: 'I\'m being hired for employment',
       },
       {
         value: 'client',
         label: 'Client',
-        icon: '💼',
+        icon: this.BriefcaseIcon,
         description: 'I\'m hiring a contractor or service',
       },
       {
         value: 'contractor',
         label: 'Contractor / Freelancer',
-        icon: '🔧',
+        icon: this.WrenchIcon,
         description: 'I\'m providing services',
       },
       {
         value: 'landlord',
         label: 'Landlord / Property Owner',
-        icon: '🏠',
+        icon: this.HomeIcon,
         description: 'I\'m renting out property',
       },
       {
         value: 'tenant',
         label: 'Tenant / Renter',
-        icon: '🔑',
+        icon: this.KeyIcon,
         description: 'I\'m renting property',
       },
       {
         value: 'both_views',
         label: 'Compare Both Perspectives',
-        icon: '👀',
+        icon: this.EyeIcon,
         description: 'See analysis from both parties\' viewpoints',
       },
     ];
@@ -134,17 +163,17 @@ export class PartySelectorModal {
   /**
    * Get icon for role
    */
-  private getIconForRole(role: string): string {
-    const roleMap: Record<string, string> = {
-      'Employer': '🏢',
-      'Employee': '🧑‍💻',
-      'Client': '💼',
-      'Contractor': '🔧',
-      'Landlord': '🏠',
-      'Tenant': '🔑',
-      'Partner': '🤝',
+  private getIconForRole(role: string): any {
+    const roleMap: Record<string, any> = {
+      'Employer': this.Building2Icon,
+      'Employee': this.UserIcon,
+      'Client': this.BriefcaseIcon,
+      'Contractor': this.WrenchIcon,
+      'Landlord': this.HomeIcon,
+      'Tenant': this.KeyIcon,
+      'Partner': this.HandshakeIcon,
     };
     
-    return roleMap[role] || '📄';
+    return roleMap[role] || this.FileTextIcon;
   }
 }

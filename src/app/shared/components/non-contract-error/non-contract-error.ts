@@ -5,10 +5,27 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { LucideAngularModule } from 'lucide-angular';
+import { 
+  Mail, 
+  FileText, 
+  BookOpen, 
+  ChefHat, 
+  Book, 
+  Newspaper, 
+  File, 
+  HelpCircle,
+  Briefcase,
+  Home,
+  Handshake,
+  Clipboard,
+  Lightbulb,
+  ArrowLeft
+} from '../../icons/lucide-icons';
 
 @Component({
   selector: 'app-non-contract-error',
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, LucideAngularModule],
   templateUrl: './non-contract-error.html',
   styleUrl: './non-contract-error.css',
 })
@@ -19,6 +36,22 @@ export class NonContractError {
   
   // Outputs
   tryAgain = output<void>();
+
+  // Lucide icons
+  readonly MailIcon = Mail;
+  readonly FileTextIcon = FileText;
+  readonly BookOpenIcon = BookOpen;
+  readonly ChefHatIcon = ChefHat;
+  readonly BookIcon = Book;
+  readonly NewspaperIcon = Newspaper;
+  readonly FileIcon = File;
+  readonly HelpCircleIcon = HelpCircle;
+  readonly BriefcaseIcon = Briefcase;
+  readonly HomeIcon = Home;
+  readonly HandshakeIcon = Handshake;
+  readonly ClipboardIcon = Clipboard;
+  readonly LightbulbIcon = Lightbulb;
+  readonly ArrowLeftIcon = ArrowLeft;
   
   /**
    * Get friendly document type name
@@ -38,20 +71,20 @@ export class NonContractError {
   }
   
   /**
-   * Get emoji for document type
+   * Get icon for document type
    */
-  get documentEmoji(): string {
-    const emojiMap: Record<string, string> = {
-      'email_or_letter': '📧',
-      'academic_paper': '📝',
-      'story_or_book': '📚',
-      'recipe': '🍳',
-      'instructions_or_tutorial': '📖',
-      'article': '📰',
-      'other': '📄',
+  get documentIcon(): any {
+    const iconMap: Record<string, any> = {
+      'email_or_letter': this.MailIcon,
+      'academic_paper': this.FileTextIcon,
+      'story_or_book': this.BookOpenIcon,
+      'recipe': this.ChefHatIcon,
+      'instructions_or_tutorial': this.BookIcon,
+      'article': this.NewspaperIcon,
+      'other': this.FileIcon,
     };
     
-    return emojiMap[this.documentType()] || '📄';
+    return iconMap[this.documentType()] || this.FileIcon;
   }
   
   /**

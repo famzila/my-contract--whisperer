@@ -8,20 +8,23 @@
           <div class="flex items-center gap-3 flex-wrap">
             <h1 class="text-3xl font-bold text-gray-900">{{ translate.instant('analysis.title') }}</h1>
             @if (isMockMode) {
-              <span class="px-3 py-1 text-sm font-medium bg-amber-100 text-amber-800 rounded-full border border-amber-200">
-                🎭 {{ translate.instant('analysis.mockMode') }}
+              <span class="px-3 py-1 text-sm font-medium bg-amber-100 text-amber-800 rounded-full border border-amber-200 flex items-center gap-1">
+                <lucide-icon [img]="TheaterIcon" class="w-4 h-4"></lucide-icon>
+                {{ translate.instant('analysis.mockMode') }}
               </span>
             }
             <!-- Perspective Badge -->
             @if (getPerspectiveBadge()) {
-              <span [class]="getPerspectiveBadge()!.className">
-                {{ getPerspectiveBadge()!.icon }} {{ getPerspectiveBadge()!.text }}
+              <span [class]="getPerspectiveBadge()!.className" class="flex items-center gap-2">
+                <lucide-icon [img]="getPerspectiveBadge()!.icon" class="w-4 h-4"></lucide-icon>
+                {{ getPerspectiveBadge()!.text }}
               </span>
             }
-            <!-- 🌍 Translation Badge -->
+            <!-- Translation Badge -->
             @if (wasTranslated()) {
-              <span class="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200">
-                🌍 {{ translate.instant('analysis.translatedFrom') }} {{ getSourceLanguageName() }}
+              <span class="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200 flex items-center gap-1">
+                <lucide-icon [img]="GlobeIcon" class="w-4 h-4"></lucide-icon>
+                {{ translate.instant('analysis.translatedFrom') }} {{ getSourceLanguageName() }}
               </span>
             }
           </div>
@@ -32,13 +35,15 @@
         
         <!-- Action Buttons -->
         <div class="flex items-center gap-3">
-          <!-- 🌍 Toggle Original/Translated Button -->
+          <!-- Toggle Original/Translated Button -->
           @if (wasTranslated()) {
             <app-button (click)="toggleOriginal()" variant="secondary" size="md">
               @if (showingOriginal()) {
-                🔄 {{ translate.instant('analysis.showTranslated') }}
+                <lucide-icon [img]="RefreshCwIcon" class="w-4 h-4 mr-2"></lucide-icon>
+                {{ translate.instant('analysis.showTranslated') }}
               } @else {
-                📝 {{ translate.instant('analysis.showOriginal') }} {{ getSourceLanguageName() }}
+                <lucide-icon [img]="FileTextIcon" class="w-4 h-4 mr-2"></lucide-icon>
+                {{ translate.instant('analysis.showOriginal') }} {{ getSourceLanguageName() }}
               }
             </app-button>
           }
@@ -68,8 +73,9 @@
                   <h3 class="text-sm font-semibold text-gray-600 mb-1">{{ translate.instant('analysis.endDate') }}</h3>
                   <p class="text-gray-900 font-medium">{{ getMetadata()!.endDate }}</p>
                   @if (isContractExpiringSoon()) {
-                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded mt-1">
-                      ⚠️ {{ translate.instant('analysis.expiringSoon') }}
+                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded mt-1 gap-1">
+                      <lucide-icon [img]="AlertTriangleIcon" class="w-3 h-3"></lucide-icon>
+                      {{ translate.instant('analysis.expiringSoon') }}
                     </span>
                   }
                 </div>
@@ -121,48 +127,59 @@
             [class]="selectedTab() === 'summary' 
               ? 'border-b-3 border-primary text-primary bg-primary/5' 
               : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
-            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
-            📋 {{ translate.instant('analysis.tabs.summary') }}
+            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200 flex items-center justify-center gap-2">
+            <lucide-icon [img]="ClipboardIcon" class="w-5 h-5"></lucide-icon>
+            {{ translate.instant('analysis.tabs.summary') }}
           </button>
           <button
             (click)="selectTab('risks')"
             [class]="selectedTab() === 'risks' 
               ? 'border-b-3 border-error text-error bg-error/5' 
               : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
-            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
-            🚨 {{ translate.instant('analysis.tabs.risks') }}
+            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200 flex items-center justify-center gap-2">
+            <lucide-icon [img]="AlertTriangleIcon" class="w-5 h-5"></lucide-icon>
+            {{ translate.instant('analysis.tabs.risks') }}
           </button>
           <button
             (click)="selectTab('obligations')"
             [class]="selectedTab() === 'obligations' 
               ? 'border-b-3 border-info text-info bg-info/5' 
               : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
-            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
-            📅 {{ translate.instant('analysis.tabs.obligations') }}
+            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200 flex items-center justify-center gap-2">
+            <lucide-icon [img]="ClockIcon" class="w-5 h-5"></lucide-icon>
+            {{ translate.instant('analysis.tabs.obligations') }}
           </button>
           <button
             (click)="selectTab('omissions')"
             [class]="selectedTab() === 'omissions' 
               ? 'border-b-3 border-warning text-warning bg-warning/5' 
               : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
-            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
-            🚧 {{ translate.instant('analysis.tabs.omissions') }}
+            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200 flex items-center justify-center gap-2">
+            <lucide-icon [img]="FileXIcon" class="w-5 h-5"></lucide-icon>
+            {{ translate.instant('analysis.tabs.omissions') }}
           </button>
           <button
             (click)="selectTab('questions')"
             [class]="selectedTab() === 'questions' 
               ? 'border-b-3 border-accent text-accent bg-accent/5' 
               : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
-            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
-            ❓ {{ translate.instant('analysis.tabs.questions') }}
+            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200 flex items-center justify-center gap-2">
+            <lucide-icon [img]="InfoIcon" class="w-5 h-5"></lucide-icon>
+            {{ translate.instant('analysis.tabs.questions') }}
+            @if (getQuestions().length > 0) {
+              <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-gray-200 text-gray-700 rounded-full">
+                {{ getQuestions().length }}
+              </span>
+            }
           </button>
           <button
             (click)="selectTab('disclaimer')"
             [class]="selectedTab() === 'disclaimer' 
               ? 'border-b-3 border-gray-500 text-gray-700 bg-gray-100' 
               : 'border-b-3 border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
-            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200">
-            ⚖️ {{ translate.instant('analysis.tabs.disclaimer') }}
+            class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200 flex items-center justify-center gap-2">
+            <lucide-icon [img]="ScaleIcon" class="w-5 h-5"></lucide-icon>
+            {{ translate.instant('analysis.tabs.disclaimer') }}
           </button>
         </div>
       </div>
@@ -176,7 +193,7 @@
             <app-card>
               <div class="p-8">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                  <span class="text-3xl">📋</span>
+                  <lucide-icon [img]="ClipboardIcon" class="w-8 h-8 text-blue-600"></lucide-icon>
                   {{ translate.instant('analysis.summary.title') }}
                 </h2>
                 
@@ -184,7 +201,10 @@
                 @if (getPerspectiveContext()) {
                   <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
                     <p class="text-sm text-blue-900 leading-relaxed">
-                      <span class="font-semibold">{{ getPerspectiveContext()!.icon }} {{ getPerspectiveContext()!.title }}</span><br/>
+                      <span class="font-semibold flex items-center gap-2">
+                        <lucide-icon [img]="getPerspectiveContext()!.icon" class="w-4 h-4"></lucide-icon>
+                        {{ getPerspectiveContext()!.title }}
+                      </span><br/>
                       {{ getPerspectiveContext()!.message }}
                     </p>
                   </div>
@@ -193,20 +213,29 @@
                 <div class="space-y-6">
                   <!-- Parties -->
                   <div>
-                    <h3 class="font-semibold text-lg text-gray-800 mb-2">👥 {{ translate.instant('analysis.summary.parties') }}</h3>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                      <lucide-icon [img]="UsersIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
+                      {{ translate.instant('analysis.summary.parties') }}
+                    </h3>
                     <p class="text-gray-700">{{ getSummary()!.parties }}</p>
                   </div>
                   
                   <!-- Role -->
                   <div>
-                    <h3 class="font-semibold text-lg text-gray-800 mb-2">💼 {{ translate.instant('analysis.summary.roleRelationship') }}</h3>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                      <lucide-icon [img]="BriefcaseIcon" class="w-5 h-5 text-green-600"></lucide-icon>
+                      {{ translate.instant('analysis.summary.roleRelationship') }}
+                    </h3>
                     <p class="text-gray-700">{{ getSummary()!.role }}</p>
                   </div>
                   
                   <!-- Responsibilities -->
                   @if (getSummary()!.responsibilities.length > 0) {
                     <div>
-                      <h3 class="font-semibold text-lg text-gray-800 mb-2">📋 {{ translate.instant('analysis.summary.keyResponsibilities') }}</h3>
+                      <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                        <lucide-icon [img]="ClipboardIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
+                        {{ translate.instant('analysis.summary.keyResponsibilities') }}
+                      </h3>
                       <ul class="list-disc list-inside space-y-1 text-gray-700">
                         @for (resp of getSummary()!.responsibilities; track $index) {
                           <li>{{ resp }}</li>
@@ -217,7 +246,10 @@
                   
                   <!-- Compensation -->
                   <div>
-                    <h3 class="font-semibold text-lg text-gray-800 mb-2">💰 {{ translate.instant('analysis.summary.compensationBenefits') }}</h3>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                      <lucide-icon [img]="DollarSignIcon" class="w-5 h-5 text-green-600"></lucide-icon>
+                      {{ translate.instant('analysis.summary.compensationBenefits') }}
+                    </h3>
                     <div class="space-y-2 text-gray-700">
                       @if (getSummary()!.compensation.baseSalary) {
                         <p><strong>{{ translate.instant('analysis.summary.baseSalary') }}:</strong> ${{ getSummary()!.compensation.baseSalary }}</p>
@@ -243,7 +275,10 @@
                   
                   <!-- Termination -->
                   <div>
-                    <h3 class="font-semibold text-lg text-gray-800 mb-2">🚪 {{ translate.instant('analysis.summary.terminationConditions') }}</h3>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                      <lucide-icon [img]="DoorOpenIcon" class="w-5 h-5 text-red-600"></lucide-icon>
+                      {{ translate.instant('analysis.summary.terminationConditions') }}
+                    </h3>
                     <div class="space-y-2 text-gray-700">
                       @if (getSummary()!.termination.atWill) {
                         <p><strong>{{ translate.instant('analysis.summary.atWill') }}:</strong> {{ getSummary()!.termination.atWill }}</p>
@@ -259,7 +294,10 @@
                   
                   <!-- Restrictions -->
                   <div>
-                    <h3 class="font-semibold text-lg text-gray-800 mb-2">🔒 Restrictions</h3>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                      <lucide-icon [img]="ShieldIcon" class="w-5 h-5 text-red-600"></lucide-icon>
+                      Restrictions
+                    </h3>
                     <div class="space-y-2 text-gray-700">
                       @if (getSummary()!.restrictions.confidentiality) {
                         <p><strong>Confidentiality:</strong> {{ getSummary()!.restrictions.confidentiality }}</p>
@@ -286,7 +324,7 @@
           <div class="space-y-6">
             <div class="text-center mb-6">
               <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
-                <span class="text-3xl">🚨</span>
+                <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 text-red-600"></lucide-icon>
                 Risk Flags
               </h2>
               <p class="text-gray-600 mt-2">Prioritized by severity - High risks first</p>
@@ -297,7 +335,8 @@
               @if (getHighRisks().length > 0) {
                 <div class="space-y-3">
                   <h3 class="text-lg font-semibold text-error flex items-center gap-2">
-                    <span>🚨</span> High Priority Risks
+                    <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4 text-red-600"></lucide-icon>
+                    High Priority Risks
                   </h3>
                   @for (risk of getHighRisks(); track $index) {
                     <app-card>
@@ -309,7 +348,10 @@
                               <h4 class="font-semibold text-gray-900 mb-2">{{ risk.title }}</h4>
                               <p class="text-gray-700 leading-relaxed mb-2">{{ risk.description }}</p>
                               <div class="bg-white rounded-lg p-3 border border-error/20">
-                                <p class="text-sm font-medium text-error">⚠️ Impact:</p>
+                                <p class="text-sm font-medium text-error flex items-center gap-1">
+                                  <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4"></lucide-icon>
+                                  Impact:
+                                </p>
                                 <p class="text-sm text-gray-700 mt-1">{{ risk.impact }}</p>
                               </div>
                             </div>
@@ -325,7 +367,8 @@
               @if (getMediumRisks().length > 0) {
                 <div class="space-y-3">
                   <h3 class="text-lg font-semibold text-warning flex items-center gap-2">
-                    <span>⚠️</span> Medium Priority Risks
+                    <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4 text-amber-600"></lucide-icon>
+                    Medium Priority Risks
                   </h3>
                   @for (risk of getMediumRisks(); track $index) {
                     <app-card>
@@ -337,7 +380,10 @@
                               <h4 class="font-semibold text-gray-900 mb-2">{{ risk.title }}</h4>
                               <p class="text-gray-700 leading-relaxed mb-2">{{ risk.description }}</p>
                               <div class="bg-white rounded-lg p-3 border border-warning/20">
-                                <p class="text-sm font-medium text-warning">💡 Impact:</p>
+                                <p class="text-sm font-medium text-warning flex items-center gap-1">
+                                  <lucide-icon [img]="LightbulbIcon" class="w-4 h-4"></lucide-icon>
+                                  Impact:
+                                </p>
                                 <p class="text-sm text-gray-700 mt-1">{{ risk.impact }}</p>
                               </div>
                             </div>
@@ -353,7 +399,8 @@
               @if (getLowRisks().length > 0) {
                 <div class="space-y-3">
                   <h3 class="text-lg font-semibold text-info flex items-center gap-2">
-                    <span>ℹ️</span> Low Priority Risks
+                    <lucide-icon [img]="InfoIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+                    Low Priority Risks
                   </h3>
                   @for (risk of getLowRisks(); track $index) {
                     <app-card>
@@ -388,7 +435,7 @@
           <div class="space-y-6">
             <div class="text-center mb-6">
               <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
-                <span class="text-3xl">📅</span>
+                <lucide-icon [img]="ClockIcon" class="w-8 h-8 text-green-600"></lucide-icon>
                 Obligations
               </h2>
               <p class="text-gray-600 mt-2">What each party is responsible for - structured and actionable</p>
@@ -399,7 +446,7 @@
               <app-card>
                 <div class="p-6 bg-gradient-to-br from-blue-50 to-white h-full">
                   <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <span class="text-2xl">✅</span>
+                    <lucide-icon [img]="CheckCircleIcon" class="w-8 h-8 text-green-600"></lucide-icon>
                     Employer / Company
                   </h3>
                   <div class="space-y-3">
@@ -409,31 +456,31 @@
                         <div class="text-sm text-gray-600 space-y-1">
                           @if (obligation.amount) {
                             <p class="flex items-center gap-2">
-                              <span class="text-green-600">💰</span>
+                              <lucide-icon [img]="DollarSignIcon" class="w-4 h-4 text-green-600"></lucide-icon>
                               ${{ obligation.amount.toLocaleString() }}
                             </p>
                           }
                           @if (obligation.frequency) {
                             <p class="flex items-center gap-2">
-                              <span>🔄</span>
+                              <lucide-icon [img]="RefreshCwIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
                               {{ obligation.frequency }}
                             </p>
                           }
                           @if (obligation.startDate) {
                             <p class="flex items-center gap-2">
-                              <span>📅</span>
+                              <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
                               Starts: {{ obligation.startDate }}
                             </p>
                           }
                           @if (obligation.duration) {
                             <p class="flex items-center gap-2">
-                              <span>⏱️</span>
+                              <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
                               Duration: {{ obligation.duration }}
                             </p>
                           }
                           @if (obligation.scope) {
                             <p class="flex items-center gap-2">
-                              <span>📋</span>
+                              <lucide-icon [img]="ClipboardIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
                               {{ obligation.scope }}
                             </p>
                           }
@@ -458,13 +505,13 @@
                         <div class="text-sm text-gray-600 space-y-1">
                           @if (obligation.scope) {
                             <p class="flex items-center gap-2">
-                              <span>📋</span>
+                              <lucide-icon [img]="ClipboardIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
                               {{ obligation.scope }}
                             </p>
                           }
                           @if (obligation.duration) {
                             <p class="flex items-center gap-2">
-                              <span>⏱️</span>
+                              <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
                               {{ obligation.duration }}
                             </p>
                           }
@@ -483,7 +530,7 @@
           <div class="space-y-6">
             <div class="text-center mb-6">
               <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
-                <span class="text-3xl">🚧</span>
+                <lucide-icon [img]="FileXIcon" class="w-8 h-8 text-amber-600"></lucide-icon>
                 What's Missing
               </h2>
               <p class="text-gray-600 mt-2">Prioritized by importance - High priority first</p>
@@ -494,18 +541,22 @@
               @if (getHighPriorityOmissions().length > 0) {
                 <div class="space-y-3">
                   <h3 class="text-lg font-semibold text-error flex items-center gap-2">
-                    <span>🚨</span> High Priority Omissions
+                    <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4 text-red-600"></lucide-icon>
+                    High Priority Omissions
                   </h3>
                   @for (omission of getHighPriorityOmissions(); track $index) {
                     <app-card>
                       <div class="flex border-l-4 border-error bg-error/5">
                         <div class="flex-1 p-6">
                           <div class="flex items-start gap-3">
-                            <span class="text-2xl">⚠️</span>
+                            <!-- <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 text-red-600"></lucide-icon> -->
                             <div class="flex-1">
                               <h4 class="font-semibold text-gray-900 mb-2">{{ omission.item }}</h4>
                               <div class="bg-white rounded-lg p-3 border border-error/20">
-                                <p class="text-sm font-medium text-error">⚠️ Why this matters:</p>
+                                <p class="text-sm font-medium text-error flex items-center gap-1">
+                                  <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4"></lucide-icon>
+                                  Why this matters:
+                                </p>
                                 <p class="text-sm text-gray-700 mt-1">{{ omission.impact }}</p>
                               </div>
                             </div>
@@ -521,14 +572,15 @@
               @if (getMediumPriorityOmissions().length > 0) {
                 <div class="space-y-3">
                   <h3 class="text-lg font-semibold text-warning flex items-center gap-2">
-                    <span>⚠️</span> Medium Priority Omissions
+                    <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4 text-amber-600"></lucide-icon>
+                    Medium Priority Omissions
                   </h3>
                   @for (omission of getMediumPriorityOmissions(); track $index) {
                     <app-card>
                       <div class="flex border-l-4 border-warning bg-warning/5">
                         <div class="flex-1 p-6">
                           <div class="flex items-start gap-3">
-                            <span class="text-2xl">⚠️</span>
+                            <!-- <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 text-red-600"></lucide-icon> -->
                             <div class="flex-1">
                               <h4 class="font-semibold text-gray-900 mb-2">{{ omission.item }}</h4>
                               <p class="text-sm text-gray-700">{{ omission.impact }}</p>
@@ -545,14 +597,15 @@
               @if (getLowPriorityOmissions().length > 0) {
                 <div class="space-y-3">
                   <h3 class="text-lg font-semibold text-info flex items-center gap-2">
-                    <span>ℹ️</span> Low Priority Omissions
+                    <lucide-icon [img]="InfoIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+                    Low Priority Omissions
                   </h3>
                   @for (omission of getLowPriorityOmissions(); track $index) {
                     <app-card>
                       <div class="flex border-l-4 border-info bg-info/5">
                         <div class="flex-1 p-6">
                           <div class="flex items-start gap-3">
-                            <span class="text-2xl">ℹ️</span>
+                            <!-- <lucide-icon [img]="InfoIcon" class="w-8 h-8 text-blue-600"></lucide-icon> -->
                             <div class="flex-1">
                               <h4 class="font-semibold text-gray-900 mb-1">{{ omission.item }}</h4>
                               <p class="text-sm text-gray-700">{{ omission.impact }}</p>
@@ -577,57 +630,87 @@
 
         <!-- Questions Tab -->
         @if (selectedTab() === 'questions') {
-          <div class="space-y-4">
-            <div class="text-center mb-6">
-              <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
-                <span class="text-3xl">❓</span>
-                Questions You Should Ask
-              </h2>
-              <p class="text-gray-600 mt-2">Clarify these points before signing</p>
+          <div class="space-y-6">
+            <!-- Header with title and action buttons -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">Questions to Ask</h2>
+                <p class="text-gray-600">Important clarifications for the other party</p>
+              </div>
+              @if (getQuestions().length > 0) {
+                <div class="flex items-center gap-3">
+                  <button
+                    (click)="copyAllQuestions()"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
+                    @if (copyAllButtonState() === 'copy') {
+                      <lucide-icon [img]="CopyIcon" class="w-4 h-4"></lucide-icon>
+                      Copy All
+                    } @else {
+                      <lucide-icon [img]="CheckIcon" class="w-4 h-4 text-green-600"></lucide-icon>
+                      Copied
+                    }
+                  </button>
+                  @if (!isContractProvider()) {
+                    <app-button
+                      (click)="draftProfessionalEmail()"
+                      [disabled]="emailStore.isDrafting()"
+                      variant="primary"
+                      size="md">
+                      @if (emailStore.isDrafting()) {
+                        <span class="flex items-center gap-2">
+                          <app-loading-spinner size="sm" />
+                          Drafting...
+                        </span>
+                      } @else {
+                        <span class="flex items-center gap-2">
+                          <lucide-icon [img]="MailIcon" class="w-4 h-4"></lucide-icon>
+                          Write Email
+                        </span>
+                      }
+                    </app-button>
+                  }
+                </div>
+              }
             </div>
             
             @if (getQuestions().length > 0) {
-              <!-- Draft Email CTA (only for contract recipients, not providers) -->
-              @if (!isContractProvider()) {
-                <div class="mb-6">
-                  <app-card>
-                    <div class="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200">
-                      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div class="flex items-center gap-3">
-                          <span class="text-3xl">✉️</span>
-                          <div>
-                            <h3 class="font-semibold text-gray-900">Need to ask these questions?</h3>
-                            <p class="text-sm text-gray-600">Generate a professional email ready to send</p>
+              <!-- Questions List -->
+              <div class="space-y-4">
+                @for (question of getQuestions(); track $index) {
+                  <app-card [hoverable]="true">
+                    <div class="bg-white border border-gray-200 p-6 rounded-xl">
+                      <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-start gap-3 flex-1">
+                          <div class="flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full flex-shrink-0 mt-0.5">
+                            <lucide-icon [img]="InfoIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+                          </div>
+                          <div class="flex-1">
+                            <p class="text-gray-800 font-medium leading-relaxed">
+                              <span class="text-gray-500 font-normal">{{ $index + 1 }}.</span> {{ question }}
+                            </p>
                           </div>
                         </div>
-                        <app-button
-                          (click)="draftProfessionalEmail()"
-                          [disabled]="emailStore.isDrafting()"
-                          variant="primary"
-                          size="md">
-                          @if (emailStore.isDrafting()) {
-                            <span class="flex items-center gap-2">
-                              <app-loading-spinner size="sm" />
-                              Drafting...
-                            </span>
-                          } @else {
-                            ✍️ Draft Professional Email
-                          }
-                        </app-button>
+                        <button
+                          (click)="copyQuestion(question)"
+                          class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0">
+                          <lucide-icon [img]="CopyIcon" class="w-4 h-4"></lucide-icon>
+                        </button>
                       </div>
                     </div>
                   </app-card>
-                </div>
-              } @else {
-                <div class="mb-6">
+                }
+              </div>
+              
+              <!-- Call to Action Section -->
+              @if (!isContractProvider()) {
+                <div class="mt-8">
                   <app-card>
-                    <div class="p-6 bg-gray-50 border-2 border-gray-200">
-                      <div class="flex items-start gap-3">
-                        <span class="text-3xl">ℹ️</span>
+                    <div class="p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div class="flex items-center gap-3">
+                        <lucide-icon [img]="MailIcon" class="w-6 h-6 text-blue-600 flex-shrink-0"></lucide-icon>
                         <div>
-                          <h3 class="font-semibold text-gray-700 mb-2">Email Drafting Unavailable</h3>
-                          <p class="text-sm text-gray-600 leading-relaxed">
-                            This feature is designed for contract recipients who need clarification. You're currently viewing as the contract provider or from both perspectives (the party who likely created this contract). Switch to the other party's perspective to draft clarification emails.
+                          <p class="text-sm text-blue-800 leading-relaxed">
+                            Need to reach out? Click the "Write Email" button to generate a professional email draft with these questions that you can send to the other party.
                           </p>
                         </div>
                       </div>
@@ -635,27 +718,6 @@
                   </app-card>
                 </div>
               }
-              
-              <!-- Questions List -->
-              <div class="space-y-3">
-                @for (question of getQuestions(); track $index) {
-                  <app-card>
-                    <div class="p-6">
-                      <div class="flex items-start justify-between gap-4">
-                        <div class="flex items-start gap-3 flex-1">
-                          <span class="text-2xl">❓</span>
-                          <p class="text-gray-800 font-medium leading-relaxed">{{ question }}</p>
-                        </div>
-                        <button
-                          (click)="copyQuestion(question)"
-                          class="px-3 py-1 text-sm bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors whitespace-nowrap">
-                          📋 Copy
-                        </button>
-                      </div>
-                    </div>
-                  </app-card>
-                }
-              </div>
             } @else {
               <app-card>
                 <div class="p-8 text-center text-gray-500">
@@ -672,7 +734,7 @@
           <app-card>
             <div class="p-8 bg-gray-50">
               <h2 class="text-2xl font-bold text-gray-700 mb-6 flex items-center gap-3">
-                <span class="text-3xl">⚖️</span>
+                <lucide-icon [img]="ScaleIcon" class="w-8 h-8 text-gray-600"></lucide-icon>
                 Legal Disclaimer
               </h2>
               <p class="text-gray-600 leading-relaxed text-lg">{{ getDisclaimer() }}</p>
@@ -694,7 +756,7 @@
       <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <span class="text-3xl">✉️</span>
+            <lucide-icon [img]="MailIcon" class="w-8 h-8 text-blue-600"></lucide-icon>
             <div>
               <h2 class="text-2xl font-bold text-gray-900">Professional Email Draft</h2>
               <p class="text-sm text-gray-600 mt-1">Ready to copy and send</p>
@@ -802,7 +864,10 @@
                     Rewriting...
                   </span>
                 } @else {
-                  🔄 Apply Changes
+                  <span class="flex items-center gap-2">
+                    <lucide-icon [img]="RefreshCwIcon" class="w-4 h-4"></lucide-icon>
+                    Apply Changes
+                  </span>
                 }
               </app-button>
             </div>
@@ -833,7 +898,10 @@
             (click)="copyDraftedEmail()"
             variant="primary"
             size="md">
-            📋 Copy to Clipboard
+            <span class="flex items-center gap-2">
+              <lucide-icon [img]="CopyIcon" class="w-4 h-4"></lucide-icon>
+              Copy
+            </span>
           </app-button>
         </div>
       </div>

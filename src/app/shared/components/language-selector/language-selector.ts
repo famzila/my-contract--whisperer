@@ -5,16 +5,23 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LucideAngularModule } from 'lucide-angular';
 import { LanguageStore } from '../../../core/stores/language.store';
+import { Globe, ChevronDown, Check } from '../../icons/lucide-icons';
 
 @Component({
   selector: 'app-language-selector',
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, LucideAngularModule],
   templateUrl: './language-selector.html',
 })
 export class LanguageSelector {
   languageStore = inject(LanguageStore);
   translateService = inject(TranslateService);
+  
+  // Lucide icons
+  readonly GlobeIcon = Globe;
+  readonly ChevronDownIcon = ChevronDown;
+  readonly CheckIcon = Check;
   
   // Local UI state
   isDropdownOpen = signal(false);

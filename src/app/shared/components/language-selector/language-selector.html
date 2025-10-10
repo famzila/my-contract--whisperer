@@ -8,22 +8,14 @@
     [attr.aria-expanded]="isDropdownOpen()"
   >
     @if (selectedLanguage()) {
-      <span class="text-xl leading-none">{{ selectedLanguage()!.flag }}</span>
+      <lucide-icon [img]="GlobeIcon" class="w-5 h-5 text-slate-600"></lucide-icon>
       <span class="font-semibold text-slate-900">{{ selectedLanguage()!.nativeName }}</span>
     }
-    <svg 
+    <lucide-icon 
+      [img]="ChevronDownIcon" 
       class="w-4 h-4 text-slate-500 transition-transform duration-150 ease-in-out"
       [class.rotate-180]="isDropdownOpen()"
-      xmlns="http://www.w3.org/2000/svg" 
-      width="16" 
-      height="16" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      stroke-width="2"
-    >
-      <polyline points="6 9 12 15 18 9"></polyline>
-    </svg>
+    ></lucide-icon>
   </button>
 
   <!-- Dropdown Menu -->
@@ -33,7 +25,10 @@
       (click)="closeDropdown()"
     >
       <div class="p-4 border-b border-slate-100">
-        <span class="block text-sm font-semibold text-slate-900 mb-1">🌍 {{ 'language.choose' | translate }}</span>
+        <span class="flex items-center gap-2 text-sm font-semibold text-slate-900 mb-1">
+          <lucide-icon [img]="GlobeIcon" class="w-4 h-4 text-slate-600"></lucide-icon>
+          {{ 'language.choose' | translate }}
+        </span>
       </div>
       
       <div class="max-h-96 overflow-y-auto p-2">
@@ -46,24 +41,13 @@
             [class.border]="lang.code === selectedLanguage()?.code"
             [class.border-blue-200]="lang.code === selectedLanguage()?.code"
           >
-            <span class="text-2xl leading-none flex-shrink-0">{{ lang.flag }}</span>
+            <lucide-icon [img]="GlobeIcon" class="w-6 h-6 text-slate-600 flex-shrink-0"></lucide-icon>
             <div class="flex flex-col gap-0.5 flex-1">
               <span class="text-sm font-medium text-slate-900">{{ lang.nativeName }}</span>
               <span class="text-xs text-slate-500">{{ lang.name }}</span>
             </div>
             @if (lang.code === selectedLanguage()?.code) {
-              <svg 
-                class="w-4 h-4 text-blue-600 flex-shrink-0" 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="18" 
-                height="18" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                stroke-width="2.5"
-              >
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
+              <lucide-icon [img]="CheckIcon" class="w-4 h-4 text-blue-600 flex-shrink-0"></lucide-icon>
             }
           </button>
         }

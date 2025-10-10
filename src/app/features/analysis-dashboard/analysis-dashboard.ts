@@ -2,15 +2,48 @@ import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@ang
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { LucideAngularModule } from 'lucide-angular';
 import { ContractStore, EmailDraftStore } from '../../core/stores';
 import { Card, LoadingSpinner, Button } from '../../shared/components';
 import type { ContractClause } from '../../core/models/contract.model';
 import type { AIAnalysisResponse, RiskSeverity, RiskEmoji } from '../../core/models/ai-analysis.model';
 import { AppConfig } from '../../core/config/app.config';
+import { 
+  Theater, 
+  Globe, 
+  RefreshCw, 
+  FileText, 
+  AlertTriangle, 
+  Clipboard, 
+  Scale, 
+  CheckCircle, 
+  Info, 
+  Lightbulb, 
+  BarChart3, 
+  TrendingUp, 
+  TrendingDown, 
+  Clock, 
+  Mail, 
+  Copy, 
+  Edit,
+  Wrench,
+  Shield,
+  FileX,
+  Users,
+  Briefcase,
+  DollarSign,
+  DoorOpen,
+  User,
+  Building2,
+  Home,
+  Key,
+  Handshake,
+  Check
+} from '../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'app-analysis-dashboard',
-  imports: [CommonModule, Card, LoadingSpinner, Button],
+  imports: [CommonModule, LucideAngularModule, Card, LoadingSpinner, Button],
   templateUrl: './analysis-dashboard.html',
   styleUrl: './analysis-dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,9 +58,42 @@ export class AnalysisDashboard implements OnInit {
   // Services
   translate = inject(TranslateService);
   
+  // Lucide icons
+  readonly TheaterIcon = Theater;
+  readonly GlobeIcon = Globe;
+  readonly RefreshCwIcon = RefreshCw;
+  readonly FileTextIcon = FileText;
+  readonly AlertTriangleIcon = AlertTriangle;
+  readonly ClipboardIcon = Clipboard;
+  readonly ScaleIcon = Scale;
+  readonly CheckCircleIcon = CheckCircle;
+  readonly InfoIcon = Info;
+  readonly LightbulbIcon = Lightbulb;
+  readonly BarChart3Icon = BarChart3;
+  readonly TrendingUpIcon = TrendingUp;
+  readonly TrendingDownIcon = TrendingDown;
+  readonly ClockIcon = Clock;
+  readonly MailIcon = Mail;
+  readonly CopyIcon = Copy;
+  readonly EditIcon = Edit;
+  readonly WrenchIcon = Wrench;
+  readonly ShieldIcon = Shield;
+  readonly FileXIcon = FileX;
+  readonly UsersIcon = Users;
+  readonly BriefcaseIcon = Briefcase;
+  readonly DollarSignIcon = DollarSign;
+  readonly DoorOpenIcon = DoorOpen;
+  readonly UserIcon = User;
+  readonly Building2Icon = Building2;
+  readonly HomeIcon = Home;
+  readonly KeyIcon = Key;
+  readonly HandshakeIcon = Handshake;
+  readonly CheckIcon = Check;
+  
   // Local UI state only
   selectedTab = signal<'summary' | 'risks' | 'obligations' | 'omissions' | 'questions' | 'disclaimer'>('summary');
   expandedQuestionId = signal<string | null>(null);
+  copyAllButtonState = signal<'copy' | 'copied'>('copy');
   
   // Parsed structured data from AI JSON response
   structuredData = signal<AIAnalysisResponse | null>(null);
@@ -257,6 +323,26 @@ export class AnalysisDashboard implements OnInit {
   }
 
   /**
+   * Copy all questions to clipboard
+   */
+  async copyAllQuestions(): Promise<void> {
+    try {
+      const questions = this.getQuestions();
+      const questionsText = questions.map((q, index) => `${index + 1}. ${q}`).join('\n\n');
+      await navigator.clipboard.writeText(questionsText);
+      console.log('✅ All questions copied to clipboard');
+      
+      // Show temporary "copied" state
+      this.copyAllButtonState.set('copied');
+      setTimeout(() => {
+        this.copyAllButtonState.set('copy');
+      }, 2000); // Revert after 2 seconds
+    } catch (err) {
+      console.error('❌ Failed to copy all questions:', err);
+    }
+  }
+
+  /**
    * Get risk level color
    */
   getRiskColor(risk: string): string {
@@ -406,7 +492,7 @@ export class AnalysisDashboard implements OnInit {
     
     if (!role || role === 'both_views') {
       return role === 'both_views' ? {
-        icon: '⚖️',
+        icon: this.ScaleIcon,
         text: 'Both Parties',
         className: 'px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full border border-green-200'
       } : null;
@@ -426,14 +512,14 @@ export class AnalysisDashboard implements OnInit {
     }
     
     // Icon based on role
-    const iconMap: Record<string, string> = {
-      'employee': '🧑‍💼',
-      'employer': '👔',
-      'contractor': '🔧',
-      'client': '🏢',
-      'tenant': '🏠',
-      'landlord': '🔑',
-      'partner': '🤝',
+    const iconMap: Record<string, any> = {
+      'employee': this.UserIcon,
+      'employer': this.BriefcaseIcon,
+      'contractor': this.WrenchIcon,
+      'client': this.Building2Icon,
+      'tenant': this.HomeIcon,
+      'landlord': this.KeyIcon,
+      'partner': this.HandshakeIcon,
     };
     
     // Color based on role
@@ -466,44 +552,44 @@ export class AnalysisDashboard implements OnInit {
     
     if (!role) return null;
     
-    const contexts: Record<string, { icon: string; title: string; message: string }> = {
+    const contexts: Record<string, { icon: any; title: string; message: string }> = {
       'employee': {
-        icon: '📊',
+        icon: this.BarChart3Icon,
         title: 'Analyzed from Your Perspective as an Employee',
         message: 'This analysis is tailored to protect your interests as the employee. The risks, obligations, and recommendations focus on what matters to you in this employment relationship.'
       },
       'employer': {
-        icon: '📊',
+        icon: this.BarChart3Icon,
         title: 'Analyzed from Your Perspective as an Employer',
         message: 'This analysis is tailored to protect your company\'s interests. The risks, obligations, and recommendations focus on what matters to you as the employer.'
       },
       'contractor': {
-        icon: '📊',
+        icon: this.BarChart3Icon,
         title: 'Analyzed from Your Perspective as a Contractor',
         message: 'This analysis is tailored to protect your interests as the contractor. The risks, obligations, and recommendations focus on fair compensation, payment timing, and liability exposure.'
       },
       'client': {
-        icon: '📊',
+        icon: this.BarChart3Icon,
         title: 'Analyzed from Your Perspective as a Client',
         message: 'This analysis is tailored to protect your interests as the client. The risks, obligations, and recommendations focus on deliverables, quality, and timelines.'
       },
       'tenant': {
-        icon: '📊',
+        icon: this.BarChart3Icon,
         title: 'Analyzed from Your Perspective as a Tenant',
         message: 'This analysis is tailored to protect your interests as the tenant. The risks, obligations, and recommendations focus on your rights, security deposit, and housing costs.'
       },
       'landlord': {
-        icon: '📊',
+        icon: this.BarChart3Icon,
         title: 'Analyzed from Your Perspective as a Landlord',
         message: 'This analysis is tailored to protect your property interests. The risks, obligations, and recommendations focus on rent collection and property protection.'
       },
       'partner': {
-        icon: '📊',
+        icon: this.BarChart3Icon,
         title: 'Analyzed from Your Perspective as a Partner',
         message: 'This analysis is tailored to your interests as a partner. The risks, obligations, and recommendations focus on equity fairness and exit options.'
       },
       'both_views': {
-        icon: '⚖️',
+        icon: this.ScaleIcon,
         title: 'Balanced Analysis - Both Parties\' Perspectives',
         message: 'This analysis provides a balanced view showing how each clause affects both parties. Risks and obligations are marked to show impact on each side.'
       }

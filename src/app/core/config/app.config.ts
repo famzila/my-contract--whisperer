@@ -22,6 +22,6 @@ export const AppConfig = {
    * 
    * 💡 Tip: Set to true for development, false for production/demo
    */
-  useMockAI: false, // Toggle this to switch between mock and real AI
+  useMockAI: true, // Toggle this to switch between mock and real AI
 };
 

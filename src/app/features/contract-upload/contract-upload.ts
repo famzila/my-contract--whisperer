@@ -3,6 +3,22 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { LucideAngularModule } from 'lucide-angular';
+import { 
+  FileText, 
+  Edit, 
+  Upload, 
+  AlertTriangle, 
+  BarChart3, 
+  Clock, 
+  CheckCircle, 
+  BookOpen, 
+  HelpCircle, 
+  Shield, 
+  Globe, 
+  Lightbulb, 
+  Search 
+} from '../../shared/icons/lucide-icons';
 import { ContractStore } from '../../core/stores/contract.store';
 import { UiStore } from '../../core/stores/ui.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
@@ -15,7 +31,7 @@ type UploadMode = 'file' | 'text';
 
 @Component({
   selector: 'app-contract-upload',
-  imports: [CommonModule, FormsModule, TranslateModule, PartySelectorModal, NonContractError],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PartySelectorModal, NonContractError],
   templateUrl: './contract-upload.html',
   styleUrl: './contract-upload.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -25,6 +41,21 @@ export class ContractUpload {
   contractStore = inject(ContractStore);
   onboardingStore = inject(OnboardingStore);
   languageStore = inject(LanguageStore);
+  
+  // Lucide icons
+  readonly FileTextIcon = FileText;
+  readonly EditIcon = Edit;
+  readonly UploadIcon = Upload;
+  readonly AlertTriangleIcon = AlertTriangle;
+  readonly BarChart3Icon = BarChart3;
+  readonly ClockIcon = Clock;
+  readonly CheckCircleIcon = CheckCircle;
+  readonly BookOpenIcon = BookOpen;
+  readonly HelpCircleIcon = HelpCircle;
+  readonly ShieldIcon = Shield;
+  readonly GlobeIcon = Globe;
+  readonly LightbulbIcon = Lightbulb;
+  readonly SearchIcon = Search;
   private parserService = inject(ContractParserService);
   private uiStore = inject(UiStore);
   private router = inject(Router);
