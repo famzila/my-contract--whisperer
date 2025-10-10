@@ -4,7 +4,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div class="flex items-center justify-between">
         <!-- Logo & Title -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 cursor-pointer" routerLink="/">
           <lucide-icon [img]="FileTextIcon" class="w-8 h-8 text-blue-600"></lucide-icon>
           <div>
             <h1 class="text-xl font-bold text-gray-900">{{ 'navbar.title' | translate }}</h1>
@@ -14,9 +14,9 @@
 
         <!-- Navigation -->
         <nav class="hidden md:flex items-center gap-6">
-          <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">{{ 'navbar.home' | translate }}</a>
-          <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">{{ 'navbar.howItWorks' | translate }}</a>
-          <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">{{ 'navbar.privacy' | translate }}</a>
+          <button routerLink="/" class="text-gray-600 hover:text-gray-900 transition-colors">{{ 'navbar.home' | translate }}</button>
+          <button (click)="showHowItWorks()" class="text-gray-600 hover:text-gray-900 transition-colors">{{ 'navbar.howItWorks' | translate }}</button>
+          <button (click)="showPrivacyPolicy()" class="text-gray-600 hover:text-gray-900 transition-colors">{{ 'navbar.privacy' | translate }}</button>
         </nav>
 
         <!-- Language Selector -->
@@ -56,9 +56,9 @@
         <div>
           <h3 class="font-semibold text-gray-900 mb-3">{{ 'footer.quickLinks' | translate }}</h3>
           <ul class="space-y-2 text-sm text-gray-600">
-            <li><a href="#" class="hover:text-gray-900">{{ 'footer.privacyPolicy' | translate }}</a></li>
-            <li><a href="#" class="hover:text-gray-900">{{ 'footer.termsOfService' | translate }}</a></li>
-            <li><a href="#" class="hover:text-gray-900">{{ 'footer.contactUs' | translate }}</a></li>
+            <li><button (click)="showPrivacyPolicy()" class="hover:text-gray-900 text-left">{{ 'footer.privacyPolicy' | translate }}</button></li>
+            <li><button (click)="showTermsOfService()" class="hover:text-gray-900 text-left">{{ 'footer.termsOfService' | translate }}</button></li>
+            <li><a href="mailto:famzil.contact@gmail.com?subject=Contract Whisperer Support&body=Hi, I have a question about Contract Whisperer:" class="hover:text-gray-900">{{ 'footer.contactUs' | translate }}</a></li>
           </ul>
         </div>
 
@@ -81,4 +81,20 @@
       </div>
     </div>
   </footer>
+
+  <!-- Modals -->
+  <app-how-it-works-modal
+    [isOpen]="showHowItWorksModal()"
+    (close)="closeHowItWorksModal()"
+  />
+
+  <app-privacy-policy-modal
+    [isOpen]="showPrivacyPolicyModal()"
+    (close)="closePrivacyPolicyModal()"
+  />
+
+  <app-terms-of-service-modal
+    [isOpen]="showTermsOfServiceModal()"
+    (close)="closeTermsOfServiceModal()"
+  />
 </div>

@@ -179,15 +179,21 @@
     <div class="mt-12 text-center">
       <h3 class="text-sm font-medium text-gray-700 mb-3">{{ 'upload.needHelp' | translate }}</h3>
       <div class="flex justify-center gap-6 text-sm text-gray-500">
-        <button class="hover:text-gray-900 transition-colors flex items-center gap-2">
+        <button 
+          (click)="viewSampleContract()"
+          class="hover:text-gray-900 transition-colors flex items-center gap-2">
           <lucide-icon [img]="BookOpenIcon" class="w-4 h-4"></lucide-icon>
           {{ 'upload.viewSample' | translate }}
         </button>
-        <button class="hover:text-gray-900 transition-colors flex items-center gap-2">
+        <button 
+          (click)="showHowItWorks()"
+          class="hover:text-gray-900 transition-colors flex items-center gap-2">
           <lucide-icon [img]="HelpCircleIcon" class="w-4 h-4"></lucide-icon>
           {{ 'upload.howItWorks' | translate }}
         </button>
-        <button class="hover:text-gray-900 transition-colors flex items-center gap-2">
+        <button 
+          (click)="showPrivacyPolicy()"
+          class="hover:text-gray-900 transition-colors flex items-center gap-2">
           <lucide-icon [img]="ShieldIcon" class="w-4 h-4"></lucide-icon>
           {{ 'upload.privacyPolicy' | translate }}
         </button>
@@ -306,3 +312,21 @@
     (close)="onboardingStore.reset()"
   />
 }
+
+<!-- Sample Contract Modal -->
+<app-sample-contract-modal
+  [isOpen]="showSampleContractModal()"
+  (close)="closeSampleContractModal()"
+/>
+
+<!-- How It Works Modal -->
+<app-how-it-works-modal
+  [isOpen]="showHowItWorksModal()"
+  (close)="closeHowItWorksModal()"
+/>
+
+<!-- Privacy Policy Modal -->
+<app-privacy-policy-modal
+  [isOpen]="showPrivacyPolicyModal()"
+  (close)="closePrivacyPolicyModal()"
+/>

@@ -26,12 +26,15 @@ import { LanguageStore } from '../../core/stores/language.store';
 import { ContractParserService } from '../../core/services/contract-parser.service';
 import { PartySelectorModal } from '../../shared/components/party-selector-modal/party-selector-modal';
 import { NonContractError } from '../../shared/components/non-contract-error/non-contract-error';
+import { SampleContractModal } from '../../shared/components/sample-contract-modal/sample-contract-modal';
+import { HowItWorksModal } from '../../shared/components/how-it-works-modal/how-it-works-modal';
+import { PrivacyPolicyModal } from '../../shared/components/privacy-policy-modal/privacy-policy-modal';
 
 type UploadMode = 'file' | 'text';
 
 @Component({
   selector: 'app-contract-upload',
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PartySelectorModal, NonContractError],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PartySelectorModal, NonContractError, SampleContractModal, HowItWorksModal, PrivacyPolicyModal],
   templateUrl: './contract-upload.html',
   styleUrl: './contract-upload.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -64,6 +67,11 @@ export class ContractUpload {
   mode = signal<UploadMode>('file');
   contractText = signal('');
   isDragging = signal(false);
+  
+  // Modal states
+  showSampleContractModal = signal(false);
+  showHowItWorksModal = signal(false);
+  showPrivacyPolicyModal = signal(false);
 
   /**
    * Switch between upload modes
@@ -293,5 +301,47 @@ export class ContractUpload {
   get readingTime(): number {
     const words = this.wordCount;
     return Math.ceil(words / 200);
+  }
+
+  /**
+   * View sample contract
+   */
+  viewSampleContract(): void {
+    this.showSampleContractModal.set(true);
+  }
+
+  /**
+   * Show how it works information
+   */
+  showHowItWorks(): void {
+    this.showHowItWorksModal.set(true);
+  }
+
+  /**
+   * Show privacy policy
+   */
+  showPrivacyPolicy(): void {
+    this.showPrivacyPolicyModal.set(true);
+  }
+
+  /**
+   * Close sample contract modal
+   */
+  closeSampleContractModal(): void {
+    this.showSampleContractModal.set(false);
+  }
+
+  /**
+   * Close how it works modal
+   */
+  closeHowItWorksModal(): void {
+    this.showHowItWorksModal.set(false);
+  }
+
+  /**
+   * Close privacy policy modal
+   */
+  closePrivacyPolicyModal(): void {
+    this.showPrivacyPolicyModal.set(false);
   }
 }

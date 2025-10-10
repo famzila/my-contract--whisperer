@@ -1,0 +1,170 @@
+@if (isOpen()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm" (click)="onBackdropClick($event)">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+      <!-- Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <lucide-icon [img]="ShieldIcon" class="w-6 h-6 text-blue-600"></lucide-icon>
+          <h2 class="text-xl font-bold text-gray-900">{{ 'privacyPolicy.title' | translate }}</h2>
+        </div>
+        <button
+          (click)="onClose()"
+          class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <lucide-icon [img]="XIcon" class="w-5 h-5 text-gray-500"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="p-6 overflow-y-auto flex-1 min-h-0">
+        <div class="prose max-w-none pb-4">
+          <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div class="flex items-center gap-2 mb-2">
+              <lucide-icon [img]="LockIcon" class="w-5 h-5 text-green-600"></lucide-icon>
+              <h3 class="font-semibold text-green-800">
+                {{ 'privacyPolicy.mainTitle' | translate }}
+              </h3>
+            </div>
+            <p class="text-sm text-green-700">
+              {{ 'privacyPolicy.mainDescription' | translate }}
+            </p>
+          </div>
+
+          <div class="space-y-6 text-sm">
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-3">
+              {{ 'privacyPolicy.whatWeCollect' | translate }}
+            </h3>
+            <p class="text-gray-700 mb-2">
+               {{ 'privacyPolicy.whatWeCollectDescription' | translate }}
+            </p>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
+                 <li>{{ 'privacyPolicy.collectItem1' | translate }}</li>
+                 <li>{{ 'privacyPolicy.collectItem2' | translate }}</li>
+                 <li>{{ 'privacyPolicy.collectItem3' | translate }}</li>
+                 <li>{{ 'privacyPolicy.collectItem4' | translate }}</li>
+            </ul>
+            <p class="text-gray-700 mt-2 font-medium">
+               <strong>{{ 'privacyPolicy.doNotCollect' | translate }}</strong> {{ 'privacyPolicy.doNotCollectDescription' | translate }}
+            </p>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-3">
+              {{ 'privacyPolicy.zeroDataStorage' | translate }}
+            </h3>
+            <p class="text-gray-700 mb-2">
+               <strong>{{ 'privacyPolicy.zeroDataStorageDescription' | translate }}</strong>
+            </p>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
+                 <li>{{ 'privacyPolicy.storageItem1' | translate }}</li>
+                 <li>{{ 'privacyPolicy.storageItem2' | translate }}</li>
+                 <li>{{ 'privacyPolicy.storageItem3' | translate }}</li>
+                 <li>{{ 'privacyPolicy.storageItem4' | translate }}</li>
+                 <li>{{ 'privacyPolicy.storageItem5' | translate }}</li>
+            </ul>
+            <p class="text-gray-700 mt-2">
+               <strong>{{ 'privacyPolicy.onlyLocalStorage' | translate }}</strong> {{ 'privacyPolicy.onlyLocalStorageDescription' | translate }}
+            </p>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-3">
+              {{ 'privacyPolicy.localAIProcessing' | translate }}
+            </h3>
+            <p class="text-gray-700 mb-2">
+               <strong>{{ 'privacyPolicy.localAIProcessingDescription' | translate }}</strong>
+            </p>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
+                 <li>{{ 'privacyPolicy.processingItem1' | translate }}</li>
+              <li>{{ 'privacyPolicy.processingItem2' | translate }}</li>
+              <li>{{ 'privacyPolicy.processingItem3' | translate }}</li>
+              <li>{{ 'privacyPolicy.processingItem4' | translate }}</li>
+              <li>{{ 'privacyPolicy.processingItem5' | translate }}</li>
+              <li>{{ 'privacyPolicy.processingItem6' | translate }}</li>
+            </ul>
+            <p class="text-gray-700 mt-2">
+              <strong>{{ 'privacyPolicy.chromeOnly' | translate }}</strong> {{ 'privacyPolicy.chromeOnlyDescription' | translate }}
+            </p>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-3">{{ 'privacyPolicy.browserStorage' | translate }}</h3>
+            <p class="text-gray-700 mb-2">
+              <strong>{{ 'privacyPolicy.browserStorageDescription' | translate }}</strong>
+            </p>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
+              <li>{{ 'privacyPolicy.browserStorageItem1' | translate }}</li>
+              <li>{{ 'privacyPolicy.browserStorageItem2' | translate }}</li>
+              <li>{{ 'privacyPolicy.browserStorageItem3' | translate }}</li>
+              <li>{{ 'privacyPolicy.browserStorageItem4' | translate }}</li>
+            </ul>
+            <p class="text-gray-700 mt-2">
+              {{ 'privacyPolicy.browserStorageNote' | translate }}
+            </p>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-3">{{ 'privacyPolicy.noCookies' | translate }}</h3>
+            <p class="text-gray-700">
+              {{ 'privacyPolicy.noCookiesDescription' | translate }}
+            </p>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-3">{{ 'privacyPolicy.yourRights' | translate }}</h3>
+            <p class="text-gray-700 mb-2">
+              <strong>{{ 'privacyPolicy.yourRightsDescription' | translate }}</strong>
+            </p>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
+              <li>{{ 'privacyPolicy.rightsItem1' | translate }}</li>
+              <li>{{ 'privacyPolicy.rightsItem2' | translate }}</li>
+              <li>{{ 'privacyPolicy.rightsItem3' | translate }}</li>
+              <li>{{ 'privacyPolicy.rightsItem4' | translate }}</li>
+              <li>{{ 'privacyPolicy.rightsItem5' | translate }}</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-3">{{ 'privacyPolicy.technicalRequirements' | translate }}</h3>
+            <p class="text-gray-700 mb-2">
+              <strong>{{ 'privacyPolicy.technicalRequirementsDescription' | translate }}</strong>
+            </p>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
+              <li>{{ 'privacyPolicy.requirementsItem1' | translate }}</li>
+              <li>{{ 'privacyPolicy.requirementsItem2' | translate }}</li>
+              <li>{{ 'privacyPolicy.processingItem2' | translate }}</li>
+              <li>{{ 'privacyPolicy.requirementsItem4' | translate }}</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-3">{{ 'privacyPolicy.contact' | translate }}</h3>
+            <p class="text-gray-700">
+              {{ 'privacyPolicy.contactDescription' | translate }}
+              <a
+                href="mailto:famzil.contact@gmail.com?subject=Privacy Policy Question&body=Hi, I have a question about Contract Whisperer's privacy policy:"
+                class="text-sm text-blue-600 hover:text-blue-700 underline"
+              >
+                {{ 'privacyPolicy.contactLink' | translate }}</a
+              >
+            </p>
+          </div>
+
+          <div class="text-xs text-gray-500 mt-6">{{ 'privacyPolicy.lastUpdated' | translate }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-end p-6 border-t border-gray-200 flex-shrink-0">
+        <button
+          (click)="onClose()"
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          {{ 'modal.close' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
