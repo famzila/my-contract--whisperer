@@ -1,33 +1,34 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { TranslatePipe } from '@ngx-translate/core';
-import { X, Shield, Lock, Eye, EyeOff } from '../../icons/lucide-icons';
+import { DialogRef } from '@angular/cdk/dialog';
+import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
+import { Shield, Lock, Eye, EyeOff } from '../../icons/lucide-icons';
 
 @Component({
   selector: 'app-privacy-policy-modal',
-  imports: [CommonModule, LucideAngularModule, TranslatePipe],
+  imports: [CommonModule, LucideAngularModule, TranslatePipe, BaseModal],
   templateUrl: './privacy-policy-modal.html',
   styleUrl: './privacy-policy-modal.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PrivacyPolicyModal {
-  isOpen = input<boolean>(false);
-  close = output<void>();
+  private dialogRef = inject(DialogRef);
 
-  readonly XIcon = X;
+  // Icons for content
   readonly ShieldIcon = Shield;
   readonly LockIcon = Lock;
   readonly EyeIcon = Eye;
   readonly EyeOffIcon = EyeOff;
 
-  onClose(): void {
-    this.close.emit();
-  }
+  // Base modal configuration
+  readonly modalConfig: BaseModalConfig = {
+    titleKey: 'privacyPolicy.title',
+    icon: this.ShieldIcon
+  };
 
-  onBackdropClick(event: Event): void {
-    if (event.target === event.currentTarget) {
-      this.onClose();
-    }
+  onClose(): void {
+    this.dialogRef.close();
   }
 }

@@ -5,6 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { ContractStore, EmailDraftStore } from '../../core/stores';
 import { Card, LoadingSpinner, Button } from '../../shared/components';
+import { ModalService } from '../../core/services/modal.service';
 import type { ContractClause } from '../../core/models/contract.model';
 import type { AIAnalysisResponse, RiskSeverity, RiskEmoji } from '../../core/models/ai-analysis.model';
 import { AppConfig } from '../../core/config/app.config';
@@ -57,6 +58,7 @@ export class AnalysisDashboard implements OnInit {
   
   // Services
   translate = inject(TranslateService);
+  private modalService = inject(ModalService);
   
   // Lucide icons
   readonly TheaterIcon = Theater;
@@ -752,8 +754,28 @@ export class AnalysisDashboard implements OnInit {
     
     // Delegate to EmailDraftStore
     await this.emailStore.draftEmail(questions, recipientName, senderName, senderRole, recipientRole);
+    
+    // Open the email draft modal
+    this.openEmailDraftModal();
   }
   
+  /**
+   * Open email draft modal using ModalService
+   */
+  openEmailDraftModal(): void {
+    const emailData = {
+      emailContent: this.emailStore.draftedEmail(),
+      isRewriting: this.emailStore.isRewriting(),
+      showRewriteOptions: this.emailStore.showRewriteOptions(),
+      rewriteOptions: {
+        tone: this.emailStore.rewriteTone(),
+        length: this.emailStore.rewriteLength()
+      }
+    };
+
+    const dialogRef = this.modalService.openEmailDraft(emailData);
+  }
+
   /**
    * Copy drafted email to clipboard
    * Delegates to EmailDraftStore
@@ -787,6 +809,18 @@ export class AnalysisDashboard implements OnInit {
    */
   async rewriteEmail(): Promise<void> {
     await this.emailStore.rewriteEmail();
+  }
+
+  /**
+   * Update rewrite option (tone or length)
+   * Delegates to EmailDraftStore
+   */
+  updateRewriteOption(key: string, value: string): void {
+    if (key === 'tone') {
+      this.emailStore.setRewriteTone(value as 'formal' | 'neutral' | 'casual');
+    } else if (key === 'length') {
+      this.emailStore.setRewriteLength(value as 'short' | 'medium' | 'long');
+    }
   }
   
   /**

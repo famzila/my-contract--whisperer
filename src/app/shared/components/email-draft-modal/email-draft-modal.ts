@@ -1,0 +1,158 @@
+import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { LucideAngularModule } from 'lucide-angular';
+import { TranslatePipe } from '@ngx-translate/core';
+import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
+import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
+import { Mail, Copy, RefreshCw, X, Check } from '../../icons/lucide-icons';
+import { Button } from '../button/button';
+import { LoadingSpinner } from '../loading-spinner/loading-spinner';
+import { EmailDraftStore } from '../../../core/stores/email-draft.store';
+
+export interface EmailDraftData {
+  emailContent: string;
+  isRewriting: boolean;
+  showRewriteOptions: boolean;
+  rewriteOptions: {
+    tone: string;
+    length: string;
+    formality: string;
+  };
+}
+
+@Component({
+  selector: 'app-email-draft-modal',
+  standalone: true,
+  imports: [CommonModule, LucideAngularModule, TranslatePipe, BaseModal, Button, LoadingSpinner],
+  templateUrl: './email-draft-modal.html',
+  styleUrl: './email-draft-modal.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class EmailDraftModal {
+  private dialogRef = inject(DialogRef);
+  private dialogData = inject(DIALOG_DATA, { optional: true });
+  private emailStore = inject(EmailDraftStore);
+
+  // Inputs (can be provided via DIALOG_DATA or inputs)
+  emailContent = input<string>('');
+  isRewriting = input<boolean>(false);
+  showRewriteOptions = input<boolean>(false);
+  rewriteOptions = input<any>({});
+
+
+  // Icons
+  readonly MailIcon = Mail;
+  readonly CopyIcon = Copy;
+  readonly RefreshCwIcon = RefreshCw;
+  readonly XIcon = X;
+  readonly CheckIcon = Check;
+
+  // Copy button state
+  copyButtonState = signal<'copy' | 'copied'>('copy');
+
+  // Base modal configuration with custom action buttons
+  get modalConfig(): BaseModalConfig {
+    return {
+      titleKey: 'analysis.email.modalTitle',
+      icon: this.MailIcon,
+      maxWidth: 'max-w-3xl',
+      showFooter: true,
+      actionButtons: [
+        {
+          textKey: 'common.close',
+          icon: this.XIcon,
+          variant: 'secondary',
+          callback: () => this.onClose()
+        },
+        {
+          text: this.copyButtonState() === 'copy' ? 'Copy' : 'Copied',
+          icon: this.copyButtonState() === 'copy' ? this.CopyIcon : this.CheckIcon,
+          variant: this.copyButtonState() === 'copy' ? 'primary' : 'secondary',
+          callback: () => this.onCopy()
+        }
+      ]
+    };
+  }
+
+  /**
+   * Get email content from store
+   */
+  get emailText(): string {
+    return this.emailStore.draftedEmail() || '';
+  }
+
+  /**
+   * Get rewriting state from store
+   */
+  get isCurrentlyRewriting(): boolean {
+    return this.emailStore.isRewriting();
+  }
+
+  /**
+   * Get rewrite options visibility from store
+   */
+  get showRewriteOptionsState(): boolean {
+    return this.emailStore.showRewriteOptions();
+  }
+
+  /**
+   * Get rewrite options from store
+   */
+  get currentRewriteOptions(): any {
+    return {
+      tone: this.emailStore.rewriteTone(),
+      length: this.emailStore.rewriteLength()
+    };
+  }
+
+  /**
+   * Handle close
+   */
+  onClose(): void {
+    this.dialogRef.close();
+  }
+
+  /**
+   * Handle copy email
+   */
+  async onCopy(): Promise<void> {
+    try {
+      // Copy to clipboard
+      await navigator.clipboard.writeText(this.emailText);
+      console.log('✅ Email copied to clipboard');
+
+      // Show temporary "copied" state
+      this.copyButtonState.set('copied');
+      setTimeout(() => {
+        this.copyButtonState.set('copy');
+      }, 2000); // Revert after 2 seconds
+    } catch (err) {
+      console.error('❌ Failed to copy email:', err);
+    }
+  }
+
+  /**
+   * Handle toggle rewrite options
+   */
+  onToggleRewriteOptions(): void {
+    this.emailStore.toggleRewriteOptions();
+  }
+
+  /**
+   * Handle rewrite email
+   */
+  onRewriteEmail(): void {
+    this.emailStore.rewriteEmail();
+  }
+
+  /**
+   * Handle update rewrite option
+   */
+  onUpdateRewriteOption(key: string, value: string): void {
+    if (key === 'tone') {
+      this.emailStore.setRewriteTone(value as 'formal' | 'neutral' | 'casual');
+    } else if (key === 'length') {
+      this.emailStore.setRewriteLength(value as 'short' | 'medium' | 'long');
+    }
+  }
+}

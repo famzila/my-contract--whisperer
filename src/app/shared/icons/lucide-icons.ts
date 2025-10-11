@@ -101,7 +101,9 @@ import {
   ThumbsDown,
   Bot,
   Theater,
-  Wrench
+  Wrench,
+  CircleQuestionMark,
+  CircleCheckBig
 } from 'lucide-angular';
 
 // Export individual icons for standalone component usage
@@ -198,5 +200,7 @@ export {
   ThumbsDown,
   Bot,
   Theater,
-  Wrench
+  Wrench,
+  CircleQuestionMark,
+  CircleCheckBig
 };

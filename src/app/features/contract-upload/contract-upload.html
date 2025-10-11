@@ -202,14 +202,6 @@
   </div>
 </div>
 
-<!-- Non-Contract Error Modal -->
-@if (onboardingStore.isValidContract() === false) {
-  <app-non-contract-error
-    [documentType]="onboardingStore.documentType() || 'Unknown Document'"
-    [reason]="onboardingStore.validationError() || 'This document does not appear to be a contract'"
-    (retry)="onboardingStore.reset()"
-  />
-}
 
 <!-- Language Selection Banner (shows when language mismatch detected) -->
 @if (onboardingStore.isValidContract() === true && onboardingStore.needsLanguageSelection()) {
@@ -303,30 +295,4 @@
   </div>
 }
 
-<!-- Party Selector Modal (only shows when parties are detected) -->
-@if (onboardingStore.needsPartySelection()) {
-  <app-party-selector-modal
-    [isOpen]="true"
-    [detectedParties]="onboardingStore.detectedParties()"
-    (selectRole)="onSelectRole($event)"
-    (close)="onboardingStore.reset()"
-  />
-}
 
-<!-- Sample Contract Modal -->
-<app-sample-contract-modal
-  [isOpen]="showSampleContractModal()"
-  (close)="closeSampleContractModal()"
-/>
-
-<!-- How It Works Modal -->
-<app-how-it-works-modal
-  [isOpen]="showHowItWorksModal()"
-  (close)="closeHowItWorksModal()"
-/>
-
-<!-- Privacy Policy Modal -->
-<app-privacy-policy-modal
-  [isOpen]="showPrivacyPolicyModal()"
-  (close)="closePrivacyPolicyModal()"
-/>

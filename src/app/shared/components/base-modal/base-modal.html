@@ -1,0 +1,69 @@
+<div [class]="getModalClasses()">
+  <!-- Header -->
+  <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-2xl">
+    <div class="flex items-center gap-3">
+      @if (config().icon) {
+        <lucide-icon [img]="config().icon" class="w-6 h-6 text-blue-600"></lucide-icon>
+      }
+      <h2 class="text-xl font-bold text-gray-900">
+        @if (getTitleKey()) {
+          {{ getTitleKey() | translate }}
+        } @else {
+          {{ getTitle() }}
+        }
+      </h2>
+    </div>
+    <button
+      (click)="onClose()"
+      class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+    >
+      <lucide-icon [img]="XIcon" class="w-5 h-5 text-gray-500"></lucide-icon>
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="p-6 overflow-y-auto flex-1 min-h-0">
+    <div class="prose max-w-none pb-4">
+      <ng-content></ng-content>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  @if (shouldShowFooter()) {
+    <div class="flex justify-end gap-3 p-6 border-t border-gray-200 flex-shrink-0 rounded-b-2xl">
+      @if (getActionButtons().length > 0) {
+        <!-- Configurable Action Buttons -->
+        @for (button of getActionButtons(); track $index) {
+          <button
+            (click)="onActionButtonClick(button)"
+            [disabled]="button.disabled"
+            [class]="getButtonClasses(button.variant)"
+            [class.opacity-50]="button.disabled"
+            [class.cursor-not-allowed]="button.disabled"
+          >
+            @if (button.icon) {
+              <lucide-icon [img]="button.icon" class="w-4 h-4"></lucide-icon>
+            }
+            @if (button.textKey) {
+              {{ button.textKey | translate }}
+            } @else {
+              {{ button.text }}
+            }
+          </button>
+        }
+      } @else {
+        <!-- Legacy Close Button -->
+        <button
+          (click)="onClose()"
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          @if (getFooterButtonKey()) {
+            {{ getFooterButtonKey() | translate }}
+          } @else {
+            {{ getFooterButtonText() }}
+          }
+        </button>
+      }
+    </div>
+  }
+</div>

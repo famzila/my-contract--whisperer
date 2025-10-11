@@ -2,10 +2,12 @@
  * Party Selector Modal Component
  * Allows user to select which party they represent in the contract
  */
-import { Component, input, output, computed } from '@angular/core';
+import { Component, input, output, computed, inject } from '@angular/core';
+import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
+import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
 import { 
   Building2, 
   User, 
@@ -31,18 +33,19 @@ interface PartyOption {
 
 @Component({
   selector: 'app-party-selector-modal',
-  imports: [CommonModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, TranslatePipe, LucideAngularModule, BaseModal],
   templateUrl: './party-selector-modal.html',
   styleUrl: './party-selector-modal.css',
 })
 export class PartySelectorModal {
+  private dialogRef = inject(DialogRef);
+  private dialogData = inject(DIALOG_DATA, { optional: true });
+
   // Inputs
-  isOpen = input<boolean>(false);
   detectedParties = input<PartyDetectionResult | null>(null);
   
   // Outputs
   selectRole = output<UserRole>();
-  close = output<void>();
 
   // Lucide icons
   readonly Building2Icon = Building2;
@@ -57,12 +60,20 @@ export class PartySelectorModal {
   readonly LightbulbIcon = Lightbulb;
   readonly EyeIcon = Eye;
   readonly XIcon = X;
+
+  // Base modal configuration (no footer - actions handled in content)
+  readonly modalConfig: BaseModalConfig = {
+    titleKey: 'partySelector.title',
+    icon: this.SparklesIcon,
+    showFooter: false
+  };
   
   /**
    * Get party options based on detection confidence
    */
   partyOptions = computed(() => {
-    const detected = this.detectedParties();
+    // Use data from CDK Dialog if available, otherwise use input
+    const detected = this.dialogData?.detectedParties || this.detectedParties();
     
     if (!detected) {
       return this.getGenericOptions();
@@ -107,7 +118,7 @@ export class PartySelectorModal {
    * Handle close
    */
   onClose(): void {
-    this.close.emit();
+    this.dialogRef.close();
   }
   
   /**

@@ -1,42 +1,13 @@
-@if (isOpen()) {
-  <!-- Backdrop -->
-  <div 
-    class="fixed inset-0 bg-black/50 z-40 animate-[fadeIn_200ms_ease]"
-    (click)="onClose()"
-    aria-hidden="true"
-  ></div>
-  
-  <!-- Modal -->
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div 
-      class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-[slideUp_300ms_ease]"
-      (click)="$event.stopPropagation()"
-    >
-      <!-- Header -->
-      <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-1">
-              {{ 'partySelector.title' | translate }}
-            </h2>
-            <p class="text-sm text-gray-600">
-              {{ 'partySelector.subtitle' | translate }}
-            </p>
-          </div>
-          
-          <button
-            type="button"
-            (click)="onClose()"
-            class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            [attr.aria-label]="'partySelector.close' | translate"
-          >
-            <lucide-icon [img]="XIcon" class="w-6 h-6"></lucide-icon>
-          </button>
-        </div>
+<app-base-modal [config]="modalConfig">
+      <!-- Header Description -->
+      <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <p class="text-sm text-blue-900 leading-relaxed">
+          <span class="font-semibold flex items-center gap-2">
+            <lucide-icon [img]="LightbulbIcon" class="w-4 h-4"></lucide-icon>
+            {{ 'partySelector.subtitle' | translate }}
+          </span>
+        </p>
       </div>
-      
-      <!-- Body -->
-      <div class="p-8">
         <!-- Detection Confidence Badge (if high confidence) -->
         @if (detectedParties()?.confidence === 'high' && detectedParties()?.parties) {
           <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -95,7 +66,4 @@
             </span>
           </p>
         </div>
-      </div>
-    </div>
-  </div>
-}
+</app-base-modal>

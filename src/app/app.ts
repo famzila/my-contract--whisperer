@@ -7,8 +7,7 @@ import { initializeLanguageStore } from './core/stores/language.store';
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  templateUrl: './app.html'
 })
 export class App {
   protected readonly title = signal('my-contract-whisperer');

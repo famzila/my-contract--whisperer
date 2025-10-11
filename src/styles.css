@@ -1,5 +1,6 @@
 /* Global Styles - Contract Whisperer */
 @import "tailwindcss";
+@import '@angular/cdk/overlay-prebuilt.css';
 
 /* Design System Tokens */
 @theme {
@@ -90,4 +91,10 @@ body {
 *:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+/* CDK Dialog */
+/* Custom backdrop blur effect */
+.cdk-overlay-backdrop {
+  backdrop-filter: blur(2px);
 }

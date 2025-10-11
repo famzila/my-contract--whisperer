@@ -1,23 +1,4 @@
-@if (isOpen()) {
-  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm" (click)="onBackdropClick($event)">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-      <!-- Header -->
-      <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
-         <div class="flex items-center gap-3">
-           <lucide-icon [img]="FileTextIcon" class="w-6 h-6 text-blue-600"></lucide-icon>
-           <h2 class="text-xl font-bold text-gray-900">{{ 'sampleContract.title' | translate }}</h2>
-         </div>
-        <button
-          (click)="onClose()"
-          class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <lucide-icon [img]="XIcon" class="w-5 h-5 text-gray-500"></lucide-icon>
-        </button>
-      </div>
-
-      <!-- Content -->
-      <div class="p-6 overflow-y-auto flex-1 min-h-0">
-        <div class="prose max-w-none pb-4">
+<app-base-modal [config]="modalConfig">
           <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div class="flex items-center gap-2 mb-2">
               <lucide-icon [img]="FileTextIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
@@ -72,6 +53,87 @@
             </div>
           </div>
 
+          <!-- Download Examples Section -->
+          <div class="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg">
+            <div class="flex items-center gap-2 mb-4">
+              <lucide-icon [img]="DownloadIcon" class="w-5 h-5 text-indigo-600"></lucide-icon>
+              <h3 class="font-semibold text-indigo-800">{{ 'sampleContract.downloadExamples' | translate }}</h3>
+            </div>
+            <p class="text-sm text-indigo-700 mb-4">
+              {{ 'sampleContract.downloadDescription' | translate }}
+            </p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- NDA Contract -->
+              <a 
+                href="/samples/nda-contract.docx" 
+                download="nda-contract.docx"
+                class="flex items-center gap-3 p-3 bg-white border border-indigo-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all duration-200 group">
+                <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors">
+                  <lucide-icon [img]="FileTextIcon" class="w-5 h-5 text-red-600"></lucide-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 group-hover:text-indigo-700 transition-colors">
+                    {{ 'sampleContract.ndaContract' | translate }}
+                  </p>
+                  <p class="text-xs text-gray-500">DOCX • {{ 'sampleContract.ndaDescription' | translate }}</p>
+                </div>
+                <lucide-icon [img]="DownloadIcon" class="w-4 h-4 text-gray-400 group-hover:text-indigo-600 transition-colors"></lucide-icon>
+              </a>
+
+              <!-- Freelance Contract -->
+              <a 
+                href="/samples/freelance-contract.pdf" 
+                download="freelance-contract.pdf"
+                class="flex items-center gap-3 p-3 bg-white border border-indigo-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all duration-200 group">
+                <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <lucide-icon [img]="FileTextIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 group-hover:text-indigo-700 transition-colors">
+                    {{ 'sampleContract.freelanceContract' | translate }}
+                  </p>
+                  <p class="text-xs text-gray-500">PDF • {{ 'sampleContract.freelanceDescription' | translate }}</p>
+                </div>
+                <lucide-icon [img]="DownloadIcon" class="w-4 h-4 text-gray-400 group-hover:text-indigo-600 transition-colors"></lucide-icon>
+              </a>
+
+              <!-- Residential Lease -->
+              <a 
+                href="/samples/residential-lease-contract.docx" 
+                download="residential-lease-contract.docx"
+                class="flex items-center gap-3 p-3 bg-white border border-indigo-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all duration-200 group">
+                <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                  <lucide-icon [img]="FileTextIcon" class="w-5 h-5 text-green-600"></lucide-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 group-hover:text-indigo-700 transition-colors">
+                    {{ 'sampleContract.leaseContract' | translate }}
+                  </p>
+                  <p class="text-xs text-gray-500">DOCX • {{ 'sampleContract.leaseDescription' | translate }}</p>
+                </div>
+                <lucide-icon [img]="DownloadIcon" class="w-4 h-4 text-gray-400 group-hover:text-indigo-600 transition-colors"></lucide-icon>
+              </a>
+
+              <!-- Arabic Contract -->
+              <a 
+                href="/samples/arabic-contract.docx" 
+                download="arabic-contract.docx"
+                class="flex items-center gap-3 p-3 bg-white border border-indigo-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all duration-200 group">
+                <div class="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                  <lucide-icon [img]="FileTextIcon" class="w-5 h-5 text-purple-600"></lucide-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 group-hover:text-indigo-700 transition-colors">
+                    {{ 'sampleContract.arabicContract' | translate }}
+                  </p>
+                  <p class="text-xs text-gray-500">DOCX • {{ 'sampleContract.arabicDescription' | translate }}</p>
+                </div>
+                <lucide-icon [img]="DownloadIcon" class="w-4 h-4 text-gray-400 group-hover:text-indigo-600 transition-colors"></lucide-icon>
+              </a>
+            </div>
+          </div>
+
           <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div class="flex items-center gap-2 mb-2">
               <lucide-icon [img]="LightbulbIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
@@ -81,18 +143,4 @@
               {{ 'sampleContract.understandingContent' | translate }}
             </p>
           </div>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="flex justify-end p-6 border-t border-gray-200 flex-shrink-0">
-        <button
-          (click)="onClose()"
-          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          {{ 'modal.close' | translate }}
-        </button>
-      </div>
-    </div>
-  </div>
-}
+</app-base-modal>

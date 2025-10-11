@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -24,17 +24,13 @@ import { UiStore } from '../../core/stores/ui.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { LanguageStore } from '../../core/stores/language.store';
 import { ContractParserService } from '../../core/services/contract-parser.service';
-import { PartySelectorModal } from '../../shared/components/party-selector-modal/party-selector-modal';
-import { NonContractError } from '../../shared/components/non-contract-error/non-contract-error';
-import { SampleContractModal } from '../../shared/components/sample-contract-modal/sample-contract-modal';
-import { HowItWorksModal } from '../../shared/components/how-it-works-modal/how-it-works-modal';
-import { PrivacyPolicyModal } from '../../shared/components/privacy-policy-modal/privacy-policy-modal';
+import { ModalService } from '../../core/services/modal.service';
 
 type UploadMode = 'file' | 'text';
 
 @Component({
   selector: 'app-contract-upload',
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PartySelectorModal, NonContractError, SampleContractModal, HowItWorksModal, PrivacyPolicyModal],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule],
   templateUrl: './contract-upload.html',
   styleUrl: './contract-upload.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -62,16 +58,23 @@ export class ContractUpload {
   private parserService = inject(ContractParserService);
   private uiStore = inject(UiStore);
   private router = inject(Router);
+  private modalService = inject(ModalService);
 
   // Local UI state
   mode = signal<UploadMode>('file');
   contractText = signal('');
   isDragging = signal(false);
-  
-  // Modal states
-  showSampleContractModal = signal(false);
-  showHowItWorksModal = signal(false);
-  showPrivacyPolicyModal = signal(false);
+  private partySelectorDialogRef: any = null;
+
+  constructor() {
+    effect(() => {
+      // Watch for party selection needs and open modal automatically
+      if (this.onboardingStore.needsPartySelection() && !this.partySelectorDialogRef) {
+        this.openPartySelector();
+      }
+    });
+
+  }
 
   /**
    * Switch between upload modes
@@ -307,41 +310,48 @@ export class ContractUpload {
    * View sample contract
    */
   viewSampleContract(): void {
-    this.showSampleContractModal.set(true);
+    this.modalService.openSampleContract();
   }
 
   /**
    * Show how it works information
    */
   showHowItWorks(): void {
-    this.showHowItWorksModal.set(true);
+    this.modalService.openHowItWorks();
   }
 
   /**
    * Show privacy policy
    */
   showPrivacyPolicy(): void {
-    this.showPrivacyPolicyModal.set(true);
+    this.modalService.openPrivacyPolicy();
   }
 
   /**
-   * Close sample contract modal
+   * Open party selector modal
    */
-  closeSampleContractModal(): void {
-    this.showSampleContractModal.set(false);
+  openPartySelector(): void {
+    if (this.partySelectorDialogRef) {
+      return; // Already open
+    }
+    
+    this.partySelectorDialogRef = this.modalService.openPartySelector({
+      data: {
+        detectedParties: this.onboardingStore.detectedParties()
+      }
+    });
+
+    // Subscribe to role selection
+    this.partySelectorDialogRef.componentInstance.selectRole.subscribe((role: string) => {
+      this.onSelectRole(role);
+      this.partySelectorDialogRef?.close();
+      this.partySelectorDialogRef = null;
+    });
+
+    // Subscribe to close event
+    this.partySelectorDialogRef.closed.subscribe(() => {
+      this.partySelectorDialogRef = null;
+    });
   }
 
-  /**
-   * Close how it works modal
-   */
-  closeHowItWorksModal(): void {
-    this.showHowItWorksModal.set(false);
-  }
-
-  /**
-   * Close privacy policy modal
-   */
-  closePrivacyPolicyModal(): void {
-    this.showPrivacyPolicyModal.set(false);
-  }
 }

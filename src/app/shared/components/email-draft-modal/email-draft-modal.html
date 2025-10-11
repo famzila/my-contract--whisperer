@@ -1,0 +1,90 @@
+<app-base-modal [config]="modalConfig">
+  <!-- Rewrite Options Toggle -->
+  <div class="mb-4">
+    <button
+      (click)="onToggleRewriteOptions()"
+      class="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+      </svg>
+      {{ showRewriteOptionsState ? ('analysis.email.hideRewriteOptions' | translate) : ('analysis.email.showRewriteOptions' | translate) }}
+    </button>
+    
+    @if (showRewriteOptionsState) {
+      <div class="mt-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200 animate-fade-in">
+        <h4 class="text-sm font-semibold text-indigo-900 mb-3">{{ 'analysis.email.customizeStyle' | translate }}</h4>
+        
+        <!-- Tone Selection -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-indigo-800 mb-2">{{ 'analysis.email.tone' | translate }}</label>
+          <div class="flex flex-wrap gap-2">
+            @for (tone of ['formal', 'neutral', 'casual']; track tone) {
+              <button
+                type="button"
+                (click)="onUpdateRewriteOption('tone', tone)"
+                [class]="
+                  'px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ' +
+                  (currentRewriteOptions.tone === tone
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-100')
+                ">
+                {{ ('analysis.email.tones.' + tone) | translate }}
+              </button>
+            }
+          </div>
+        </div>
+        
+        <!-- Length Selection -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-indigo-800 mb-2">{{ 'analysis.email.length' | translate }}</label>
+          <div class="flex flex-wrap gap-2">
+            @for (length of ['short', 'medium', 'long']; track length) {
+              <button
+                type="button"
+                (click)="onUpdateRewriteOption('length', length)"
+                [class]="
+                  'px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ' +
+                  (currentRewriteOptions.length === length
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-100')
+                ">
+                {{ ('analysis.email.lengths.' + length) | translate }}
+              </button>
+            }
+          </div>
+        </div>
+        
+        
+        <!-- Apply Button -->
+        <app-button
+          (click)="onRewriteEmail()"
+          [disabled]="isCurrentlyRewriting"
+          variant="primary"
+          size="md"
+          class="w-full">
+          @if (isCurrentlyRewriting) {
+            <span class="flex items-center justify-center gap-2">
+              <app-loading-spinner size="sm" />
+              {{ 'analysis.email.rewriting' | translate }}
+            </span>
+          } @else {
+            <span class="flex items-center gap-2">
+              <lucide-icon [img]="RefreshCwIcon" class="w-4 h-4"></lucide-icon>
+              {{ 'analysis.email.applyChanges' | translate }}
+            </span>
+          }
+        </app-button>
+      </div>
+    }
+  </div>
+  
+  <!-- Email Content -->
+  <div class="bg-gray-50 rounded-lg p-6 font-mono text-sm whitespace-pre-wrap relative">
+    @if (isCurrentlyRewriting) {
+      <div class="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
+        <app-loading-spinner size="md" />
+      </div>
+    }
+    {{ emailText }}
+  </div>
+</app-base-modal>
