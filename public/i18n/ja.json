@@ -27,7 +27,10 @@
     "originalLanguage": "契約書の原文言語で分析する",
     "preferredLanguage": "選択した言語で分析する",
     "tipTitle": "ヒント：",
-    "tipMessage": "AI が契約書を分析し、選択した言語で結果を提供します。元の契約書の内容は変更されません。"
+    "tipMessage": "AI が契約書を分析し、選択した言語で結果を提供します。元の契約書の内容は変更されません。",
+    "appWillSwitch": "アプリはこの言語に切り替わります",
+    "appWillStayInCurrent": "アプリは現在の言語のままです（UIは利用できません）",
+    "noAppSwitch": "アプリの言語は変更されません"
   },
   "navbar": {
     "title": "Contract Whisperer",

@@ -27,7 +27,10 @@
     "originalLanguage": "계약서 원문 언어로 분석하기",
     "preferredLanguage": "선호하는 언어로 분석하기",
     "tipTitle": "팁:",
-    "tipMessage": "AI가 계약서를 분석하고 선택한 언어로 결과를 제공합니다. 원본 계약서의 내용은 변경되지 않습니다."
+    "tipMessage": "AI가 계약서를 분석하고 선택한 언어로 결과를 제공합니다. 원본 계약서의 내용은 변경되지 않습니다.",
+    "appWillSwitch": "앱이 이 언어로 전환됩니다",
+    "appWillStayInCurrent": "앱은 현재 언어로 유지됩니다 (UI를 사용할 수 없음)",
+    "noAppSwitch": "앱 언어 전환 없음"
   },
   "navbar": {
     "title": "Contract Whisperer",

@@ -29,7 +29,10 @@
     "originalLanguage": "Analyze in the contract's original language",
     "preferredLanguage": "Show in My Language (translated for easier understanding)",
     "tipTitle": "Note:",
-    "tipMessage": "The contract will be analyzed in its original language to preserve legal accuracy. We'll translate the results to your chosen language."
+    "tipMessage": "The contract will be analyzed in its original language to preserve legal accuracy. We'll translate the results to your chosen language.",
+    "appWillSwitch": "App will switch to this language",
+    "appWillStayInCurrent": "App will stay in current language (UI not available)",
+    "noAppSwitch": "No app language switch"
   },
   "navbar": {
     "title": "Contract Whisperer",
@@ -115,6 +118,10 @@
     "translatedFrom": "Translated from",
     "showTranslated": "Show Translated",
     "showOriginal": "Show Original",
+    "viewingInDifferentLanguage": "Viewing analysis in different language",
+    "analysisLanguage": "Analysis Language",
+    "uiLanguage": "UI Language",
+    "switchUITo": "Switch UI to",
     "tabs": {
       "summary": "Summary",
       "risks": "Risks",

@@ -1,74 +1,74 @@
 <app-base-modal [config]="modalConfig">
           <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div class="flex items-center gap-2 mb-2">
+            <div class="flex items-center gap-2 mb-2 rtl:flex-row-reverse">
               <lucide-icon [img]="FileTextIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
               <h3 class="font-semibold text-blue-800">{{ 'termsOfService.headerTitle' | translate }}</h3>
             </div>
-            <p class="text-sm text-blue-700">
+            <p class="text-sm text-blue-700 rtl:text-right">
               {{ 'termsOfService.headerDescription' | translate }}
             </p>
           </div>
 
           <div class="space-y-6 text-sm">
             <div>
-              <h3 class="font-semibold text-gray-900 mb-3">
+              <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">
                 {{ 'termsOfService.acceptance' | translate }}
               </h3>
-              <p class="text-gray-700">
+              <p class="text-gray-700 rtl:text-right">
                 {{ 'termsOfService.acceptanceContent' | translate }}
               </p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-3">
+              <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">
                 {{ 'termsOfService.description' | translate }}
               </h3>
-              <p class="text-gray-700">
+              <p class="text-gray-700 rtl:text-right">
                 {{ 'termsOfService.descriptionContent' | translate }}
               </p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-3">
+              <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">
                 {{ 'termsOfService.userResponsibilities' | translate }}
               </h3>
-              <p class="text-gray-700">
+              <p class="text-gray-700 rtl:text-right">
                 {{ 'termsOfService.userResponsibilitiesContent' | translate }}
               </p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-3">
+              <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">
                 {{ 'termsOfService.limitations' | translate }}
               </h3>
-              <p class="text-gray-700">
+              <p class="text-gray-700 rtl:text-right">
                 {{ 'termsOfService.limitationsContent' | translate }}
               </p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-3">
+              <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">
                 {{ 'termsOfService.privacy' | translate }}
               </h3>
-              <p class="text-gray-700">
+              <p class="text-gray-700 rtl:text-right">
                 {{ 'termsOfService.privacyContent' | translate }}
               </p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-3">
+              <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">
                 {{ 'termsOfService.modifications' | translate }}
               </h3>
-              <p class="text-gray-700">
+              <p class="text-gray-700 rtl:text-right">
                 {{ 'termsOfService.modificationsContent' | translate }}
               </p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-3">
+              <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">
                 {{ 'termsOfService.contact' | translate }}
               </h3>
-              <p class="text-gray-700">
+              <p class="text-gray-700 rtl:text-right">
                 {{ 'termsOfService.contactDescription' | translate }}
                 <a
                   href="mailto:famzil.contact@gmail.com?subject=Terms of Service Question&body=Hi, I have a question about Contract Whisperer's terms of service:"
@@ -79,6 +79,6 @@
               </p>
             </div>
 
-            <div class="text-xs text-gray-500 mt-6">{{ 'termsOfService.lastUpdated' | translate }}</div>
+            <div class="text-xs text-gray-500 mt-6 rtl:text-right">{{ 'termsOfService.lastUpdated' | translate }}</div>
         </div>
 </app-base-modal>

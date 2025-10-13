@@ -22,7 +22,7 @@
         <!-- Header Description -->
         <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p class="text-sm text-blue-900 leading-relaxed">
-            <span class="font-semibold flex items-center gap-2">
+            <span class="font-semibold flex items-center gap-2 rtl:flex-row-reverse">
               <lucide-icon [img]="LightbulbIcon" class="w-4 h-4"></lucide-icon>
               {{ 'partySelector.subtitle' | translate }}
             </span>
@@ -44,19 +44,14 @@
             <button
               type="button"
               (click)="onSelectRole(option.value)"
-              class="flex items-start gap-4 p-5 text-left bg-white border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 hover:shadow-md active:scale-[0.98] transition-all duration-150 group rtl:flex-row-reverse"
+              class="flex items-start gap-4 p-5 text-left rtl:text-right bg-white border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 hover:shadow-md active:scale-[0.98] transition-all duration-150 group"
               [class.col-span-full]="option.value === 'both_views'"
             >
-              <!-- Arrow Icon -->
-              <svg 
-                class="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-all duration-150" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-              
+              <!-- Icon (Left in LTR, Right in RTL) -->
+              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-150 order-first rtl:order-last">
+                <lucide-icon [img]="option.icon" class="w-8 h-8 text-gray-600 group-hover:text-primary"></lucide-icon>
+              </div>
+
               <!-- Content -->
               <div class="flex-1 min-w-0">
                 <h3 class="text-lg font-semibold text-gray-900 mb-1 group-hover:text-primary transition-colors">
@@ -68,20 +63,25 @@
                   </p>
                 }
               </div>
-              
-              <!-- Icon -->
-              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-150">
-                <lucide-icon [img]="option.icon" class="w-8 h-8 text-gray-600 group-hover:text-primary"></lucide-icon>
-              </div>
+
+              <!-- Arrow Icon (Right in LTR, Left in RTL) -->
+              <svg
+                class="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-primary transition-all duration-150 order-last rtl:order-first rtl:rotate-180"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           }
         </div>
         
         <!-- Info Box -->
         <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <p class="text-sm text-gray-700 flex items-start gap-2">
+          <p class="text-sm text-gray-700 flex items-start gap-2 rtl:flex-row-reverse">
             <lucide-icon [img]="LightbulbIcon" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></lucide-icon>
-            <span>
+            <span class="rtl:text-right">
               <strong>{{ 'partySelector.proTip' | translate }}</strong> {{ 'partySelector.proTipMessage' | translate }}
             </span>
           </p>

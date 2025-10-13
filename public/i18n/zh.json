@@ -27,7 +27,10 @@
     "originalLanguage": "以合同原文语言分析",
     "preferredLanguage": "以您的首选语言分析",
     "tipTitle": "提示：",
-    "tipMessage": "AI 将分析合同并以您选择的语言显示结果。原始合同文本不会被修改。"
+    "tipMessage": "AI 将分析合同并以您选择的语言显示结果。原始合同文本不会被修改。",
+    "appWillSwitch": "应用将切换到此语言",
+    "appWillStayInCurrent": "应用将保持当前语言（UI不可用）",
+    "noAppSwitch": "不切换应用语言"
   },
   "navbar": {
     "title": "Contract Whisperer",

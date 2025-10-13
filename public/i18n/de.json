@@ -17,7 +17,18 @@
     "choose": "Wählen Sie Ihre Sprache",
     "detected": "Vertrag erkannt in",
     "wantAnalysis": "Möchten Sie die Analyse in Ihrer Sprache?",
-    "analyzeIn": "Analysieren in"
+    "analyzeIn": "Analysieren in",
+    "mismatchDetected": "Sprachkonflikt erkannt",
+    "mismatchMessage": "Dieser Vertrag ist in",
+    "appLanguageSet": "aber Ihre App-Sprache ist eingestellt auf",
+    "whichLanguage": "Wählen Sie Ihre bevorzugte Sprache für die Analyseergebnisse:",
+    "originalLanguage": "In der Originalsprache des Vertrags analysieren",
+    "preferredLanguage": "In meiner Sprache anzeigen (übersetzt für besseres Verständnis)",
+    "tipTitle": "Hinweis:",
+    "tipMessage": "Der Vertrag wird in seiner Originalsprache analysiert, um die rechtliche Genauigkeit zu wahren. Wir übersetzen die Ergebnisse in Ihre gewählte Sprache.",
+    "appWillSwitch": "Die App wechselt zu dieser Sprache",
+    "appWillStayInCurrent": "Die App bleibt in der aktuellen Sprache (UI nicht verfügbar)",
+    "noAppSwitch": "Kein Sprachwechsel der App"
   },
   "navbar": {
     "title": "Contract Whisperer",

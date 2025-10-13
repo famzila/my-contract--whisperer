@@ -399,11 +399,10 @@ export const ContractStore = signalStore(
         const analysisContext = {
           contractLanguage: contractLang,
           userPreferredLanguage: languageStore.preferredLanguage(),
-          // 🔑 KEY FIX: ALWAYS analyze in contract's language to preserve nuances
-          analyzedInLanguage: contractLang,  // ✅ Analyze in contract language (not user's choice!)
+          analyzedInLanguage: onboardingStore.selectedOutputLanguage() || languageStore.preferredLanguage(),
           userRole: onboardingStore.selectedRole(),
           detectedParties: detectedParties?.parties && detectedParties.parties.party1 && detectedParties.parties.party2
-            ? { 
+            ? {
                 party1: detectedParties.parties.party1,
                 party2: detectedParties.parties.party2
               }

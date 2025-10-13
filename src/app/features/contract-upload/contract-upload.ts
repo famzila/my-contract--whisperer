@@ -24,6 +24,7 @@ import { UiStore } from '../../core/stores/ui.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { LanguageStore } from '../../core/stores/language.store';
 import { ContractParserService } from '../../core/services/contract-parser.service';
+import { isAppLanguageSupported } from '../../core/constants/languages';
 
 type UploadMode = 'file' | 'text';
 
@@ -268,11 +269,27 @@ export class ContractUpload {
    */
   selectContractLanguage(): void {
     const detectedLang = this.onboardingStore.detectedLanguage();
-    console.log('👤 [Language Choice] User selected: Keep original', detectedLang);
-    if (detectedLang) {
-      this.onboardingStore.setSelectedLanguage(detectedLang);
-      // Note: Do NOT change user's app language preference - only analysis output language
-      console.log('✅ [Language Choice] Analysis will be in original language (no translation)');
+
+    console.log(`🌍 User chose contract language: ${detectedLang}`);
+
+    if (!detectedLang) return;
+
+    // Set selected output language in onboarding store
+    this.onboardingStore.setSelectedLanguage(detectedLang);
+
+    // Check if we should switch app language
+    if (isAppLanguageSupported(detectedLang)) {
+      const currentAppLang = this.languageStore.preferredLanguage();
+      if (detectedLang !== currentAppLang) {
+        console.log(`✅ Switching app to ${detectedLang} (supported)`);
+        this.languageStore.setPreferredLanguage(detectedLang);
+
+        // Optional: Show toast
+        // this.uiStore.showToast(`App switched to ${this.getLanguageName(detectedLang)}`, 'info');
+      }
+    } else {
+      console.warn(`⚠️ ${detectedLang} not supported for app UI, keeping ${this.languageStore.preferredLanguage()}`);
+      // App stays in current language, analysis will be in contract language
     }
   }
 
@@ -280,10 +297,14 @@ export class ContractUpload {
    * Handle language selection - use user's preferred language (with translation)
    */
   selectUserLanguage(): void {
-    const userLang = this.languageStore.preferredLanguage();
-    console.log('👤 [Language Choice] User selected:', userLang, '(will translate from', this.onboardingStore.detectedLanguage(), ')');
-    this.onboardingStore.setSelectedLanguage(userLang);
-    console.log('✅ [Language Choice] Analysis will be translated to user preferred language');
+    const preferredLang = this.languageStore.preferredLanguage();
+
+    console.log(`✅ Keeping app in ${preferredLang}, results will be translated`);
+
+    // Set selected output language to current app language
+    this.onboardingStore.setSelectedLanguage(preferredLang);
+
+    // No app switch needed - already in preferred language
   }
 
   /**
@@ -321,9 +342,13 @@ export class ContractUpload {
    * Show language mismatch modal
    */
   showLanguageMismatchModal(): void {
+    const detectedLang = this.onboardingStore.detectedLanguage();
+    const preferredLang = this.languageStore.preferredLanguage();
+
     const languageData = {
-      detectedLanguage: this.onboardingStore.detectedLanguage(),
-      preferredLanguage: this.languageStore.preferredLanguage(),
+      detectedLanguage: detectedLang,
+      preferredLanguage: preferredLang,
+      isContractLanguageSupported: isAppLanguageSupported(detectedLang!),
       onSelectContractLanguage: () => this.selectContractLanguage(),
       onSelectUserLanguage: () => this.selectUserLanguage(),
       getLanguageName: (code: string) => this.getLanguageName(code),

@@ -36,3 +36,23 @@ export function isRTL(languageCode: string): boolean {
  * Default language fallback
  */
 export const DEFAULT_LANGUAGE = LANGUAGES.ENGLISH;
+
+/**
+ * Languages supported for APP UI (i18n translations available)
+ */
+export const SUPPORTED_APP_LANGUAGES = [
+  LANGUAGES.ENGLISH,
+  LANGUAGES.FRENCH,
+  LANGUAGES.ARABIC,
+  LANGUAGES.SPANISH,
+  LANGUAGES.GERMAN,
+  LANGUAGES.JAPANESE,
+  LANGUAGES.CHINESE,
+] as const;
+
+/**
+ * Check if language is supported for app UI
+ */
+export function isAppLanguageSupported(langCode: string): boolean {
+  return (SUPPORTED_APP_LANGUAGES as readonly string[]).includes(langCode);
+}

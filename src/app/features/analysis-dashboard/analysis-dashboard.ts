@@ -1,13 +1,16 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { ContractStore, EmailDraftStore, UiStore } from '../../core/stores';
+import { LanguageStore } from '../../core/stores/language.store';
+import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { Card, LoadingSpinner, Button } from '../../shared/components';
 import type { ContractClause } from '../../core/models/contract.model';
 import type { AIAnalysisResponse, RiskSeverity, RiskEmoji } from '../../core/models/ai-analysis.model';
 import { AppConfig } from '../../core/config/app.config';
+import { isAppLanguageSupported } from '../../core/constants/languages';
 import { 
   Theater, 
   Globe, 
@@ -50,11 +53,13 @@ import {
 })
 export class AnalysisDashboard implements OnInit {
   private router = inject(Router);
-  
+
   // Stores
   contractStore = inject(ContractStore);
   emailStore = inject(EmailDraftStore);
-  
+  languageStore = inject(LanguageStore);
+  onboardingStore = inject(OnboardingStore);
+
   // Services
   translate = inject(TranslateService);
   private uiStore = inject(UiStore);
@@ -101,7 +106,29 @@ export class AnalysisDashboard implements OnInit {
   
   // 🌍 Translation state
   showingOriginal = signal(false);  // Toggle between translated and original
-  
+
+  // 🌍 Language mismatch banner computed signals
+  showLanguageMismatchBanner = computed(() => {
+    const appLang = this.languageStore.preferredLanguage();
+    const detectedLang = this.languageStore.detectedContractLanguage();
+    return appLang !== detectedLang && detectedLang !== null;
+  });
+
+  canSwitchAppLanguage = computed(() => {
+    const detectedLang = this.languageStore.detectedContractLanguage();
+    return detectedLang ? isAppLanguageSupported(detectedLang) : false;
+  });
+
+  analysisLanguageName = computed(() => {
+    const lang = this.languageStore.detectedContractLanguage();
+    return this.getLanguageNameByCode(lang || 'en');
+  });
+
+  appLanguageName = computed(() => {
+    const lang = this.languageStore.preferredLanguage();
+    return this.getLanguageNameByCode(lang);
+  });
+
   // Check if mock mode is enabled
   isMockMode = AppConfig.useMockAI;
 
@@ -129,7 +156,7 @@ export class AnalysisDashboard implements OnInit {
   getSourceLanguageName(): string {
     const code = this.contractStore.analysis()?.translationInfo?.sourceLanguage;
     if (!code) return this.translate.instant('languages.unknown');
-    
+
     // Map language codes to translation keys
     const languageKeyMap: Record<string, string> = {
       'en': 'languages.english',
@@ -141,11 +168,40 @@ export class AnalysisDashboard implements OnInit {
       'zh': 'languages.chinese',
       'ko': 'languages.korean',
     };
-    
+
     const translationKey = languageKeyMap[code];
     return translationKey ? this.translate.instant(translationKey) : code.toUpperCase();
   }
-  
+
+  /**
+   * Get language name by code (for banner)
+   */
+  private getLanguageNameByCode(code: string): string {
+    const languageKeyMap: Record<string, string> = {
+      'en': 'languages.english',
+      'fr': 'languages.french',
+      'ar': 'languages.arabic',
+      'es': 'languages.spanish',
+      'de': 'languages.german',
+      'ja': 'languages.japanese',
+      'zh': 'languages.chinese',
+      'ko': 'languages.korean',
+    };
+
+    const translationKey = languageKeyMap[code];
+    return translationKey ? this.translate.instant(translationKey) : code.toUpperCase();
+  }
+
+  /**
+   * Switch app language to analysis language
+   */
+  switchAppToAnalysisLanguage(): void {
+    const detectedLang = this.languageStore.detectedContractLanguage();
+    if (detectedLang && isAppLanguageSupported(detectedLang)) {
+      this.languageStore.setPreferredLanguage(detectedLang);
+    }
+  }
+
   /**
    * Toggle between translated and original content
    */

@@ -1,127 +1,127 @@
 <app-base-modal [config]="modalConfig">
           <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <div class="flex items-center gap-2 mb-2">
+            <div class="flex items-center gap-2 mb-2 rtl:flex-row-reverse">
               <lucide-icon [img]="LockIcon" class="w-5 h-5 text-green-600"></lucide-icon>
               <h3 class="font-semibold text-green-800">
                 {{ 'privacyPolicy.mainTitle' | translate }}
               </h3>
             </div>
-            <p class="text-sm text-green-700">
+            <p class="text-sm text-green-700 rtl:text-right">
               {{ 'privacyPolicy.mainDescription' | translate }}
             </p>
           </div>
 
           <div class="space-y-6 text-sm">
           <div>
-            <h3 class="font-semibold text-gray-900 mb-3">
+            <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">
               {{ 'privacyPolicy.whatWeCollect' | translate }}
             </h3>
-            <p class="text-gray-700 mb-2">
+            <p class="text-gray-700 mb-2 rtl:text-right">
                {{ 'privacyPolicy.whatWeCollectDescription' | translate }}
             </p>
-            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
-                 <li>{{ 'privacyPolicy.collectItem1' | translate }}</li>
-                 <li>{{ 'privacyPolicy.collectItem2' | translate }}</li>
-                 <li>{{ 'privacyPolicy.collectItem3' | translate }}</li>
-                 <li>{{ 'privacyPolicy.collectItem4' | translate }}</li>
+            <ul class="list-disc text-gray-700 space-y-1 ml-4 rtl:mr-4 rtl:ml-0 rtl:list-inside ltr:list-inside">
+                 <li class="rtl:text-right">{{ 'privacyPolicy.collectItem1' | translate }}</li>
+                 <li class="rtl:text-right">{{ 'privacyPolicy.collectItem2' | translate }}</li>
+                 <li class="rtl:text-right">{{ 'privacyPolicy.collectItem3' | translate }}</li>
+                 <li class="rtl:text-right">{{ 'privacyPolicy.collectItem4' | translate }}</li>
             </ul>
-            <p class="text-gray-700 mt-2 font-medium">
+            <p class="text-gray-700 mt-2 font-medium rtl:text-right">
                <strong>{{ 'privacyPolicy.doNotCollect' | translate }}</strong> {{ 'privacyPolicy.doNotCollectDescription' | translate }}
             </p>
           </div>
 
           <div>
-            <h3 class="font-semibold text-gray-900 mb-3">
+            <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">
               {{ 'privacyPolicy.zeroDataStorage' | translate }}
             </h3>
-            <p class="text-gray-700 mb-2">
+            <p class="text-gray-700 mb-2 rtl:text-right">
                <strong>{{ 'privacyPolicy.zeroDataStorageDescription' | translate }}</strong>
             </p>
-            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
-                 <li>{{ 'privacyPolicy.storageItem1' | translate }}</li>
-                 <li>{{ 'privacyPolicy.storageItem2' | translate }}</li>
-                 <li>{{ 'privacyPolicy.storageItem3' | translate }}</li>
-                 <li>{{ 'privacyPolicy.storageItem4' | translate }}</li>
-                 <li>{{ 'privacyPolicy.storageItem5' | translate }}</li>
+            <ul class="list-disc text-gray-700 space-y-1 ml-4 rtl:mr-4 rtl:ml-0 rtl:list-inside ltr:list-inside">
+                 <li class="rtl:text-right">{{ 'privacyPolicy.storageItem1' | translate }}</li>
+                 <li class="rtl:text-right">{{ 'privacyPolicy.storageItem2' | translate }}</li>
+                 <li class="rtl:text-right">{{ 'privacyPolicy.storageItem3' | translate }}</li>
+                 <li class="rtl:text-right">{{ 'privacyPolicy.storageItem4' | translate }}</li>
+                 <li class="rtl:text-right">{{ 'privacyPolicy.storageItem5' | translate }}</li>
             </ul>
-            <p class="text-gray-700 mt-2">
+            <p class="text-gray-700 mt-2 rtl:text-right">
                <strong>{{ 'privacyPolicy.onlyLocalStorage' | translate }}</strong> {{ 'privacyPolicy.onlyLocalStorageDescription' | translate }}
             </p>
           </div>
 
           <div>
-            <h3 class="font-semibold text-gray-900 mb-3">
+            <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">
               {{ 'privacyPolicy.localAIProcessing' | translate }}
             </h3>
-            <p class="text-gray-700 mb-2">
+            <p class="text-gray-700 mb-2 rtl:text-right">
                <strong>{{ 'privacyPolicy.localAIProcessingDescription' | translate }}</strong>
             </p>
-            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
-                 <li>{{ 'privacyPolicy.processingItem1' | translate }}</li>
-              <li>{{ 'privacyPolicy.processingItem2' | translate }}</li>
-              <li>{{ 'privacyPolicy.processingItem3' | translate }}</li>
-              <li>{{ 'privacyPolicy.processingItem4' | translate }}</li>
-              <li>{{ 'privacyPolicy.processingItem5' | translate }}</li>
-              <li>{{ 'privacyPolicy.processingItem6' | translate }}</li>
+            <ul class="list-disc text-gray-700 space-y-1 ml-4 rtl:mr-4 rtl:ml-0 rtl:list-inside ltr:list-inside">
+                 <li class="rtl:text-right">{{ 'privacyPolicy.processingItem1' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.processingItem2' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.processingItem3' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.processingItem4' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.processingItem5' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.processingItem6' | translate }}</li>
             </ul>
-            <p class="text-gray-700 mt-2">
+            <p class="text-gray-700 mt-2 rtl:text-right">
               <strong>{{ 'privacyPolicy.chromeOnly' | translate }}</strong> {{ 'privacyPolicy.chromeOnlyDescription' | translate }}
             </p>
           </div>
 
           <div>
-            <h3 class="font-semibold text-gray-900 mb-3">{{ 'privacyPolicy.browserStorage' | translate }}</h3>
-            <p class="text-gray-700 mb-2">
+            <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">{{ 'privacyPolicy.browserStorage' | translate }}</h3>
+            <p class="text-gray-700 mb-2 rtl:text-right">
               <strong>{{ 'privacyPolicy.browserStorageDescription' | translate }}</strong>
             </p>
-            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
-              <li>{{ 'privacyPolicy.browserStorageItem1' | translate }}</li>
-              <li>{{ 'privacyPolicy.browserStorageItem2' | translate }}</li>
-              <li>{{ 'privacyPolicy.browserStorageItem3' | translate }}</li>
-              <li>{{ 'privacyPolicy.browserStorageItem4' | translate }}</li>
+            <ul class="list-disc text-gray-700 space-y-1 ml-4 rtl:mr-4 rtl:ml-0 rtl:list-inside ltr:list-inside">
+              <li class="rtl:text-right">{{ 'privacyPolicy.browserStorageItem1' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.browserStorageItem2' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.browserStorageItem3' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.browserStorageItem4' | translate }}</li>
             </ul>
-            <p class="text-gray-700 mt-2">
+            <p class="text-gray-700 mt-2 rtl:text-right">
               {{ 'privacyPolicy.browserStorageNote' | translate }}
             </p>
           </div>
 
           <div>
-            <h3 class="font-semibold text-gray-900 mb-3">{{ 'privacyPolicy.noCookies' | translate }}</h3>
-            <p class="text-gray-700">
+            <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">{{ 'privacyPolicy.noCookies' | translate }}</h3>
+            <p class="text-gray-700 rtl:text-right">
               {{ 'privacyPolicy.noCookiesDescription' | translate }}
             </p>
           </div>
 
           <div>
-            <h3 class="font-semibold text-gray-900 mb-3">{{ 'privacyPolicy.yourRights' | translate }}</h3>
-            <p class="text-gray-700 mb-2">
+            <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">{{ 'privacyPolicy.yourRights' | translate }}</h3>
+            <p class="text-gray-700 mb-2 rtl:text-right">
               <strong>{{ 'privacyPolicy.yourRightsDescription' | translate }}</strong>
             </p>
-            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
-              <li>{{ 'privacyPolicy.rightsItem1' | translate }}</li>
-              <li>{{ 'privacyPolicy.rightsItem2' | translate }}</li>
-              <li>{{ 'privacyPolicy.rightsItem3' | translate }}</li>
-              <li>{{ 'privacyPolicy.rightsItem4' | translate }}</li>
-              <li>{{ 'privacyPolicy.rightsItem5' | translate }}</li>
+            <ul class="list-disc text-gray-700 space-y-1 ml-4 rtl:mr-4 rtl:ml-0 rtl:list-inside ltr:list-inside">
+              <li class="rtl:text-right">{{ 'privacyPolicy.rightsItem1' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.rightsItem2' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.rightsItem3' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.rightsItem4' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.rightsItem5' | translate }}</li>
             </ul>
           </div>
 
           <div>
-            <h3 class="font-semibold text-gray-900 mb-3">{{ 'privacyPolicy.technicalRequirements' | translate }}</h3>
-            <p class="text-gray-700 mb-2">
+            <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">{{ 'privacyPolicy.technicalRequirements' | translate }}</h3>
+            <p class="text-gray-700 mb-2 rtl:text-right">
               <strong>{{ 'privacyPolicy.technicalRequirementsDescription' | translate }}</strong>
             </p>
-            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
-              <li>{{ 'privacyPolicy.requirementsItem1' | translate }}</li>
-              <li>{{ 'privacyPolicy.requirementsItem2' | translate }}</li>
-              <li>{{ 'privacyPolicy.processingItem2' | translate }}</li>
-              <li>{{ 'privacyPolicy.requirementsItem4' | translate }}</li>
+            <ul class="list-disc text-gray-700 space-y-1 ml-4 rtl:mr-4 rtl:ml-0 rtl:list-inside ltr:list-inside">
+              <li class="rtl:text-right">{{ 'privacyPolicy.requirementsItem1' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.requirementsItem2' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.processingItem2' | translate }}</li>
+              <li class="rtl:text-right">{{ 'privacyPolicy.requirementsItem4' | translate }}</li>
             </ul>
           </div>
 
           <div>
-            <h3 class="font-semibold text-gray-900 mb-3">{{ 'privacyPolicy.contact' | translate }}</h3>
-            <p class="text-gray-700">
+            <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">{{ 'privacyPolicy.contact' | translate }}</h3>
+            <p class="text-gray-700 rtl:text-right">
               {{ 'privacyPolicy.contactDescription' | translate }}
               <a
                 href="mailto:famzil.contact@gmail.com?subject=Privacy Policy Question&body=Hi, I have a question about Contract Whisperer's privacy policy:"
@@ -132,6 +132,6 @@
             </p>
           </div>
 
-          <div class="text-xs text-gray-500 mt-6">{{ 'privacyPolicy.lastUpdated' | translate }}</div>
+          <div class="text-xs text-gray-500 mt-6 rtl:text-right">{{ 'privacyPolicy.lastUpdated' | translate }}</div>
         </div>
 </app-base-modal>
