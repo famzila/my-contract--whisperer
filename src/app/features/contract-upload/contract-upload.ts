@@ -41,6 +41,7 @@ export class ContractUpload {
   onboardingStore = inject(OnboardingStore);
   languageStore = inject(LanguageStore);
   translate = inject(TranslateService);
+  modalService = inject(ModalService);
   
   // Lucide icons
   readonly FileTextIcon = FileText;
@@ -59,7 +60,6 @@ export class ContractUpload {
   private parserService = inject(ContractParserService);
   private uiStore = inject(UiStore);
   private router = inject(Router);
-  private modalService = inject(ModalService);
 
   // Local UI state
   mode = signal<UploadMode>('file');
@@ -75,6 +75,33 @@ export class ContractUpload {
       }
     });
 
+    effect(() => {
+      // Watch for party extraction loading state and open modal automatically
+      const isValidContract = this.onboardingStore.isValidContract();
+      const needsLanguageSelection = this.onboardingStore.needsLanguageSelection();
+      const selectedOutputLanguage = this.onboardingStore.selectedOutputLanguage();
+      const detectedParties = this.onboardingStore.detectedParties();
+      
+      const isLoadingParties = isValidContract === true && 
+                              !needsLanguageSelection && 
+                              selectedOutputLanguage !== null &&
+                              detectedParties === null;
+      
+      if (isLoadingParties && !this.partySelectorDialogRef) {
+        this.openPartySelector();
+      }
+    });
+
+    effect(() => {
+      // Watch for language mismatch and show modal automatically
+      const isValidContract = this.onboardingStore.isValidContract();
+      const needsLanguageSelection = this.onboardingStore.needsLanguageSelection();
+      
+      if (isValidContract === true && needsLanguageSelection) {
+        // Show language mismatch modal
+        this.showLanguageMismatchModal();
+      }
+    });
   }
 
   /**
@@ -295,6 +322,22 @@ export class ContractUpload {
   }
 
   /**
+   * Show language mismatch modal
+   */
+  showLanguageMismatchModal(): void {
+    const languageData = {
+      detectedLanguage: this.onboardingStore.detectedLanguage(),
+      preferredLanguage: this.languageStore.preferredLanguage(),
+      onSelectContractLanguage: () => this.selectContractLanguage(),
+      onSelectUserLanguage: () => this.selectUserLanguage(),
+      getLanguageName: (code: string) => this.getLanguageName(code),
+      getLanguageFlag: (code: string) => this.getLanguageFlag(code)
+    };
+
+    this.modalService.openLanguageMismatch(languageData);
+  }
+
+  /**
    * Reset upload state
    */
   reset(): void {
@@ -349,9 +392,16 @@ export class ContractUpload {
       return; // Already open
     }
     
+    // Check if we're in loading state (extracting parties)
+    const isLoading = this.onboardingStore.isValidContract() === true && 
+                     !this.onboardingStore.needsLanguageSelection() && 
+                     this.onboardingStore.selectedOutputLanguage() !== null &&
+                     this.onboardingStore.detectedParties() === null;
+    
     this.partySelectorDialogRef = this.modalService.openPartySelector({
       data: {
-        detectedParties: this.onboardingStore.detectedParties()
+        detectedParties: this.onboardingStore.detectedParties(),
+        isLoading: isLoading
       }
     });
 

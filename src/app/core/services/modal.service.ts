@@ -6,6 +6,7 @@ import { PrivacyPolicyModal } from '../../shared/components/privacy-policy-modal
 import { TermsOfServiceModal } from '../../shared/components/terms-of-service-modal/terms-of-service-modal';
 import { PartySelectorModal } from '../../shared/components/party-selector-modal/party-selector-modal';
 import { EmailDraftModal } from '../../shared/components/email-draft-modal/email-draft-modal';
+import { LanguageMismatchModal } from '../../shared/components/language-mismatch-modal/language-mismatch-modal';
 
 export interface ModalConfig {
   width?: string;
@@ -115,11 +116,45 @@ export class ModalService {
     });
   }
 
+  /**
+   * Open Language Mismatch Modal
+   */
+  openLanguageMismatch(languageData: any, config?: ModalConfig): DialogRef<any, any> {
+    const dialogRef = this.dialog.open(LanguageMismatchModal, {
+      width: '90vw',
+      maxWidth: '28rem', // md = 28rem
+      maxHeight: '90vh',
+      panelClass: 'language-mismatch-modal',
+      hasBackdrop: true,
+      disableClose: false,
+      data: languageData,
+      ...config
+    });
+
+    // Apply dark mode to overlay if needed
+    this.applyDarkModeToOverlay();
+    
+    return dialogRef;
+  }
+
 
   /**
    * Close all open dialogs
    */
   closeAll(): void {
     this.dialog.closeAll();
+  }
+
+  /**
+   * Apply dark mode to CDK overlay container
+   */
+  private applyDarkModeToOverlay(): void {
+    // Small delay to ensure overlay is created
+    setTimeout(() => {
+      const overlayContainer = document.querySelector('.cdk-overlay-container');
+      if (overlayContainer && document.documentElement.classList.contains('dark')) {
+        overlayContainer.classList.add('dark');
+      }
+    }, 0);
   }
 }

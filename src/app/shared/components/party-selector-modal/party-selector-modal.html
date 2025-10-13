@@ -1,13 +1,33 @@
-<app-base-modal [config]="modalConfig">
-      <!-- Header Description -->
-      <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p class="text-sm text-blue-900 leading-relaxed">
-          <span class="font-semibold flex items-center gap-2">
-            <lucide-icon [img]="LightbulbIcon" class="w-4 h-4"></lucide-icon>
-            {{ 'partySelector.subtitle' | translate }}
-          </span>
-        </p>
-      </div>
+<app-base-modal [config]="modalConfig()">
+      @if (isLoading()) {
+        <!-- Loading State -->
+        <div class="text-center py-8">
+          <div class="flex justify-center mb-4">
+            <lucide-icon [img]="SearchIcon" class="w-16 h-16 text-blue-600 animate-bounce"></lucide-icon>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">
+            {{ 'upload.analyzingParties' | translate }}
+          </h2>
+          <p class="text-gray-600 mb-4">
+            {{ 'upload.identifyingParties' | translate }}
+          </p>
+          <div class="flex items-center justify-center gap-2">
+            <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+            <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+            <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+          </div>
+        </div>
+      } @else {
+        <!-- Selection State -->
+        <!-- Header Description -->
+        <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p class="text-sm text-blue-900 leading-relaxed">
+            <span class="font-semibold flex items-center gap-2">
+              <lucide-icon [img]="LightbulbIcon" class="w-4 h-4"></lucide-icon>
+              {{ 'partySelector.subtitle' | translate }}
+            </span>
+          </p>
+        </div>
         <!-- Detection Confidence Badge (if high confidence) -->
         @if (detectedParties()?.confidence === 'high' && detectedParties()?.parties) {
           <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -66,4 +86,5 @@
             </span>
           </p>
         </div>
+      }
 </app-base-modal>

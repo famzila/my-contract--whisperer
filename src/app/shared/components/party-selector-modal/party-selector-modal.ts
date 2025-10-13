@@ -20,7 +20,8 @@ import {
   Sparkles, 
   Lightbulb, 
   Eye,
-  X
+  X,
+  Search
 } from '../../../shared/icons/lucide-icons';
 import type { PartyDetectionResult, UserRole } from '../../../core/stores/onboarding.store';
 
@@ -31,6 +32,11 @@ interface PartyOption {
   description?: string;
 }
 
+interface PartySelectorData {
+  detectedParties: PartyDetectionResult | null;
+  isLoading?: boolean;
+}
+
 @Component({
   selector: 'app-party-selector-modal',
   imports: [CommonModule, TranslatePipe, LucideAngularModule, BaseModal],
@@ -39,7 +45,7 @@ interface PartyOption {
 })
 export class PartySelectorModal {
   private dialogRef = inject(DialogRef);
-  private dialogData = inject(DIALOG_DATA, { optional: true });
+  private dialogData = inject<PartySelectorData>(DIALOG_DATA, { optional: true });
   private translate = inject(TranslateService);
 
   // Inputs
@@ -61,18 +67,38 @@ export class PartySelectorModal {
   readonly LightbulbIcon = Lightbulb;
   readonly EyeIcon = Eye;
   readonly XIcon = X;
+  readonly SearchIcon = Search;
 
-  // Base modal configuration (no footer - actions handled in content)
-  readonly modalConfig: BaseModalConfig = {
-    titleKey: 'partySelector.title',
-    icon: this.SparklesIcon,
-    showFooter: false
-  };
+  // Computed properties for state management
+  isLoading = computed(() => {
+    return this.dialogData?.isLoading ?? false;
+  });
+
+  modalConfig = computed(() => {
+    if (this.isLoading()) {
+      return {
+        titleKey: 'upload.analyzingParties',
+        icon: this.SearchIcon,
+        showFooter: false,
+      } as BaseModalConfig;
+    }
+    
+    return {
+      titleKey: 'partySelector.title',
+      icon: this.SparklesIcon,
+      showFooter: false
+    } as BaseModalConfig;
+  });
   
   /**
    * Get party options based on detection confidence
    */
   partyOptions = computed(() => {
+    // If loading, return empty array
+    if (this.isLoading()) {
+      return [];
+    }
+
     // Use data from CDK Dialog if available, otherwise use input
     const detected = this.dialogData?.detectedParties || this.detectedParties();
     
