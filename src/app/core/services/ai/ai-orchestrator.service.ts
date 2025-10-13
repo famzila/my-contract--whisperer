@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { PromptService } from './prompt.service';
 import { SummarizerService } from './summarizer.service';
 import { TranslatorService } from './translator.service';
@@ -31,6 +32,7 @@ export class AiOrchestratorService {
   private translatorService = inject(TranslatorService);
   private languageDetectorService = inject(LanguageDetectorService);
   private writerService = inject(WriterService);
+  private translate = inject(TranslateService);
 
   private servicesStatus: AIServicesStatus | null = null;
 
@@ -78,9 +80,7 @@ export class AiOrchestratorService {
 
     // We only need Prompt and Summarizer APIs for basic contract analysis
     if (!status.prompt || !status.summarizer) {
-      throw new Error(
-        `Required AI services not available. Prompt: ${status.prompt}, Summarizer: ${status.summarizer}`
-      );
+      throw new Error(this.translate.instant('errors.aiServicesUnavailable'));
     }
 
     console.log(`✅ Both Prompt and Summarizer APIs available. Starting analysis${userRole ? ` from ${userRole}'s perspective` : ''}...`);
@@ -117,7 +117,7 @@ Remember: Output ONLY the JSON object, no markdown, no code blocks, no additiona
     const status = await this.checkAvailability();
 
     if (!status.prompt || !status.summarizer) {
-      throw new Error('Required AI services (Prompt & Summarizer) are not available');
+      throw new Error(this.translate.instant('errors.aiServicesUnavailable'));
     }
 
     const [executiveSummary, detailedSummary, eli5Summary, clauses] = await Promise.all([
@@ -145,7 +145,7 @@ Remember: Output ONLY the JSON object, no markdown, no code blocks, no additiona
     const status = this.servicesStatus || await this.checkAvailability();
 
     if (!status.prompt) {
-      throw new Error('Prompt API is not available');
+      throw new Error(this.translate.instant('errors.promptApiUnavailable'));
     }
 
     return await this.promptService.askQuestion(contractText, question);
@@ -161,7 +161,7 @@ Remember: Output ONLY the JSON object, no markdown, no code blocks, no additiona
     const status = this.servicesStatus || await this.checkAvailability();
 
     if (!status.translator) {
-      throw new Error('Translator API is not available');
+      throw new Error(this.translate.instant('errors.translatorApiUnavailable'));
     }
 
     const sourceLanguage = this.translatorService.detectLanguage(summary);
@@ -179,7 +179,7 @@ Remember: Output ONLY the JSON object, no markdown, no code blocks, no additiona
     const status = this.servicesStatus || await this.checkAvailability();
 
     if (!status.writer && !status.rewriter) {
-      throw new Error('Writer/Rewriter APIs are not available');
+      throw new Error(this.translate.instant('errors.writerApiUnavailable'));
     }
 
     switch (improvementType) {

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { ContractStore, EmailDraftStore } from '../../core/stores';
 import { Card, LoadingSpinner, Button } from '../../shared/components';
@@ -44,7 +44,7 @@ import {
 
 @Component({
   selector: 'app-analysis-dashboard',
-  imports: [CommonModule, LucideAngularModule, Card, LoadingSpinner, Button],
+  imports: [CommonModule, LucideAngularModule, Card, LoadingSpinner, Button, TranslatePipe],
   templateUrl: './analysis-dashboard.html',
   styleUrl: './analysis-dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -129,17 +129,22 @@ export class AnalysisDashboard implements OnInit {
    */
   getSourceLanguageName(): string {
     const code = this.contractStore.analysis()?.translationInfo?.sourceLanguage;
-    const languages: Record<string, string> = {
-      'en': 'English',
-      'fr': 'French',
-      'ar': 'Arabic',
-      'es': 'Spanish',
-      'de': 'German',
-      'ja': 'Japanese',
-      'zh': 'Chinese',
-      'ko': 'Korean',
+    if (!code) return this.translate.instant('languages.unknown');
+    
+    // Map language codes to translation keys
+    const languageKeyMap: Record<string, string> = {
+      'en': 'languages.english',
+      'fr': 'languages.french',
+      'ar': 'languages.arabic',
+      'es': 'languages.spanish',
+      'de': 'languages.german',
+      'ja': 'languages.japanese',
+      'zh': 'languages.chinese',
+      'ko': 'languages.korean',
     };
-    return languages[code || 'en'] || code?.toUpperCase() || 'Unknown';
+    
+    const translationKey = languageKeyMap[code];
+    return translationKey ? this.translate.instant(translationKey) : code.toUpperCase();
   }
   
   /**
@@ -225,7 +230,7 @@ export class AnalysisDashboard implements OnInit {
       // Build AIAnalysisResponse from analysis fields
       const structured: AIAnalysisResponse = {
         metadata: analysis.metadata || {
-          contractType: 'Unknown',
+          contractType: this.translate.instant('analysis.unknownContractType'),
           effectiveDate: null,
           endDate: null,
           duration: null,
@@ -255,7 +260,7 @@ export class AnalysisDashboard implements OnInit {
             severity: (c.riskLevel === 'high' ? 'High' : c.riskLevel === 'medium' ? 'Medium' : 'Low') as RiskSeverity,
             emoji: (c.riskLevel === 'high' ? '🚨' : c.riskLevel === 'medium' ? '⚠️' : 'ℹ️') as RiskEmoji,
             description: c.plainLanguage,
-            impact: `Risk level: ${c.riskLevel}`,  // Required field
+            impact: `${this.translate.instant('analysis.risks.riskLevel')}: ${c.riskLevel}`,  // Required field
             impactOn: 'both',
             contextWarning: null
           })),
@@ -284,7 +289,7 @@ export class AnalysisDashboard implements OnInit {
         })) || [],
         questions: analysis.questions || [],
         contextWarnings: analysis.contextWarnings as any,  // Type cast for now
-        disclaimer: analysis.disclaimer || 'This analysis is provided by an AI system and is not legal advice.'
+        disclaimer: this.translate.instant('analysis.disclaimer.text')
       };
       
       this.structuredData.set(structured);
@@ -475,7 +480,7 @@ export class AnalysisDashboard implements OnInit {
    * Get disclaimer text
    */
   getDisclaimer(): string {
-    return this.structuredData()?.disclaimer || 'I am an AI assistant, not a lawyer. This information is for educational purposes only. Consult a qualified attorney for legal advice.';
+    return this.translate.instant('analysis.disclaimer.text');
   }
   
   /**
@@ -540,7 +545,7 @@ export class AnalysisDashboard implements OnInit {
     
     return {
       icon,
-      text: `From ${partyName} perspective`,
+      text: this.translate.instant('analysis.badge.fromPerspective', { name: partyName }),
       className: `px-3 py-1 text-sm font-medium ${colorClass} rounded-full border`
     };
   }
@@ -557,43 +562,43 @@ export class AnalysisDashboard implements OnInit {
     const contexts: Record<string, { icon: any; title: string; message: string }> = {
       'employee': {
         icon: this.BarChart3Icon,
-        title: 'Analyzed from Your Perspective as an Employee',
-        message: 'This analysis is tailored to protect your interests as the employee. The risks, obligations, and recommendations focus on what matters to you in this employment relationship.'
+        title: this.translate.instant('analysis.perspectiveAnalysis.employeeTitle'),
+        message: this.translate.instant('analysis.perspectiveAnalysis.employeeDescription')
       },
       'employer': {
         icon: this.BarChart3Icon,
-        title: 'Analyzed from Your Perspective as an Employer',
-        message: 'This analysis is tailored to protect your company\'s interests. The risks, obligations, and recommendations focus on what matters to you as the employer.'
+        title: this.translate.instant('analysis.perspectiveAnalysis.employerTitle'),
+        message: this.translate.instant('analysis.perspectiveAnalysis.employerDescription')
       },
       'contractor': {
         icon: this.BarChart3Icon,
-        title: 'Analyzed from Your Perspective as a Contractor',
-        message: 'This analysis is tailored to protect your interests as the contractor. The risks, obligations, and recommendations focus on fair compensation, payment timing, and liability exposure.'
+        title: this.translate.instant('analysis.perspectiveAnalysis.contractorTitle'),
+        message: this.translate.instant('analysis.perspectiveAnalysis.contractorDescription')
       },
       'client': {
         icon: this.BarChart3Icon,
-        title: 'Analyzed from Your Perspective as a Client',
-        message: 'This analysis is tailored to protect your interests as the client. The risks, obligations, and recommendations focus on deliverables, quality, and timelines.'
+        title: this.translate.instant('analysis.perspectiveAnalysis.clientTitle'),
+        message: this.translate.instant('analysis.perspectiveAnalysis.clientDescription')
       },
       'tenant': {
         icon: this.BarChart3Icon,
-        title: 'Analyzed from Your Perspective as a Tenant',
-        message: 'This analysis is tailored to protect your interests as the tenant. The risks, obligations, and recommendations focus on your rights, security deposit, and housing costs.'
+        title: this.translate.instant('analysis.perspectiveAnalysis.tenantTitle'),
+        message: this.translate.instant('analysis.perspectiveAnalysis.tenantDescription')
       },
       'landlord': {
         icon: this.BarChart3Icon,
-        title: 'Analyzed from Your Perspective as a Landlord',
-        message: 'This analysis is tailored to protect your property interests. The risks, obligations, and recommendations focus on rent collection and property protection.'
+        title: this.translate.instant('analysis.perspectiveAnalysis.landlordTitle'),
+        message: this.translate.instant('analysis.perspectiveAnalysis.landlordDescription')
       },
       'partner': {
         icon: this.BarChart3Icon,
-        title: 'Analyzed from Your Perspective as a Partner',
-        message: 'This analysis is tailored to your interests as a partner. The risks, obligations, and recommendations focus on equity fairness and exit options.'
+        title: this.translate.instant('analysis.perspectiveAnalysis.partnerTitle'),
+        message: this.translate.instant('analysis.perspectiveAnalysis.partnerDescription')
       },
       'both_views': {
         icon: this.ScaleIcon,
-        title: 'Balanced Analysis - Both Parties\' Perspectives',
-        message: 'This analysis provides a balanced view showing how each clause affects both parties. Risks and obligations are marked to show impact on each side.'
+        title: this.translate.instant('analysis.perspectiveAnalysis.bothTitle'),
+        message: this.translate.instant('analysis.perspectiveAnalysis.bothDescription')
       }
     };
     

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, signal, inject, effect } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService  } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { 
   FileText, 
@@ -30,7 +30,7 @@ type UploadMode = 'file' | 'text';
 
 @Component({
   selector: 'app-contract-upload',
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, TranslatePipe, LucideAngularModule],
   templateUrl: './contract-upload.html',
   styleUrl: './contract-upload.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -40,6 +40,7 @@ export class ContractUpload {
   contractStore = inject(ContractStore);
   onboardingStore = inject(OnboardingStore);
   languageStore = inject(LanguageStore);
+  translate = inject(TranslateService);
   
   // Lucide icons
   readonly FileTextIcon = FileText;
@@ -266,9 +267,22 @@ export class ContractUpload {
    * Get language name from code
    */
   getLanguageName(code: string | null): string {
-    if (!code) return 'Unknown';
-    const lang = this.languageStore.availableLanguages().find(l => l.code === code);
-    return lang?.name || code.toUpperCase();
+    if (!code) return this.translate.instant('languages.unknown');
+    
+    // Map language codes to translation keys
+    const languageKeyMap: Record<string, string> = {
+      'en': 'languages.english',
+      'fr': 'languages.french',
+      'ar': 'languages.arabic',
+      'es': 'languages.spanish',
+      'de': 'languages.german',
+      'ja': 'languages.japanese',
+      'zh': 'languages.chinese',
+      'ko': 'languages.korean',
+    };
+    
+    const translationKey = languageKeyMap[code];
+    return translationKey ? this.translate.instant(translationKey) : code.toUpperCase();
   }
 
   /**

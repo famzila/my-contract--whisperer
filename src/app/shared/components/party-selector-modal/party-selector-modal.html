@@ -11,7 +11,7 @@
         <!-- Detection Confidence Badge (if high confidence) -->
         @if (detectedParties()?.confidence === 'high' && detectedParties()?.parties) {
           <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p class="text-sm font-medium text-blue-900 flex items-center gap-2">
+            <p class="text-sm font-medium text-blue-900 flex items-center gap-2 rtl:flex-row-reverse">
               <lucide-icon [img]="SparklesIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
               {{ 'partySelector.detectedParties' | translate }}
             </p>
@@ -24,13 +24,18 @@
             <button
               type="button"
               (click)="onSelectRole(option.value)"
-              class="flex items-start gap-4 p-5 text-left bg-white border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 hover:shadow-md active:scale-[0.98] transition-all duration-150 group"
+              class="flex items-start gap-4 p-5 text-left bg-white border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 hover:shadow-md active:scale-[0.98] transition-all duration-150 group rtl:flex-row-reverse"
               [class.col-span-full]="option.value === 'both_views'"
             >
-              <!-- Icon -->
-              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-150">
-                <lucide-icon [img]="option.icon" class="w-8 h-8 text-gray-600 group-hover:text-primary"></lucide-icon>
-              </div>
+              <!-- Arrow Icon -->
+              <svg 
+                class="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-all duration-150" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
               
               <!-- Content -->
               <div class="flex-1 min-w-0">
@@ -44,15 +49,10 @@
                 }
               </div>
               
-              <!-- Arrow Icon -->
-              <svg 
-                class="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all duration-150" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
+              <!-- Icon -->
+              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-150">
+                <lucide-icon [img]="option.icon" class="w-8 h-8 text-gray-600 group-hover:text-primary"></lucide-icon>
+              </div>
             </button>
           }
         </div>

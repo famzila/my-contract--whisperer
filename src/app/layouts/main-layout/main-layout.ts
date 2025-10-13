@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterModule, Router, RouterLink, RouterOutlet } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { LanguageSelector } from '../../shared/components';
 import { ModalService } from '../../core/services/modal.service';
@@ -8,7 +8,7 @@ import { FileText, Bot, Shield, Menu } from '../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterLink, RouterOutlet, TranslateModule, LucideAngularModule, LanguageSelector],
+  imports: [RouterLink, RouterOutlet,   TranslatePipe, LucideAngularModule, LanguageSelector],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-modal',
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslatePipe],
   templateUrl: './modal.html',
   styleUrl: './modal.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

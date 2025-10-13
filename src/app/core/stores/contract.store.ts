@@ -6,6 +6,7 @@
 import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals';
 import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
+import { TranslateService } from '@ngx-translate/core';
 import type { Contract, ContractAnalysis, ContractClause, RiskLevel } from '../models/contract.model';
 import { ContractAnalysisService } from '../services/contract-analysis.service';
 import { ContractParserService, type ParsedContract } from '../services/contract-parser.service';
@@ -134,7 +135,8 @@ export const ContractStore = signalStore(
     languageStore = inject(LanguageStore),
     onboardingStore = inject(OnboardingStore),
     validationService = inject(ContractValidationService),
-    partyExtractionService = inject(PartyExtractionService)
+    partyExtractionService = inject(PartyExtractionService),
+    translate = inject(TranslateService)
   ) => ({
     /**
      * Set contract
@@ -253,7 +255,7 @@ export const ContractStore = signalStore(
             uploadError: 'Not a valid contract document',
             isUploading: false,
           });
-          throw new Error('Not a contract: ' + validationResult.reason);
+          throw new Error(translate.instant('errors.notAContract', { reason: validationResult.reason }));
         }
         
         // Valid contract!
@@ -326,7 +328,7 @@ export const ContractStore = signalStore(
             uploadError: 'Not a valid contract document',
             isUploading: false,
           });
-          throw new Error('Not a contract: ' + validationResult.reason);
+          throw new Error(translate.instant('errors.notAContract', { reason: validationResult.reason }));
         }
         
         // Valid contract!

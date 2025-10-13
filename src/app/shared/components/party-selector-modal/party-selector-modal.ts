@@ -5,7 +5,7 @@
 import { Component, input, output, computed, inject } from '@angular/core';
 import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 import { CommonModule } from '@angular/common';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
 import { 
@@ -40,6 +40,7 @@ interface PartyOption {
 export class PartySelectorModal {
   private dialogRef = inject(DialogRef);
   private dialogData = inject(DIALOG_DATA, { optional: true });
+  private translate = inject(TranslateService);
 
   // Inputs
   detectedParties = input<PartyDetectionResult | null>(null);
@@ -86,19 +87,19 @@ export class PartySelectorModal {
           value: 'party1' as UserRole,
           label: detected.parties.party1.name,
           icon: this.getIconForRole(detected.parties.party1.role),
-          description: detected.parties.party1.role,
+          description: this.translateRoleName(detected.parties.party1.role),
         },
         {
           value: 'party2' as UserRole,
           label: detected.parties.party2.name,
           icon: this.getIconForRole(detected.parties.party2.role),
-          description: detected.parties.party2.role,
+          description: this.translateRoleName(detected.parties.party2.role),
         },
         {
           value: 'both_views' as UserRole,
-          label: 'Compare Both Perspectives',
+          label: this.translate.instant('partySelector.bothPerspectives'),
           icon: this.EyeIcon,
-          description: 'See analysis from both parties\' viewpoints',
+          description: this.translate.instant('partySelector.seeBothViewpoints'),
         },
       ];
     }
@@ -128,49 +129,66 @@ export class PartySelectorModal {
     return [
       {
         value: 'employer',
-        label: 'Employer / Company',
+        label: this.translate.instant('partySelector.employerCompany'),
         icon: this.Building2Icon,
-        description: 'I\'m hiring or engaging services',
+        description: this.translate.instant('partySelector.hiringServices'),
       },
       {
         value: 'employee',
-        label: 'Employee / Worker',
+        label: this.translate.instant('partySelector.employeeWorker'),
         icon: this.UserIcon,
-        description: 'I\'m being hired for employment',
+        description: this.translate.instant('partySelector.beingHired'),
       },
       {
         value: 'client',
-        label: 'Client',
+        label: this.translate.instant('partySelector.client'),
         icon: this.BriefcaseIcon,
-        description: 'I\'m hiring a contractor or service',
+        description: this.translate.instant('partySelector.hiringContractor'),
       },
       {
         value: 'contractor',
-        label: 'Contractor / Freelancer',
+        label: this.translate.instant('partySelector.contractorFreelancer'),
         icon: this.WrenchIcon,
-        description: 'I\'m providing services',
+        description: this.translate.instant('partySelector.providingServices'),
       },
       {
         value: 'landlord',
-        label: 'Landlord / Property Owner',
+        label: this.translate.instant('partySelector.landlord'),
         icon: this.HomeIcon,
-        description: 'I\'m renting out property',
+        description: this.translate.instant('partySelector.owningProperty'),
       },
       {
         value: 'tenant',
-        label: 'Tenant / Renter',
+        label: this.translate.instant('partySelector.tenantRenter'),
         icon: this.KeyIcon,
-        description: 'I\'m renting property',
+        description: this.translate.instant('partySelector.rentingProperty'),
       },
       {
         value: 'both_views',
-        label: 'Compare Both Perspectives',
+        label: this.translate.instant('partySelector.bothPerspectives'),
         icon: this.EyeIcon,
-        description: 'See analysis from both parties\' viewpoints',
+        description: this.translate.instant('partySelector.seeBothViewpoints'),
       },
     ];
   }
   
+  /**
+   * Translate role name from English to current language
+   */
+  private translateRoleName(role: string): string {
+    const roleMap: Record<string, string> = {
+      'Employer': this.translate.instant('partySelector.employer'),
+      'Employee': this.translate.instant('partySelector.employee'),
+      'Client': this.translate.instant('partySelector.client'),
+      'Contractor': this.translate.instant('partySelector.contractorFreelancer'),
+      'Landlord': this.translate.instant('partySelector.landlord'),
+      'Tenant': this.translate.instant('partySelector.tenantRenter'),
+      'Partner': this.translate.instant('partySelector.partner'),
+    };
+    
+    return roleMap[role] || role; // Return original if not found
+  }
+
   /**
    * Get icon for role
    */

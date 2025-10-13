@@ -39,11 +39,15 @@
           @if (wasTranslated()) {
             <app-button (click)="toggleOriginal()" variant="secondary" size="md">
               @if (showingOriginal()) {
-                <lucide-icon [img]="RefreshCwIcon" class="w-4 h-4 mr-2"></lucide-icon>
-                {{ translate.instant('analysis.showTranslated') }}
+                <div class="flex items-center gap-2">
+                  <lucide-icon [img]="RefreshCwIcon" class="w-4 h-4"></lucide-icon>
+                  {{ translate.instant('analysis.showTranslated') }}
+                </div>
               } @else {
-                <lucide-icon [img]="FileTextIcon" class="w-4 h-4 mr-2"></lucide-icon>
-                {{ translate.instant('analysis.showOriginal') }} {{ getSourceLanguageName() }}
+                <div class="flex items-center gap-2">
+                  <lucide-icon [img]="FileTextIcon" class="w-4 h-4"></lucide-icon>
+                  {{ translate.instant('analysis.showOriginal') }} {{ getSourceLanguageName() }}
+                </div>
               }
             </app-button>
           }
@@ -296,20 +300,20 @@
                   <div>
                     <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
                       <lucide-icon [img]="ShieldIcon" class="w-5 h-5 text-red-600"></lucide-icon>
-                      Restrictions
+                      {{ translate.instant('analysis.summary.restrictions') }}
                     </h3>
                     <div class="space-y-2 text-gray-700">
                       @if (getSummary()!.restrictions.confidentiality) {
-                        <p><strong>Confidentiality:</strong> {{ getSummary()!.restrictions.confidentiality }}</p>
+                        <p><strong>{{ translate.instant('analysis.summary.confidentiality') }}:</strong> {{ getSummary()!.restrictions.confidentiality }}</p>
                       }
                       @if (getSummary()!.restrictions.nonCompete) {
-                        <p><strong>Non-Compete:</strong> {{ getSummary()!.restrictions.nonCompete }}</p>
+                        <p><strong>{{ translate.instant('analysis.summary.nonCompete') }}:</strong> {{ getSummary()!.restrictions.nonCompete }}</p>
                       }
                       @if (getSummary()!.restrictions.nonSolicitation) {
-                        <p><strong>Non-Solicitation:</strong> {{ getSummary()!.restrictions.nonSolicitation }}</p>
+                        <p><strong>{{ translate.instant('analysis.summary.nonSolicitation') }}:</strong> {{ getSummary()!.restrictions.nonSolicitation }}</p>
                       }
                       @if (getSummary()!.restrictions.other) {
-                        <p><strong>Other:</strong> {{ getSummary()!.restrictions.other }}</p>
+                        <p><strong>{{ translate.instant('analysis.summary.other') }}:</strong> {{ getSummary()!.restrictions.other }}</p>
                       }
                     </div>
                   </div>
@@ -325,9 +329,9 @@
             <div class="text-center mb-6">
               <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
                 <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 text-red-600"></lucide-icon>
-                Risk Flags
+                {{ translate.instant('analysis.risks.title') }}
               </h2>
-              <p class="text-gray-600 mt-2">Prioritized by severity - High risks first</p>
+              <p class="text-gray-600 mt-2">{{ translate.instant('analysis.risks.subtitle') }}</p>
             </div>
             
             @if (getRisks().length > 0) {
@@ -336,11 +340,11 @@
                 <div class="space-y-3">
                   <h3 class="text-lg font-semibold text-error flex items-center gap-2">
                     <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4 text-red-600"></lucide-icon>
-                    High Priority Risks
+                    {{ translate.instant('analysis.risks.highPriority') }}
                   </h3>
                   @for (risk of getHighRisks(); track $index) {
                     <app-card>
-                      <div class="flex border-l-4 border-error bg-error/5">
+                      <div class="flex border-l-4 border-error bg-error/5 rtl:border-l-0 rtl:border-r-4">
                         <div class="flex-1 p-6">
                           <div class="flex items-start gap-3">
                             <!-- <span class="text-2xl">{{ risk.emoji }}</span> -->
@@ -350,7 +354,7 @@
                               <div class="bg-white rounded-lg p-3 border border-error/20">
                                 <p class="text-sm font-medium text-error flex items-center gap-1">
                                   <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4"></lucide-icon>
-                                  Impact:
+                                  {{ translate.instant('analysis.risks.impact') }}:
                                 </p>
                                 <p class="text-sm text-gray-700 mt-1">{{ risk.impact }}</p>
                               </div>
@@ -368,11 +372,11 @@
                 <div class="space-y-3">
                   <h3 class="text-lg font-semibold text-warning flex items-center gap-2">
                     <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4 text-amber-600"></lucide-icon>
-                    Medium Priority Risks
+                    {{ translate.instant('analysis.risks.mediumPriority') }}
                   </h3>
                   @for (risk of getMediumRisks(); track $index) {
                     <app-card>
-                      <div class="flex border-l-4 border-warning bg-warning/5">
+                      <div class="flex border-l-4 border-warning bg-warning/5 rtl:border-l-0 rtl:border-r-4">
                         <div class="flex-1 p-6">
                           <div class="flex items-start gap-3">
                             <!-- <span class="text-2xl">{{ risk.emoji }}</span> -->
@@ -382,7 +386,7 @@
                               <div class="bg-white rounded-lg p-3 border border-warning/20">
                                 <p class="text-sm font-medium text-warning flex items-center gap-1">
                                   <lucide-icon [img]="LightbulbIcon" class="w-4 h-4"></lucide-icon>
-                                  Impact:
+                                  {{ translate.instant('analysis.risks.impact') }}:
                                 </p>
                                 <p class="text-sm text-gray-700 mt-1">{{ risk.impact }}</p>
                               </div>
@@ -400,11 +404,11 @@
                 <div class="space-y-3">
                   <h3 class="text-lg font-semibold text-info flex items-center gap-2">
                     <lucide-icon [img]="InfoIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-                    Low Priority Risks
+                    {{ translate.instant('analysis.risks.lowPriority') }}
                   </h3>
                   @for (risk of getLowRisks(); track $index) {
                     <app-card>
-                      <div class="flex border-l-4 border-info bg-info/5">
+                      <div class="flex border-l-4 border-info bg-info/5 rtl:border-l-0 rtl:border-r-4">
                         <div class="flex-1 p-6">
                           <div class="flex items-start gap-3">
                             <!-- <span class="text-2xl">{{ risk.emoji }}</span> -->
@@ -423,7 +427,7 @@
               <app-card>
                 <div class="p-8 text-center text-gray-500">
                   <span class="text-4xl mb-4 block">✨</span>
-                  <p>No significant risks identified in this contract.</p>
+                  <p>{{ translate.instant('analysis.risks.noRisks') }}</p>
                 </div>
               </app-card>
             }
@@ -436,9 +440,9 @@
             <div class="text-center mb-6">
               <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
                 <lucide-icon [img]="ClockIcon" class="w-8 h-8 text-green-600"></lucide-icon>
-                Obligations
+                {{ translate.instant('analysis.obligations.title') }}
               </h2>
-              <p class="text-gray-600 mt-2">What each party is responsible for - structured and actionable</p>
+              <p class="text-gray-600 mt-2">{{ translate.instant('analysis.obligations.subtitle') }}</p>
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -447,7 +451,7 @@
                 <div class="p-6 bg-gradient-to-br from-blue-50 to-white h-full">
                   <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <lucide-icon [img]="CheckCircleIcon" class="w-8 h-8 text-green-600"></lucide-icon>
-                    Employer / Company
+                    {{ translate.instant('analysis.obligations.employer') }}
                   </h3>
                   <div class="space-y-3">
                     @for (obligation of getObligations().employer; track $index) {
@@ -469,13 +473,13 @@
                           @if (obligation.startDate) {
                             <p class="flex items-center gap-2">
                               <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-                              Starts: {{ obligation.startDate }}
+                              {{ translate.instant('analysis.obligations.starts') }}: {{ obligation.startDate }}
                             </p>
                           }
                           @if (obligation.duration) {
                             <p class="flex items-center gap-2">
                               <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-                              Duration: {{ obligation.duration }}
+                              {{ translate.instant('analysis.obligations.duration') }}: {{ obligation.duration }}
                             </p>
                           }
                           @if (obligation.scope) {
@@ -496,7 +500,7 @@
                 <div class="p-6 bg-gradient-to-br from-purple-50 to-white h-full">
                   <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <span class="text-2xl">🧑‍💻</span>
-                    Employee / Individual
+                    {{ translate.instant('analysis.obligations.employee') }}
                   </h3>
                   <div class="space-y-3">
                     @for (obligation of getObligations().employee; track $index) {
@@ -531,9 +535,9 @@
             <div class="text-center mb-6">
               <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
                 <lucide-icon [img]="FileXIcon" class="w-8 h-8 text-amber-600"></lucide-icon>
-                What's Missing
+                {{ translate.instant('analysis.omissions.title') }}
               </h2>
-              <p class="text-gray-600 mt-2">Prioritized by importance - High priority first</p>
+              <p class="text-gray-600 mt-2">{{ translate.instant('analysis.omissions.subtitle') }}</p>
             </div>
             
             @if (getOmissions().length > 0) {
@@ -542,11 +546,11 @@
                 <div class="space-y-3">
                   <h3 class="text-lg font-semibold text-error flex items-center gap-2">
                     <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4 text-red-600"></lucide-icon>
-                    High Priority Omissions
+                    {{ translate.instant('analysis.omissions.highPriority') }}
                   </h3>
                   @for (omission of getHighPriorityOmissions(); track $index) {
                     <app-card>
-                      <div class="flex border-l-4 border-error bg-error/5">
+                      <div class="flex border-l-4 border-error bg-error/5 rtl:border-l-0 rtl:border-r-4">
                         <div class="flex-1 p-6">
                           <div class="flex items-start gap-3">
                             <!-- <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 text-red-600"></lucide-icon> -->
@@ -555,7 +559,7 @@
                               <div class="bg-white rounded-lg p-3 border border-error/20">
                                 <p class="text-sm font-medium text-error flex items-center gap-1">
                                   <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4"></lucide-icon>
-                                  Why this matters:
+                                  {{ translate.instant('analysis.omissions.whyMatters') }}:
                                 </p>
                                 <p class="text-sm text-gray-700 mt-1">{{ omission.impact }}</p>
                               </div>
@@ -573,11 +577,11 @@
                 <div class="space-y-3">
                   <h3 class="text-lg font-semibold text-warning flex items-center gap-2">
                     <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4 text-amber-600"></lucide-icon>
-                    Medium Priority Omissions
+                    {{ translate.instant('analysis.omissions.mediumPriority') }}
                   </h3>
                   @for (omission of getMediumPriorityOmissions(); track $index) {
                     <app-card>
-                      <div class="flex border-l-4 border-warning bg-warning/5">
+                      <div class="flex border-l-4 border-warning bg-warning/5 rtl:border-l-0 rtl:border-r-4">
                         <div class="flex-1 p-6">
                           <div class="flex items-start gap-3">
                             <!-- <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 text-red-600"></lucide-icon> -->
@@ -598,11 +602,11 @@
                 <div class="space-y-3">
                   <h3 class="text-lg font-semibold text-info flex items-center gap-2">
                     <lucide-icon [img]="InfoIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-                    Low Priority Omissions
+                    {{ translate.instant('analysis.omissions.lowPriority') }}
                   </h3>
                   @for (omission of getLowPriorityOmissions(); track $index) {
                     <app-card>
-                      <div class="flex border-l-4 border-info bg-info/5">
+                      <div class="flex border-l-4 border-info bg-info/5 rtl:border-l-0 rtl:border-r-4">
                         <div class="flex-1 p-6">
                           <div class="flex items-start gap-3">
                             <!-- <lucide-icon [img]="InfoIcon" class="w-8 h-8 text-blue-600"></lucide-icon> -->
@@ -621,7 +625,7 @@
               <app-card>
                 <div class="p-8 text-center text-gray-500">
                   <span class="text-4xl mb-4 block">✨</span>
-                  <p>All important details appear to be covered in this contract.</p>
+                  <p>{{ translate.instant('analysis.omissions.noOmissions') }}</p>
                 </div>
               </app-card>
             }
@@ -634,8 +638,8 @@
             <!-- Header with title and action buttons -->
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div>
-                <h2 class="text-2xl font-bold text-gray-900 mb-1">Questions to Ask</h2>
-                <p class="text-gray-600">Important clarifications for the other party</p>
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ translate.instant('analysis.questions.questionsToAsk') }}</h2>
+                <p class="text-gray-600">{{ translate.instant('analysis.questions.importantClarifications') }}</p>
               </div>
               @if (getQuestions().length > 0) {
                 <div class="flex items-center gap-3">
@@ -644,10 +648,10 @@
                     class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
                     @if (copyAllButtonState() === 'copy') {
                       <lucide-icon [img]="CopyIcon" class="w-4 h-4"></lucide-icon>
-                      Copy All
+                      {{ translate.instant('analysis.questions.copyAll') }}
                     } @else {
                       <lucide-icon [img]="CheckIcon" class="w-4 h-4 text-green-600"></lucide-icon>
-                      Copied
+                      {{ translate.instant('analysis.questions.copied') }}
                     }
                   </button>
                   @if (!isContractProvider()) {
@@ -659,12 +663,12 @@
                       @if (emailStore.isDrafting()) {
                         <span class="flex items-center gap-2">
                           <app-loading-spinner size="sm" />
-                          Drafting...
+                          {{ translate.instant('analysis.questions.drafting') }}
                         </span>
                       } @else {
                         <span class="flex items-center gap-2">
                           <lucide-icon [img]="MailIcon" class="w-4 h-4"></lucide-icon>
-                          Write Email
+                          {{ translate.instant('analysis.questions.writeEmail') }}
                         </span>
                       }
                     </app-button>
@@ -710,7 +714,7 @@
                         <lucide-icon [img]="MailIcon" class="w-6 h-6 text-blue-600 flex-shrink-0"></lucide-icon>
                         <div>
                           <p class="text-sm text-blue-800 leading-relaxed">
-                            Need to reach out? Click the "Write Email" button to generate a professional email draft with these questions that you can send to the other party.
+                            {{ 'analysis.emailHelpText' | translate }}
                           </p>
                         </div>
                       </div>
@@ -722,7 +726,7 @@
               <app-card>
                 <div class="p-8 text-center text-gray-500">
                   <span class="text-4xl mb-4 block">✨</span>
-                  <p>No specific questions identified for this contract.</p>
+                  <p>{{ translate.instant('analysis.questions.noQuestions') }}</p>
                 </div>
               </app-card>
             }
@@ -735,7 +739,7 @@
             <div class="p-8 bg-gray-50">
               <h2 class="text-2xl font-bold text-gray-700 mb-6 flex items-center gap-3">
                 <lucide-icon [img]="ScaleIcon" class="w-8 h-8 text-gray-600"></lucide-icon>
-                Legal Disclaimer
+                {{ translate.instant('analysis.disclaimer.title') }}
               </h2>
               <p class="text-gray-600 leading-relaxed text-lg">{{ getDisclaimer() }}</p>
             </div>

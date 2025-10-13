@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import type {
   Translator,
   TranslatorCreateOptions,
@@ -14,6 +15,7 @@ import type {
 })
 export class TranslatorService {
   private translators = new Map<string, Translator>();
+  private translateService = inject(TranslateService);
 
   /**
    * Check if Translation API is available
@@ -49,7 +51,7 @@ export class TranslatorService {
     options: TranslatorCreateOptions
   ): Promise<Translator> {
     if (!window.Translator) {
-      throw new Error('Translator API not available');
+      throw new Error(this.translateService.instant('errors.translatorApiUnavailable'));
     }
 
     const key = `${options.sourceLanguage}-${options.targetLanguage}`;
@@ -66,9 +68,7 @@ export class TranslatorService {
     );
 
     if (capabilities.available === 'no') {
-      throw new Error(
-        `Translation from ${options.sourceLanguage} to ${options.targetLanguage} is not available`
-      );
+      throw new Error(this.translateService.instant('errors.translatorApiUnavailable'));
     }
 
     // Log download status

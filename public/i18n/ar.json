@@ -7,6 +7,8 @@
     "confirm": "تأكيد",
     "save": "حفظ",
     "close": "إغلاق",
+    "copy": "نسخ",
+    "copied": "تم النسخ",
     "back": "رجوع",
     "next": "التالي",
     "previous": "السابق",
@@ -46,7 +48,7 @@
     "contactUs": "اتصل بنا",
     "poweredBy": "مدعوم من",
     "chromeAI": "الذكاء الاصطناعي المدمج في Chrome (Gemini Nano)",
-    "clientSide": "معالجة 100٪ على جانب العميل",
+    "clientSide": "معالجة %100 على جانب العميل",
     "copyright": "Contract Whisperer. تم إنشاؤه باستخدام Angular و Chrome AI."
   },
   "upload": {
@@ -96,8 +98,6 @@
   },
   "analysis": {
     "title": "تحليل العقد",
-    "summary": "الملخص",
-    "obligations": "الالتزامات",
     "redFlags": "نقاط الخطر",
     "compare": "مقارنة",
     "uploadNew": "رفع عقد جديد",
@@ -111,7 +111,133 @@
     "mockMode": "وضع المحاكاة",
     "contractSummary": "ملخص العقد",
     "noContract": "لم يتم رفع أي عقد بعد",
-    "uploadFirst": "يرجى رفع عقد لبدء التحليل"
+    "uploadFirst": "يرجى رفع عقد لبدء التحليل",
+    "showTranslated": "عرض العقد المترجم",
+    "showOriginal": "عرض العقد الأصلي",
+    "tabs": {
+      "summary": "الملخص",
+      "risks": "الخطر",
+      "obligations": "الالتزامات",
+      "omissions": "النقصانات",
+      "questions": "الأسئلة",
+      "disclaimer": "التمهيد"
+    },
+    "summary": {
+      "title": "ملخص العقد",
+      "parties": "الأطراف",
+      "roleRelationship": "الدور/العلاقة",
+      "keyResponsibilities": "المسؤوليات الرئيسية",
+      "compensationBenefits": "التعويضات والفوائد",
+      "baseSalary": "الراتب الأساسي",
+      "bonus": "المكافأة",
+      "equity": "الأسهم",
+      "other": "أخرى",
+      "terminationConditions": "شروط الإنهاء",
+      "atWill": "بإرادة الطرفين",
+      "forCause": "لسبب",
+      "severance": "مكافأة نهاية الخدمة",
+      "restrictions": "القيود",
+      "confidentiality": "السرية",
+      "nonCompete": "عدم المنافسة",
+      "nonSolicitation": "عدم الاستقطاب"
+    },
+    "risks": {
+      "title": "نقاط الخطر",
+      "subtitle": "بالترتيب الأساسي - الخطر العالي أولا",
+      "highPriority": "الخطر العالي",
+      "mediumPriority": "الخطر المتوسط",
+      "lowPriority": "الخطر المنخفض",
+      "impact": "التأثير",
+      "riskLevel": "مستوى الخطر",
+      "noRisks": "لم يتم الكشف عن أي مخاطر مهمة في هذا العقد."
+    },
+    "obligations": {
+      "title": "الالتزامات",
+      "subtitle": "ما يكون كل طرف مسؤولا عنه - منظم وعملي",
+      "employer": "صاحب العمل / الشركة",
+      "employee": "الموظف / الفرد",
+      "starts": "يبدأ",
+      "duration": "المدة",
+      "paySalary": "دفع الراتب",
+      "provideBenefits": "توفير المزايا",
+      "maintainConfidentiality": "الحفاظ على السرية",
+      "complyWithContract": "الالتزام بالعقد"
+    },
+    "omissions": {
+      "title": "ما هو النقصان",
+      "subtitle": "بالترتيب الأساسي - النقصان العالي أولا",
+      "highPriority": "النقصان العالي",
+      "mediumPriority": "النقصان المتوسط",
+      "lowPriority": "النقصان المنخفض",
+      "whyMatters": "لماذا هذا مهم",
+      "noOmissions": "يبدو أن جميع التفاصيل المهمة مغطاة في هذا العقد."
+    },
+    "questions": {
+      "title": "الأسئلة التي يجب طرحها",
+      "subtitle": "طرح هذه النقاط قبل التوقيع",
+      "questionsToAsk": "الأسئلة المطلوب طرحها",
+      "importantClarifications": "توضيحات مهمة للطرف الآخر",
+      "copyAll": "نسخ الكل",
+      "copied": "تم النسخ",
+      "writeEmail": "كتابة بريد إلكتروني",
+      "needToAsk": "تحتاج لطرح هذه الأسئلة؟",
+      "generateEmail": "إنشاء بريد إلكتروني مهني مستعد للإرسال",
+      "draftEmail": "كتابة بريد إلكتروني مهني",
+      "drafting": "جارٍ التحرير...",
+      "copy": "نسخ",
+      "noQuestions": "لم يتم الكشف عن أي أسئلة محددة لهذا العقد.",
+      "emailUnavailable": "فشل إنشاء بريد إلكتروني",
+      "emailUnavailableMessage": "هذه الميزة مصممة لأشخاص الاتفاق الذين يحتاجون إلى التوضيح. أنت الآن تشاهد كطرف الاتفاق الذي يريد إنشاء هذا العقد أو من منظور الطرفين (الطرف الذي يريد إنشاء العقد)."
+    },
+    "disclaimer": {
+      "title": "التمهيد",
+      "text":"أنا مساعد الذكاء الاصطناعي ، وليس محامي. هذه المعلومات مخصصة للغرض التعليمي فقط. استشارة محام ذو خبرة للمشاورة القانونية."
+    },
+    "email": {
+      "modalTitle": "مسودة بريد إلكتروني مهني",
+      "modalSubtitle": "مستعد للنسخ والإرسال",
+      "showRewriteOptions": "عرض خيارات الإعادة صياغة",
+      "hideRewriteOptions": "إخفاء خيارات الإعادة صياغة",
+      "customizeStyle": "تخصيص نمط البريد الإلكتروني",
+      "tone": "النبرة",
+      "tones": {
+        "formal": "رسمي",
+        "neutral": "محايد",
+        "casual": "غير رسمي"
+      },
+      "length": "الطول",
+      "lengths": {
+        "short": "قصير",
+        "medium": "متوسط",
+        "long": "طويل"
+      },
+      "applyChanges": "تطبيق التغييرات",
+      "rewriting": "جاري إعادة الصياغة...",
+      "copyToClipboard": "نسخ"
+    },
+    "emailHelpText": "تحتاج للتواصل؟ انقر على زر \"كتابة بريد إلكتروني\" لإنشاء مسودة بريد إلكتروني مهني مع هذه الأسئلة التي يمكنك إرسالها للطرف الآخر.",
+    "unknownContractType": "غير معروف",
+    "perspectiveAnalysis": {
+      "employeeTitle": "تم التحليل من وجهة نظرك كموظف",
+      "employeeDescription": "هذا التحليل مصمم لحماية مصالحك كموظف. المخاطر والالتزامات والتوصيات تركز على ما يهمك في هذه الاتفاقية.",
+      "employerTitle": "تم التحليل من وجهة نظرك كصاحب عمل",
+      "employerDescription": "هذا التحليل مصمم لحماية مصالحك كصاحب عمل. المخاطر والالتزامات والتوصيات تركز على ما يهمك في هذه الاتفاقية.",
+      "contractorTitle": "تم التحليل من وجهة نظرك كمقاول",
+      "contractorDescription": "هذا التحليل مصمم لحماية مصالحك كمقاول. المخاطر والالتزامات والتوصيات تركز على التعويض العادل وتوقيت الدفع والتعرض للمسؤولية.",
+      "clientTitle": "تم التحليل من وجهة نظرك كعميل",
+      "clientDescription": "هذا التحليل مصمم لحماية مصالحك كعميل. المخاطر والالتزامات والتوصيات تركز على التسليمات والجودة والجداول الزمنية.",
+      "tenantTitle": "تم التحليل من وجهة نظرك كمستأجر",
+      "tenantDescription": "هذا التحليل مصمم لحماية مصالحك كمستأجر. المخاطر والالتزامات والتوصيات تركز على حقوقك وضمان الأمان وتكاليف السكن.",
+      "landlordTitle": "تم التحليل من وجهة نظرك كمؤجر",
+      "landlordDescription": "هذا التحليل مصمم لحماية مصالحك كمؤجر. المخاطر والالتزامات والتوصيات تركز على حماية الممتلكات وجمع الإيجار وإدارة المستأجرين.",
+      "partnerTitle": "تم التحليل من وجهة نظرك كشريك",
+      "partnerDescription": "هذا التحليل مصمم لمصالحك كشريك. المخاطر والالتزامات والتوصيات تركز على عدالة الأسهم وخيارات الخروج.",
+      "bothTitle": "تم التحليل من وجهتي النظر",
+      "bothDescription": "هذا التحليل يظهر المخاطر والالتزامات من منظور الطرفين لمساعدتك على فهم الصورة الكاملة."
+    },
+    "badge": {
+      "fromPerspective": "من وجهة نظر {{name}}"
+    }
   },
   "settings": {
     "title": "الإعدادات",
@@ -126,7 +252,25 @@
     "detectedParties": "لقد اكتشفنا الأطراف التالية في عقدك:",
     "proTip": "نصيحة احترافية:",
     "proTipMessage": "اختر «مقارنة بين وجهتي النظر» لرؤية المخاطر والالتزامات من منظور الطرفين. يساعدك ذلك على فهم الصورة الكاملة قبل التوقيع.",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "employer": "صاحب العمل",
+    "employee": "الموظف",
+    "bothPerspectives": "مقارنة بين وجهتي النظر",
+    "employerCompany": "صاحب العمل / الشركة",
+    "employeeWorker": "الموظف / العامل",
+    "client": "العميل",
+    "contractorFreelancer": "المقاول / المستقل",
+    "landlord": "المؤجر / مالك العقار",
+    "tenantRenter": "المستأجر / المستأجر",
+    "partner": "الشريك",
+    "hiringServices": "أنا أستأجر أو أتعاقد مع خدمات",
+    "beingHired": "أنا يتم توظيفي للعمل",
+    "hiringContractor": "أنا أستأجر مقاول أو خدمة",
+    "providingServices": "أنا أقدم الخدمات",
+    "rentingProperty": "أنا أستأجر عقار",
+    "owningProperty": "أنا أملك العقار",
+    "businessPartner": "أنا شريك تجاري",
+    "seeBothViewpoints": "رؤية التحليل من منظور الطرفين"
   },
   "modal": {
     "close": "إغلاق"
@@ -151,10 +295,21 @@
     "section7Content": "تخضع هذه الاتفاقية وتُفسَّر وفقًا لقوانين ولاية [الولاية].",
     "understandingTitle": "فهم عقدك",
     "understandingContent": "قد تكون العقود معقدة. تساعدك تقنيتنا المدعومة بالذكاء الاصطناعي في تحديد البنود الرئيسية والمخاطر والالتزامات في مستنداتك الخاصة.",
+    "downloadExamples": "تحميل عقود نموذجية",
+    "downloadDescription": "ابدأ بهذه الأمثلة المهنية للعقود. حمّلها وحلّلها لترى كيف يعمل الذكاء الاصطناعي.",
+    "ndaContract": "اتفاقية عدم الإفشاء",
+    "ndaDescription": "حماية السرية والأسرار التجارية",
+    "freelanceContract": "اتفاقية خدمات العمل الحر",
+    "freelanceDescription": "خدمات مقاول مستقل وتسليمات",
+    "leaseContract": "اتفاقية إيجار سكني",
+    "leaseDescription": "شروط وأحكام تأجير العقارات",
+    "arabicContract": "عقد عمل عربي",
+    "arabicDescription": "مثال على عقد متعدد اللغات",
     "close": "إغلاق"
   },
   "howItWorks": {
     "title": "كيف يعمل Contract Whisperer",
+    "headerDescription": "تعلم كيف يعمل تحليل العقود المدعوم بالذكاء الاصطناعي في أربع خطوات بسيطة. كل شيء يحدث محليًا على جهازك لضمان أقصى قدر من الخصوصية والأمان.",
     "step1Title": "حمّل عقدك",
     "step1Description": "قم ببساطة بتحميل ملف عقدك (PDF أو Word أو نص) أو الصق نص العقد مباشرة في واجهتنا الآمنة.",
     "step2Title": "تحليل الذكاء الاصطناعي",
@@ -169,6 +324,7 @@
     "feature3": "تحليل يعتمد على المنظور (موظف، صاحب عمل، إلخ)",
     "feature4": "إنشاء رسائل بريد احترافية وإعادة صياغة البنود",
     "feature5": "لا يوجد تخزين بيانات",
+    "feature6": "تحديد المخاطر",
     "gotIt": "تم الفهم!"
   },
   "privacyPolicy": {
@@ -251,6 +407,41 @@
     "contactDescription": "إذا كانت لديك أي أسئلة حول هذه الشروط والأحكام، يرجى استخدام ",
     "contactLink": "اتصل بنا.",
     "iAgree": "أوافق"
+  },
+  "errors": {
+    "contractTextEmpty": "نص العقد لا يمكن أن يكون فارغاً",
+    "contractTextTooShort": "نص العقد قصير جداً (الحد الأدنى 100 حرف)",
+    "fileSizeExceeded": "حجم الملف يتجاوز حد 5 ميجابايت",
+    "unsupportedFileType": "نوع ملف غير مدعوم: {{type}}. الأنواع المدعومة: TXT, PDF, DOCX",
+    "fileEmpty": "الملف فارغ",
+    "pdfEmpty": "يبدو أن ملف PDF فارغ أو يحتوي على صور فقط",
+    "pdfExtractionFailed": "فشل في استخراج النص من PDF",
+    "pdfParsingFailed": "فشل في تحليل PDF: {{error}}. جرب نسخ النص ولصقه مباشرة.",
+    "docxEmpty": "يبدو أن ملف DOCX فارغ",
+    "docxExtractionFailed": "فشل في استخراج النص من DOCX",
+    "docxParsingFailed": "فشل في تحليل DOCX: {{error}}. جرب نسخ النص ولصقه مباشرة.",
+    "aiServicesUnavailable": "خدمات الذكاء الاصطناعي المطلوبة غير متاحة",
+    "promptApiUnavailable": "واجهة برمجة التطبيقات للطلبات غير متاحة",
+    "translatorApiUnavailable": "واجهة برمجة التطبيقات للمترجم غير متاحة",
+    "writerApiUnavailable": "واجهات برمجة التطبيقات للكاتب/المعيد غير متاحة",
+    "languageDetectorUnavailable": "واجهة برمجة التطبيقات لكاشف اللغة غير متاحة",
+    "summarizerUnavailable": "واجهة برمجة التطبيقات للملخص غير متاحة",
+    "sessionNotInitialized": "الجلسة غير مهيأة. استدعِ createSession() أولاً.",
+    "notAContract": "ليس عقداً: {{reason}}"
+  },
+  "languages": {
+    "english": "الإنجليزية",
+    "french": "الفرنسية",
+    "arabic": "العربية",
+    "spanish": "الإسبانية",
+    "german": "الألمانية",
+    "japanese": "اليابانية",
+    "chinese": "الصينية",
+    "korean": "الكورية",
+    "unknown": "غير معروف"
+  },
+  "dateFormat": {
+    "analyzedOn": "تم التحليل في {{date}}"
   }
 }
 

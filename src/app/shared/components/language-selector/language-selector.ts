@@ -3,15 +3,14 @@
  * Beautiful dropdown for selecting user's preferred language
  */
 import { Component, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { LanguageStore } from '../../../core/stores/language.store';
 import { Globe, ChevronDown, Check } from '../../icons/lucide-icons';
 
 @Component({
   selector: 'app-language-selector',
-  imports: [CommonModule, TranslateModule, LucideAngularModule],
+  imports: [TranslatePipe, LucideAngularModule],
   templateUrl: './language-selector.html',
 })
 export class LanguageSelector {

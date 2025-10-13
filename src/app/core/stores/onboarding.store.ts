@@ -7,6 +7,7 @@ import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals
 import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { TranslatorService } from '../services/ai/translator.service';
+import { TranslateService } from '@ngx-translate/core';
 
 /**
  * Onboarding steps
@@ -184,7 +185,7 @@ export const OnboardingStore = signalStore(
         },
         {
           value: 'both_views',
-          label: 'Compare Both Perspectives',
+          label: 'Compare Both Perspectives', // Will be translated in the component
           icon: '👀',
         },
       ];
@@ -203,7 +204,7 @@ export const OnboardingStore = signalStore(
   })),
   
   // Methods
-  withMethods((store, translatorService = inject(TranslatorService)) => ({
+  withMethods((store, translatorService = inject(TranslatorService), translate = inject(TranslateService)) => ({
     /**
      * Move to next step
      */

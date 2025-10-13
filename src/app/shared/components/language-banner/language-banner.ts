@@ -3,15 +3,14 @@
  * Shows when contract language differs from user's preferred language
  */
 import { Component, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { Globe, FileText, X } from '../../icons/lucide-icons';
 import { LanguageStore } from '../../../core/stores/language.store';
 
 @Component({
   selector: 'app-language-banner',
-  imports: [CommonModule, TranslateModule, LucideAngularModule],
+  imports: [TranslatePipe, LucideAngularModule],
   templateUrl: './language-banner.html',
   styleUrl: './language-banner.css',
 })

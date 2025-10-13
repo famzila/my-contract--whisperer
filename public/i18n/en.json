@@ -8,6 +8,7 @@
     "save": "Save",
     "close": "Close",
     "copy": "Copy",
+    "copied": "Copied",
     "back": "Back",
     "next": "Next",
     "previous": "Previous",
@@ -148,6 +149,7 @@
       "mediumPriority": "Medium Priority Risks",
       "lowPriority": "Low Priority Risks",
       "impact": "Impact",
+      "riskLevel": "Risk level",
       "noRisks": "No significant risks identified in this contract."
     },
     "obligations": {
@@ -156,7 +158,11 @@
       "employer": "Employer / Company",
       "employee": "Employee / Individual",
       "starts": "Starts",
-      "duration": "Duration"
+      "duration": "Duration",
+      "paySalary": "Pay Salary",
+      "provideBenefits": "Provide Benefits",
+      "maintainConfidentiality": "Maintain Confidentiality",
+      "complyWithContract": "Comply with Contract"
     },
     "omissions": {
       "title": "What's Missing",
@@ -170,6 +176,11 @@
     "questions": {
       "title": "Questions You Should Ask",
       "subtitle": "Clarify these points before signing",
+      "questionsToAsk": "Questions to Ask",
+      "importantClarifications": "Important clarifications for the other party",
+      "copyAll": "Copy All",
+      "copied": "Copied",
+      "writeEmail": "Write Email",
       "needToAsk": "Need to ask these questions?",
       "generateEmail": "Generate a professional email ready to send",
       "draftEmail": "Draft Professional Email",
@@ -180,7 +191,8 @@
       "emailUnavailableMessage": "This feature is designed for contract recipients who need clarification. You're currently viewing as the contract provider or from both perspectives (the party who likely created this contract). Switch to the other party's perspective to draft clarification emails."
     },
     "disclaimer": {
-      "title": "Legal Disclaimer"
+      "title": "Legal Disclaimer",
+      "text":"I am an AI assistant, not a lawyer. This information is for educational purposes only. Consult a qualified attorney for legal advice."
     },
     "email": {
       "modalTitle": "Professional Email Draft",
@@ -203,6 +215,29 @@
       "applyChanges": "Apply Changes",
       "rewriting": "Rewriting...",
       "copyToClipboard": "Copy"
+    },
+    "emailHelpText": "Need to reach out? Click the \"Write Email\" button to generate a professional email draft with these questions that you can send to the other party.",
+    "unknownContractType": "Unknown",
+    "perspectiveAnalysis": {
+      "employeeTitle": "Analyzed from Your Perspective as an Employee",
+      "employeeDescription": "This analysis is tailored to protect your interests as the employee. The risks, obligations, and recommendations focus on what matters to you in this agreement.",
+      "employerTitle": "Analyzed from Your Perspective as an Employer", 
+      "employerDescription": "This analysis is tailored to protect your interests as the employer. The risks, obligations, and recommendations focus on what matters to you in this agreement.",
+      "contractorTitle": "Analyzed from Your Perspective as a Contractor",
+      "contractorDescription": "This analysis is tailored to protect your interests as the contractor. The risks, obligations, and recommendations focus on fair compensation, payment timing, and liability exposure.",
+      "clientTitle": "Analyzed from Your Perspective as a Client",
+      "clientDescription": "This analysis is tailored to protect your interests as the client. The risks, obligations, and recommendations focus on deliverables, quality, and timelines.",
+      "tenantTitle": "Analyzed from Your Perspective as a Tenant",
+      "tenantDescription": "This analysis is tailored to protect your interests as the tenant. The risks, obligations, and recommendations focus on your rights, security deposit, and housing costs.",
+      "landlordTitle": "Analyzed from Your Perspective as a Landlord",
+      "landlordDescription": "This analysis is tailored to protect your interests as the landlord. The risks, obligations, and recommendations focus on property protection, rent collection, and tenant management.",
+      "partnerTitle": "Analyzed from Your Perspective as a Partner",
+      "partnerDescription": "This analysis is tailored to your interests as a partner. The risks, obligations, and recommendations focus on equity fairness and exit options.",
+      "bothTitle": "Analyzed from Both Perspectives",
+      "bothDescription": "This analysis shows risks and obligations from both parties' viewpoints to help you understand the full picture."
+    },
+    "badge": {
+      "fromPerspective": "From {{name}} perspective"
     }
   },
   "settings": {
@@ -218,7 +253,25 @@
     "detectedParties": "We detected the following parties in your contract:",
     "proTip": "Pro Tip:",
     "proTipMessage": "Choose \"Compare Both Perspectives\" to see risks and obligations from both parties' viewpoints. This helps you understand the full picture before signing.",
-    "close": "Close"
+    "close": "Close",
+    "employer": "Employer",
+    "employee": "Employee",
+    "bothPerspectives": "Compare Both Perspectives",
+    "employerCompany": "Employer / Company",
+    "employeeWorker": "Employee / Worker",
+    "client": "Client",
+    "contractorFreelancer": "Contractor / Freelancer",
+    "landlord": "Landlord / Property Owner",
+    "tenantRenter": "Tenant / Renter",
+    "partner": "Partner",
+    "hiringServices": "I'm hiring or engaging services",
+    "beingHired": "I'm being hired for employment",
+    "hiringContractor": "I'm hiring a contractor or service",
+    "providingServices": "I'm providing services",
+    "rentingProperty": "I'm renting property",
+    "owningProperty": "I own the property",
+    "businessPartner": "I'm a business partner",
+    "seeBothViewpoints": "See analysis from both parties' viewpoints"
   },
   "modal": {
     "close": "Close"
@@ -272,6 +325,7 @@
     "feature3": "Perspective-aware analysis (employee, employer, etc.)",
     "feature4": "Professional email generation and clause rewriting",
     "feature5": "No data storage",
+    "feature6": "Risk identification",
     "gotIt": "Got it!"
   },
   "privacyPolicy": {
@@ -354,5 +408,40 @@
     "contactDescription": "If you have any questions about these terms of service, please use ",
     "contactLink": "Contact Us.",
     "iAgree": "I Agree"
+  },
+  "errors": {
+    "contractTextEmpty": "Contract text cannot be empty",
+    "contractTextTooShort": "Contract text is too short (minimum 100 characters)",
+    "fileSizeExceeded": "File size exceeds 5MB limit",
+    "unsupportedFileType": "Unsupported file type: {{type}}. Supported types: TXT, PDF, DOCX",
+    "fileEmpty": "File is empty",
+    "pdfEmpty": "PDF appears to be empty or contains only images",
+    "pdfExtractionFailed": "Failed to extract text from PDF",
+    "pdfParsingFailed": "Failed to parse PDF: {{error}}. Try copying the text and pasting it directly.",
+    "docxEmpty": "DOCX appears to be empty",
+    "docxExtractionFailed": "Failed to extract text from DOCX",
+    "docxParsingFailed": "Failed to parse DOCX: {{error}}. Try copying the text and pasting it directly.",
+    "aiServicesUnavailable": "Required AI services not available",
+    "promptApiUnavailable": "Prompt API is not available",
+    "translatorApiUnavailable": "Translator API is not available",
+    "writerApiUnavailable": "Writer/Rewriter APIs are not available",
+    "languageDetectorUnavailable": "LanguageDetector API not available",
+    "summarizerUnavailable": "Summarizer API not available",
+    "sessionNotInitialized": "Session not initialized. Call createSession() first.",
+    "notAContract": "Not a contract: {{reason}}"
+  },
+  "languages": {
+    "english": "English",
+    "french": "French",
+    "arabic": "Arabic",
+    "spanish": "Spanish",
+    "german": "German",
+    "japanese": "Japanese",
+    "chinese": "Chinese",
+    "korean": "Korean",
+    "unknown": "Unknown"
+  },
+  "dateFormat": {
+    "analyzedOn": "Analyzed on {{date}}"
   }
 }

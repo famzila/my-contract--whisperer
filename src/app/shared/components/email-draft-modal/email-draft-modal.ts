@@ -65,7 +65,7 @@ export class EmailDraftModal {
           callback: () => this.onClose()
         },
         {
-          text: this.copyButtonState() === 'copy' ? 'Copy' : 'Copied',
+          textKey: this.copyButtonState() === 'copy' ? 'common.copy' : 'common.copied',
           icon: this.copyButtonState() === 'copy' ? this.CopyIcon : this.CheckIcon,
           variant: this.copyButtonState() === 'copy' ? 'primary' : 'secondary',
           callback: () => this.onCopy()

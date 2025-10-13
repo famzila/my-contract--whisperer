@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 
 /**
  * Contract file types supported
@@ -24,6 +25,7 @@ export interface ParsedContract {
   providedIn: 'root',
 })
 export class ContractParserService {
+  private translate = inject(TranslateService);
   
   /**
    * Parse a file and extract contract text
@@ -47,11 +49,11 @@ export class ContractParserService {
    */
   parseText(text: string, source: string = 'manual-input'): ParsedContract {
     if (!text || text.trim().length === 0) {
-      throw new Error('Contract text cannot be empty');
+      throw new Error(this.translate.instant('errors.contractTextEmpty'));
     }
 
     if (text.length < 100) {
-      throw new Error('Contract text is too short (minimum 100 characters)');
+      throw new Error(this.translate.instant('errors.contractTextTooShort'));
     }
 
     return {
@@ -70,7 +72,7 @@ export class ContractParserService {
     // Check file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      throw new Error('File size exceeds 5MB limit');
+      throw new Error(this.translate.instant('errors.fileSizeExceeded'));
     }
 
     // Check file type
@@ -81,12 +83,12 @@ export class ContractParserService {
     ];
 
     if (!supportedTypes.includes(file.type as ContractFileType)) {
-      throw new Error(`Unsupported file type: ${file.type}. Supported types: TXT, PDF, DOCX`);
+      throw new Error(this.translate.instant('errors.unsupportedFileType', { type: file.type }));
     }
 
     // Check if file is empty
     if (file.size === 0) {
-      throw new Error('File is empty');
+      throw new Error(this.translate.instant('errors.fileEmpty'));
     }
   }
 
@@ -105,7 +107,7 @@ export class ContractParserService {
         return await this.extractTextFromDocx(file);
       
       default:
-        throw new Error(`Unsupported file type: ${file.type}`);
+        throw new Error(this.translate.instant('errors.unsupportedFileType', { type: file.type }));
     }
   }
 
@@ -169,15 +171,16 @@ export class ContractParserService {
       const fullText = pageTexts.join('\n\n');
       
       if (!fullText || fullText.trim().length === 0) {
-        throw new Error('PDF appears to be empty or contains only images');
+        throw new Error(this.translate.instant('errors.pdfEmpty'));
       }
       
       return fullText;
     } catch (error) {
       console.error('PDF parsing error:', error);
       throw new Error(
-        `Failed to parse PDF: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
-        'Try copying the text and pasting it directly.'
+        this.translate.instant('errors.pdfParsingFailed', { 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        })
       );
     }
   }
@@ -197,7 +200,7 @@ export class ContractParserService {
       const result = await mammoth.extractRawText({ arrayBuffer });
       
       if (!result.value || result.value.trim().length === 0) {
-        throw new Error('DOCX appears to be empty');
+        throw new Error(this.translate.instant('errors.docxEmpty'));
       }
       
       // Log any messages from mammoth (warnings, etc.)
@@ -209,8 +212,9 @@ export class ContractParserService {
     } catch (error) {
       console.error('DOCX parsing error:', error);
       throw new Error(
-        `Failed to parse DOCX: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
-        'Try copying the text and pasting it directly.'
+        this.translate.instant('errors.docxParsingFailed', { 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        })
       );
     }
   }
