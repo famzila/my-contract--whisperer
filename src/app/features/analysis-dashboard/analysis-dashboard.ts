@@ -3,9 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { ContractStore, EmailDraftStore } from '../../core/stores';
+import { ContractStore, EmailDraftStore, UiStore } from '../../core/stores';
 import { Card, LoadingSpinner, Button } from '../../shared/components';
-import { ModalService } from '../../core/services/modal.service';
 import type { ContractClause } from '../../core/models/contract.model';
 import type { AIAnalysisResponse, RiskSeverity, RiskEmoji } from '../../core/models/ai-analysis.model';
 import { AppConfig } from '../../core/config/app.config';
@@ -58,7 +57,7 @@ export class AnalysisDashboard implements OnInit {
   
   // Services
   translate = inject(TranslateService);
-  private modalService = inject(ModalService);
+  private uiStore = inject(UiStore);
   
   // Lucide icons
   readonly TheaterIcon = Theater;
@@ -778,7 +777,7 @@ export class AnalysisDashboard implements OnInit {
       }
     };
 
-    const dialogRef = this.modalService.openEmailDraft(emailData);
+    const dialogRef = this.uiStore.openEmailDraft(emailData);
   }
 
   /**

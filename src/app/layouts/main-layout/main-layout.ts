@@ -3,7 +3,7 @@ import { RouterModule, Router, RouterLink, RouterOutlet } from '@angular/router'
 import { TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { LanguageSelector } from '../../shared/components';
-import { ModalService } from '../../core/services/modal.service';
+import { UiStore } from '../../core/stores/ui.store';
 import { FileText, Bot, Shield, Menu } from '../../shared/icons/lucide-icons';
 
 @Component({
@@ -14,7 +14,7 @@ import { FileText, Bot, Shield, Menu } from '../../shared/icons/lucide-icons';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainLayout {
-  private modalService = inject(ModalService);
+  private uiStore = inject(UiStore);
   
   // Lucide icons
   readonly FileTextIcon = FileText;
@@ -28,20 +28,20 @@ export class MainLayout {
    * Show how it works modal
    */
   showHowItWorks(): void {
-    this.modalService.openHowItWorks();
+    this.uiStore.openHowItWorks();
   }
 
   /**
    * Show privacy policy modal
    */
   showPrivacyPolicy(): void {
-    this.modalService.openPrivacyPolicy();
+    this.uiStore.openPrivacyPolicy();
   }
 
   /**
    * Show terms of service modal
    */
   showTermsOfService(): void {
-    this.modalService.openTermsOfService();
+    this.uiStore.openTermsOfService();
   }
 }

@@ -4,8 +4,9 @@
  * Reference: https://ngrx.io/guide/signals/signal-store
  */
 import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals';
-import { computed } from '@angular/core';
+import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
+import { ModalConfig, ModalService } from '../services/modal.service';
 
 /**
  * Toast notification
@@ -74,7 +75,7 @@ export const UiStore = signalStore(
   })),
   
   // Methods
-  withMethods((store) => ({
+  withMethods((store, modalService = inject(ModalService)) => ({
     /**
      * Set theme
      */
@@ -196,6 +197,64 @@ export const UiStore = signalStore(
      */
     reset: () => {
       patchState(store, initialState);
+    },
+
+    // ===== MODAL MANAGEMENT =====
+    
+    /**
+     * Open Sample Contract Modal
+     */
+    openSampleContract: (config?: ModalConfig) => {
+      return modalService.openSampleContract(config);
+    },
+
+    /**
+     * Open How It Works Modal
+     */
+    openHowItWorks: (config?: ModalConfig) => {
+      return modalService.openHowItWorks(config);
+    },
+
+    /**
+     * Open Privacy Policy Modal
+     */
+    openPrivacyPolicy: (config?: ModalConfig) => {
+      return modalService.openPrivacyPolicy(config);
+    },
+
+    /**
+     * Open Terms of Service Modal
+     */
+    openTermsOfService: (config?: ModalConfig) => {
+      return modalService.openTermsOfService(config);
+    },
+
+    /**
+     * Open Party Selector Modal
+     */
+    openPartySelector: (config?: ModalConfig) => {
+      return modalService.openPartySelector(config);
+    },
+
+    /**
+     * Open Email Draft Modal
+     */
+    openEmailDraft: (emailData: any, config?: ModalConfig) => {
+      return modalService.openEmailDraft(emailData, config);
+    },
+
+    /**
+     * Open Language Mismatch Modal
+     */
+    openLanguageMismatch: (languageData: any, config?: ModalConfig) => {
+      return modalService.openLanguageMismatch(languageData, config);
+    },
+
+    /**
+     * Close all modals
+     */
+    closeAllModals: () => {
+      modalService.closeAll();
     },
   }))
 );

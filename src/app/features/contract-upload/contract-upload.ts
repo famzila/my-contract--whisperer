@@ -24,7 +24,6 @@ import { UiStore } from '../../core/stores/ui.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { LanguageStore } from '../../core/stores/language.store';
 import { ContractParserService } from '../../core/services/contract-parser.service';
-import { ModalService } from '../../core/services/modal.service';
 
 type UploadMode = 'file' | 'text';
 
@@ -41,7 +40,7 @@ export class ContractUpload {
   onboardingStore = inject(OnboardingStore);
   languageStore = inject(LanguageStore);
   translate = inject(TranslateService);
-  modalService = inject(ModalService);
+  uiStore = inject(UiStore);
   
   // Lucide icons
   readonly FileTextIcon = FileText;
@@ -58,7 +57,6 @@ export class ContractUpload {
   readonly LightbulbIcon = Lightbulb;
   readonly SearchIcon = Search;
   private parserService = inject(ContractParserService);
-  private uiStore = inject(UiStore);
   private router = inject(Router);
 
   // Local UI state
@@ -69,37 +67,35 @@ export class ContractUpload {
 
   constructor() {
     effect(() => {
-      // Watch for party selection needs and open modal automatically
-      if (this.onboardingStore.needsPartySelection() && !this.partySelectorDialogRef) {
-        this.openPartySelector();
-      }
-    });
-
-    effect(() => {
-      // Watch for party extraction loading state and open modal automatically
+      // Get onboarding state once
       const isValidContract = this.onboardingStore.isValidContract();
       const needsLanguageSelection = this.onboardingStore.needsLanguageSelection();
+      const needsPartySelection = this.onboardingStore.needsPartySelection();
       const selectedOutputLanguage = this.onboardingStore.selectedOutputLanguage();
       const detectedParties = this.onboardingStore.detectedParties();
       
-      const isLoadingParties = isValidContract === true && 
-                              !needsLanguageSelection && 
+      // Only proceed if we have a valid contract
+      if (isValidContract !== true) return;
+      
+      // Priority 1: Language mismatch (highest priority)
+      if (needsLanguageSelection) {
+        this.showLanguageMismatchModal();
+        return;
+      }
+      
+      // Priority 2: Party extraction loading state
+      const isLoadingParties = !needsLanguageSelection && 
                               selectedOutputLanguage !== null &&
                               detectedParties === null;
       
       if (isLoadingParties && !this.partySelectorDialogRef) {
         this.openPartySelector();
+        return;
       }
-    });
-
-    effect(() => {
-      // Watch for language mismatch and show modal automatically
-      const isValidContract = this.onboardingStore.isValidContract();
-      const needsLanguageSelection = this.onboardingStore.needsLanguageSelection();
       
-      if (isValidContract === true && needsLanguageSelection) {
-        // Show language mismatch modal
-        this.showLanguageMismatchModal();
+      // Priority 3: Party selection (when parties are detected)
+      if (needsPartySelection && !this.partySelectorDialogRef) {
+        this.openPartySelector();
       }
     });
   }
@@ -334,7 +330,7 @@ export class ContractUpload {
       getLanguageFlag: (code: string) => this.getLanguageFlag(code)
     };
 
-    this.modalService.openLanguageMismatch(languageData);
+    this.uiStore.openLanguageMismatch(languageData);
   }
 
   /**
@@ -367,21 +363,21 @@ export class ContractUpload {
    * View sample contract
    */
   viewSampleContract(): void {
-    this.modalService.openSampleContract();
+    this.uiStore.openSampleContract();
   }
 
   /**
    * Show how it works information
    */
   showHowItWorks(): void {
-    this.modalService.openHowItWorks();
+    this.uiStore.openHowItWorks();
   }
 
   /**
    * Show privacy policy
    */
   showPrivacyPolicy(): void {
-    this.modalService.openPrivacyPolicy();
+    this.uiStore.openPrivacyPolicy();
   }
 
   /**
@@ -398,7 +394,7 @@ export class ContractUpload {
                      this.onboardingStore.selectedOutputLanguage() !== null &&
                      this.onboardingStore.detectedParties() === null;
     
-    this.partySelectorDialogRef = this.modalService.openPartySelector({
+    this.partySelectorDialogRef = this.uiStore.openPartySelector({
       data: {
         detectedParties: this.onboardingStore.detectedParties(),
         isLoading: isLoading
