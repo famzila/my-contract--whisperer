@@ -18,10 +18,17 @@ export const routes: Routes = [
             (m) => m.ContractUpload
           ),
       },
+      // {
+      //   path: 'analysis',
+      //   loadComponent: () =>
+      //     import('./features/analysis-dashboard/analysis-dashboard').then(
+      //       (m) => m.AnalysisDashboard
+      //     ),
+      // },
       {
         path: 'analysis',
         loadComponent: () =>
-          import('./features/analysis-dashboard/analysis-dashboard').then(
+          import('./features/analysis-dashboard/analysis-dashboard.component').then(
             (m) => m.AnalysisDashboard
           ),
       },

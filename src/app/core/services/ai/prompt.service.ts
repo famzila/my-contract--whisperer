@@ -321,11 +321,22 @@ ${contractText}`;
   ): Promise<Schemas.ContractMetadata> {
     const roleContext = userRole ? `\n\nAnalyze this contract from the perspective of: ${userRole}` : '';
     
-    const prompt = `Extract metadata from this contract:
+    const prompt = `Extract basic metadata from this contract.
 
+Contract:
 ${contractText}${roleContext}
 
-Identify contract type, dates, parties, and jurisdiction.`;
+Instructions:
+- Identify the contract type (e.g., "Employment Agreement", "NDA", "Lease Agreement")
+- Extract effective date and end date in ISO format (YYYY-MM-DD) or null if not specified
+- Calculate duration if dates are provided
+- Identify if the contract auto-renews (true/false/null)
+- Extract governing jurisdiction
+- Identify both parties with their names, locations, and roles
+- Detect the contract language (e.g., "en", "es", "fr", "ja")
+- Set analyzedForRole to the user's role: ${userRole || 'employee'}
+
+Return the metadata in the exact JSON structure specified in the schema.`;
 
     return this.promptWithSchema<Schemas.ContractMetadata>(
       prompt,
@@ -339,11 +350,20 @@ Identify contract type, dates, parties, and jurisdiction.`;
   async extractRisks(
     contractText: string
   ): Promise<Schemas.RisksAnalysis> {
-    const prompt = `Analyze risks in this contract:
+    const prompt = `Analyze all potential risks in this contract.
 
+Contract:
 ${contractText}
 
-Identify all potential risks, prioritize by severity (high, medium, low), and explain their impact.`;
+Instructions:
+- Identify ALL risks that could negatively impact the signing party
+- Prioritize by severity: "high" (could cause significant harm), "medium" (moderate concern), "low" (minor issue)
+- For each risk, provide a clear title, description, and concrete impact
+- Use appropriate icon: "alert-triangle" for high, "alert-circle" for medium, "info" for low
+- Focus on practical, real-world consequences
+- Order risks from highest to lowest severity
+
+Return the risks in the exact JSON structure specified in the schema.`;
 
     return this.promptWithSchema<Schemas.RisksAnalysis>(
       prompt,
@@ -357,11 +377,21 @@ Identify all potential risks, prioritize by severity (high, medium, low), and ex
   async extractObligations(
     contractText: string
   ): Promise<Schemas.ObligationsAnalysis> {
-    const prompt = `Extract obligations from this contract:
+    const prompt = `Extract all obligations from this contract and structure them by party.
 
+Contract:
 ${contractText}
 
-List all obligations for each party, including amounts, frequencies, and scope.`;
+Instructions:
+- Identify ALL obligations for each party (employer/company and employee/contractor)
+- For monetary obligations, include the amount as a number
+- Include frequency (e.g., "monthly", "bi-weekly", "annually") when applicable
+- Include start dates and duration when specified
+- Use the "scope" field for additional context or conditions
+- If a field is not applicable, use null
+- Keep descriptions clear and concise
+
+Return the obligations in the exact JSON structure specified in the schema.`;
 
     return this.promptWithSchema<Schemas.ObligationsAnalysis>(
       prompt,
@@ -375,11 +405,20 @@ List all obligations for each party, including amounts, frequencies, and scope.`
   async extractOmissionsAndQuestions(
     contractText: string
   ): Promise<Schemas.OmissionsAndQuestions> {
-    const prompt = `Analyze this contract for missing clauses and generate questions:
+    const prompt = `Analyze this contract for missing clauses and generate clarifying questions.
 
+Contract:
 ${contractText}
 
-Identify important omissions and suggest 5-8 key questions to ask before signing.`;
+Instructions:
+- Identify important clauses or details that are missing from the contract
+- For each omission, explain why its absence could be problematic
+- Prioritize omissions: "high" (critical missing clause), "medium" (important but not critical), "low" (nice to have)
+- Generate 5-8 specific, actionable questions the signing party should ask
+- Questions should seek clarification on ambiguous terms, missing details, or potential risks
+- Make questions practical and easy to ask
+
+Return the omissions and questions in the exact JSON structure specified in the schema.`;
 
     return this.promptWithSchema<Schemas.OmissionsAndQuestions>(
       prompt,
@@ -393,11 +432,22 @@ Identify important omissions and suggest 5-8 key questions to ask before signing
   async extractSummary(
     contractText: string
   ): Promise<Schemas.ContractSummary> {
-    const prompt = `Generate a comprehensive summary of this contract:
+    const prompt = `Generate a comprehensive, easy-to-understand summary of this contract.
 
+Contract:
 ${contractText}
 
-Include parties, responsibilities, compensation, benefits, termination terms, and restrictions.`;
+Instructions:
+- Describe the parties and their relationship
+- List key responsibilities of the signing party
+- Detail all compensation (salary, bonuses, equity, other benefits)
+- Explain termination conditions (at-will, for-cause, severance)
+- Identify any restrictions (confidentiality, non-compete, non-solicitation, IP assignment)
+- Use clear, plain language - avoid legal jargon
+- For monetary amounts, use numbers (e.g., 150000, not "150k" or "$150,000")
+- Use null for fields that don't apply or aren't specified in the contract
+
+Return the summary in the exact JSON structure specified in the schema.`;
 
     return this.promptWithSchema<Schemas.ContractSummary>(
       prompt,

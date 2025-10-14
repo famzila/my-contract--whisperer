@@ -1,0 +1,168 @@
+@if (isLoading()) {
+  <div class="space-y-6">
+    <app-card>
+      <div class="p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+          <lucide-icon [name]="ClipboardIcon" class="w-8 h-8 text-blue-600"></lucide-icon>
+          {{ 'analysis.summary.title' | translate }}
+        </h2>
+        <app-skeleton-loader 
+          type="list" 
+          [items]="5" 
+          listItemPadding="p-1" 
+          loadingText="Loading summary...">
+        </app-skeleton-loader>
+      </div>
+    </app-card>
+  </div>
+} @else if (summary() === null) {
+  <div class="space-y-6">
+    <app-card>
+      <div class="p-8 text-center">
+        <div class="text-red-400 mb-4">
+          <lucide-icon [name]="AlertTriangleIcon" class="w-16 h-16 mx-auto"></lucide-icon>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ 'analysis.summary.title' | translate }}</h2>
+        <p class="text-red-600 text-lg">{{ 'analysis.summary.extractionError' | translate }}</p>
+      </div>
+    </app-card>
+  </div>
+} @else if (summary()) {
+  <div class="space-y-6">
+    <app-card>
+      <div class="p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+          <lucide-icon [name]="ClipboardIcon" class="w-8 h-8 text-blue-600"></lucide-icon>
+          {{ 'analysis.summary.title' | translate }}
+        </h2>
+      
+        <!-- Perspective Context Banner -->
+        @if (perspectiveContext()) {
+          <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+            <p class="text-sm text-blue-900 leading-relaxed">
+              <span class="font-semibold flex items-center gap-2">
+                <lucide-icon [name]="perspectiveContext()!.icon" class="w-4 h-4"></lucide-icon>
+                {{ perspectiveContext()!.title }}
+              </span><br/>
+              {{ perspectiveContext()!.message }}
+            </p>
+          </div>
+        }
+        
+        <div class="space-y-6">
+          <!-- Parties -->
+          <div>
+            <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+              <lucide-icon [name]="UsersIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
+              {{ 'analysis.summary.parties' | translate }}
+            </h3>
+            <p class="text-gray-700">{{ summary()?.parties || 'N/A' }}</p>
+          </div>
+          
+          <!-- Role -->
+          <div>
+            <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+              <lucide-icon [name]="BriefcaseIcon" class="w-5 h-5 text-green-600"></lucide-icon>
+              {{ 'analysis.summary.roleRelationship' | translate }}
+            </h3>
+            <p class="text-gray-700">{{ summary()?.role || 'N/A' }}</p>
+          </div>
+          
+          <!-- Responsibilities -->
+          @if (summary()?.responsibilities && summary()!.responsibilities!.length > 0) {
+            <div>
+              <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                <lucide-icon [name]="ClipboardIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
+                {{ 'analysis.summary.keyResponsibilities' | translate }}
+              </h3>
+              <ul class="list-disc list-inside space-y-1 text-gray-700">
+                @for (resp of summary()?.responsibilities || []; track $index) {
+                  <li>{{ resp }}</li>
+                }
+              </ul>
+            </div>
+          }
+          
+          <!-- Compensation -->
+          <div>
+            <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+              <lucide-icon [name]="DollarSignIcon" class="w-5 h-5 text-green-600"></lucide-icon>
+              {{ 'analysis.summary.compensationBenefits' | translate }}
+            </h3>
+            <div class="space-y-2 text-gray-700">
+                  @if (summary()?.compensation?.baseSalary) {
+                    <p><strong>{{ 'analysis.summary.baseSalary' | translate }}:</strong> ${{ summary()?.compensation?.baseSalary | number }}</p>
+                  }
+              @if (summary()?.compensation?.bonus) {
+                <p><strong>{{ 'analysis.summary.bonus' | translate }}:</strong> {{ summary()?.compensation?.bonus }}</p>
+              }
+              @if (summary()?.compensation?.equity) {
+                <p><strong>{{ 'analysis.summary.equity' | translate }}:</strong> {{ summary()?.compensation?.equity }}</p>
+              }
+              @if (summary()?.compensation?.other) {
+                <p><strong>{{ 'analysis.summary.other' | translate }}:</strong> {{ summary()?.compensation?.other }}</p>
+              }
+            </div>
+            @if (summary()?.benefits && summary()?.benefits!.length > 0) {
+              <ul class="list-disc list-inside space-y-1 text-gray-700 mt-3">
+                @for (benefit of summary()?.benefits || []; track $index) {
+                  <li>{{ benefit }}</li>
+                }
+              </ul>
+            }
+          </div>
+          
+          <!-- Termination -->
+          <div>
+            <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+              <lucide-icon [name]="DoorOpenIcon" class="w-5 h-5 text-red-600"></lucide-icon>
+              {{ 'analysis.summary.terminationConditions' | translate }}
+            </h3>
+            <div class="space-y-2 text-gray-700">
+              @if (summary()?.termination?.atWill) {
+                <p><strong>{{ 'analysis.summary.atWill' | translate }}:</strong> {{ summary()?.termination?.atWill }}</p>
+              }
+              @if (summary()?.termination?.forCause) {
+                <p><strong>{{ 'analysis.summary.forCause' | translate }}:</strong> {{ summary()?.termination?.forCause }}</p>
+              }
+              @if (summary()?.termination?.severance) {
+                <p><strong>{{ 'analysis.summary.severance' | translate }}:</strong> {{ summary()?.termination?.severance }}</p>
+              }
+            </div>
+          </div>
+          
+          <!-- Restrictions -->
+          <div>
+            <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+              <lucide-icon [name]="ShieldIcon" class="w-5 h-5 text-red-600"></lucide-icon>
+              {{ 'analysis.summary.restrictions' | translate }}
+            </h3>
+            <div class="space-y-2 text-gray-700">
+              @if (summary()?.restrictions?.confidentiality) {
+                <p><strong>{{ 'analysis.summary.confidentiality' | translate }}:</strong> {{ summary()?.restrictions?.confidentiality }}</p>
+              }
+              @if (summary()?.restrictions?.nonCompete) {
+                <p><strong>{{ 'analysis.summary.nonCompete' | translate }}:</strong> {{ summary()?.restrictions?.nonCompete }}</p>
+              }
+              @if (summary()?.restrictions?.nonSolicitation) {
+                <p><strong>{{ 'analysis.summary.nonSolicitation' | translate }}:</strong> {{ summary()?.restrictions?.nonSolicitation }}</p>
+              }
+              @if (summary()?.restrictions?.other) {
+                <p><strong>{{ 'analysis.summary.other' | translate }}:</strong> {{ summary()?.restrictions?.other }}</p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </app-card>
+  </div>
+} @else {
+  <div class="space-y-6">
+    <app-card>
+      <div class="p-8 text-center text-gray-500">
+        <span class="text-4xl mb-4 block">📄</span>
+        <p>{{ 'analysis.summary.noData' | translate }}</p>
+      </div>
+    </app-card>
+  </div>
+}

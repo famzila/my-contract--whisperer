@@ -1,0 +1,29 @@
+<div class="border-b border-gray-200">
+  <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" role="tablist">
+    @for (tab of tabs(); track tab.id) {
+      <li class="me-2" role="presentation">
+        <button 
+          [class]="getTabClasses(tab)"
+          [disabled]="tab.disabled"
+          (click)="selectTab(tab.id)"
+          role="tab"
+          [attr.aria-selected]="tab.id === activeTab()"
+          [attr.aria-controls]="tab.id + '-panel'">
+          <lucide-icon [name]="tab.icon" class="w-4 h-4 mr-2"></lucide-icon>
+          <span>{{ tab.label }}</span>
+          @if (tab.isLoading) {
+            <app-loading-spinner size="sm" class="ml-2"></app-loading-spinner>
+          }
+          @if (tab.badge) {
+            <span class="ml-2 px-2 py-0.5 text-xs bg-gray-200 text-gray-700 rounded-full">
+              {{ tab.badge }}
+            </span>
+          }
+        </button>
+      </li>
+    }
+  </ul>
+</div>
+<div class="tab-content p-8 bg-gray-50">
+  <ng-content></ng-content>
+</div>

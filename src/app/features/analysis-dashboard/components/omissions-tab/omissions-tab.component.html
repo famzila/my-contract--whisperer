@@ -1,0 +1,114 @@
+@if (isLoading()) {
+  <div class="space-y-6">
+    <div class="text-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+        <lucide-icon [name]="FileXIcon" class="w-8 h-8 text-amber-600"></lucide-icon>
+        {{ 'analysis.omissions.title' | translate }}
+      </h2>
+      <p class="text-gray-600 mt-2">{{ 'analysis.omissions.subtitle' | translate }}</p>
+    </div>
+    <app-skeleton-loader 
+      type="list" 
+      [items]="3" 
+      listItemPadding="p-4" 
+      loadingText="Loading omissions...">
+    </app-skeleton-loader>
+  </div>
+} @else {
+  <div class="space-y-6">
+    <div class="text-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+        <lucide-icon [name]="FileXIcon" class="w-8 h-8 text-amber-600"></lucide-icon>
+        {{ 'analysis.omissions.title' | translate }}
+      </h2>
+      <p class="text-gray-600 mt-2">{{ 'analysis.omissions.subtitle' | translate }}</p>
+    </div>
+    
+    @if (omissions() && omissions().length > 0) {
+      <!-- High Priority Omissions -->
+      @if (highPriorityOmissions().length > 0) {
+        <div class="space-y-3">
+          <h3 class="text-lg font-semibold text-error flex items-center gap-2">
+            <lucide-icon [name]="AlertTriangleIcon" class="w-4 h-4 text-red-600"></lucide-icon>
+            {{ 'analysis.omissions.highPriority' | translate }}
+          </h3>
+          @for (omission of highPriorityOmissions(); track $index) {
+            <app-card>
+              <div class="flex border-l-4 border-error bg-error/5 rtl:border-l-0 rtl:border-r-4">
+                <div class="flex-1 p-6">
+                  <div class="flex items-start gap-3">
+                    <div class="flex-1">
+                      <h4 class="font-semibold text-gray-900 mb-2">{{ omission.item }}</h4>
+                      <div class="bg-white rounded-lg p-3 border border-error/20">
+                        <p class="text-sm font-medium text-error flex items-center gap-1">
+                          <lucide-icon [name]="AlertTriangleIcon" class="w-4 h-4"></lucide-icon>
+                          {{ 'analysis.omissions.whyMatters' | translate }}:
+                        </p>
+                        <p class="text-sm text-gray-700 mt-1">{{ omission.impact }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </app-card>
+          }
+        </div>
+      }
+      
+      <!-- Medium Priority Omissions -->
+      @if (mediumPriorityOmissions().length > 0) {
+        <div class="space-y-3">
+          <h3 class="text-lg font-semibold text-warning flex items-center gap-2">
+            <lucide-icon [name]="AlertTriangleIcon" class="w-4 h-4 text-amber-600"></lucide-icon>
+            {{ 'analysis.omissions.mediumPriority' | translate }}
+          </h3>
+          @for (omission of mediumPriorityOmissions(); track $index) {
+            <app-card>
+              <div class="flex border-l-4 border-warning bg-warning/5 rtl:border-l-0 rtl:border-r-4">
+                <div class="flex-1 p-6">
+                  <div class="flex items-start gap-3">
+                    <div class="flex-1">
+                      <h4 class="font-semibold text-gray-900 mb-2">{{ omission.item }}</h4>
+                      <p class="text-sm text-gray-700">{{ omission.impact }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </app-card>
+          }
+        </div>
+      }
+      
+      <!-- Low Priority Omissions -->
+      @if (lowPriorityOmissions().length > 0) {
+        <div class="space-y-3">
+          <h3 class="text-lg font-semibold text-info flex items-center gap-2">
+            <lucide-icon [name]="InfoIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+            {{ 'analysis.omissions.lowPriority' | translate }}
+          </h3>
+          @for (omission of lowPriorityOmissions(); track $index) {
+            <app-card>
+              <div class="flex border-l-4 border-info bg-info/5 rtl:border-l-0 rtl:border-r-4">
+                <div class="flex-1 p-6">
+                  <div class="flex items-start gap-3">
+                    <div class="flex-1">
+                      <h4 class="font-semibold text-gray-900 mb-1">{{ omission.item }}</h4>
+                      <p class="text-sm text-gray-700">{{ omission.impact }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </app-card>
+          }
+        </div>
+      }
+    } @else {
+      <app-card>
+        <div class="p-8 text-center text-gray-500">
+          <span class="text-4xl mb-4 block">✨</span>
+          <p>{{ 'analysis.omissions.noOmissions' | translate }}</p>
+        </div>
+      </app-card>
+    }
+  </div>
+}

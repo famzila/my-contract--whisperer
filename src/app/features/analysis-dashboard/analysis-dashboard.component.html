@@ -1,0 +1,98 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Header with Metadata -->
+    <app-dashboard-header
+      [metadata]="getMetadata()"
+      [isMockMode]="isMockMode()"
+      [perspectiveBadge]="getPerspectiveBadge()"
+      [wasTranslated]="wasTranslated()"
+      [sourceLanguageName]="getSourceLanguageName()"
+      [todayDate]="getTodayDate()"
+      [showingOriginal]="showingOriginal()"
+      (uploadNew)="uploadNew()"
+      (toggleOriginal)="toggleOriginal()"
+    >
+    </app-dashboard-header>
+
+    <!-- Language Mismatch Banner -->
+    @if (showLanguageMismatchBanner()) {
+    <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+      <div class="flex items-center gap-3">
+        <lucide-icon [name]="GlobeIcon" class="w-5 h-5 text-blue-600 flex-shrink-0"></lucide-icon>
+        <div class="flex-1">
+          <span class="font-medium text-blue-900">
+            {{ 'analysis.viewingInDifferentLanguage' | translate }}
+          </span>
+          <span class="text-sm text-blue-700 block mt-1">
+            {{ 'analysis.analysisLanguage' | translate }}: {{ analysisLanguageName() }} |
+            {{ 'analysis.uiLanguage' | translate }}: {{ appLanguageName() }}
+          </span>
+        </div>
+        @if (canSwitchAppLanguage()) {
+        <button
+          (click)="switchAppToAnalysisLanguage()"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+        >
+          {{ 'analysis.switchUITo' | translate }} {{ analysisLanguageName() }}
+        </button>
+        }
+      </div>
+    </div>
+    }
+
+    <!-- Loading State -->
+    @if (isAnalyzing()) {
+    <div class="flex items-center justify-center py-12">
+      <app-loading-spinner size="lg" />
+    </div>
+    }
+
+    <!-- Tab Navigation and Content -->
+    @if (!isAnalyzing() && canShowDashboard()) {
+    <app-tabs [tabs]="tabConfigs()" [activeTab]="selectedTab()" (tabSelected)="selectTab($event)">
+      @if (selectedTab() === 'summary') {
+        <app-summary-tab
+          [summary]="getSummary()"
+          [isLoading]="isSummaryLoading()"
+          [perspectiveContext]="getPerspectiveContext()">
+        </app-summary-tab>
+      } @else if (selectedTab() === 'risks') {
+        <app-risks-tab
+          [risks]="getRisks()"
+          [isLoading]="isRisksLoading()"
+          [highRisks]="getHighRisks()"
+          [mediumRisks]="getMediumRisks()"
+          [lowRisks]="getLowRisks()">
+        </app-risks-tab>
+      } @else if (selectedTab() === 'obligations') {
+        <app-obligations-tab 
+          [obligations]="getObligations()" 
+          [isLoading]="isObligationsLoading()">
+        </app-obligations-tab>
+      } @else if (selectedTab() === 'omissions') {
+        <app-omissions-tab
+          [omissions]="getOmissions()"
+          [isLoading]="isOmissionsLoading()"
+          [highPriorityOmissions]="getHighPriorityOmissions()"
+          [mediumPriorityOmissions]="getMediumPriorityOmissions()"
+          [lowPriorityOmissions]="getLowPriorityOmissions()">
+        </app-omissions-tab>
+      } @else if (selectedTab() === 'questions') {
+        <app-questions-tab
+          [questions]="getQuestions()"
+          [isLoading]="isOmissionsLoading()"
+          [isContractProvider]="isContractProvider()"
+          [isDrafting]="isDrafting()"
+          [copyAllButtonState]="copyAllButtonState()"
+          (copyQuestion)="copyQuestion($event)"
+          (copyAllQuestions)="copyAllQuestions()"
+          (draftEmail)="draftProfessionalEmail()">
+        </app-questions-tab>
+      } @else if (selectedTab() === 'disclaimer') {
+        <app-disclaimer-tab [disclaimer]="getDisclaimer()">
+        </app-disclaimer-tab>
+      }
+    </app-tabs>
+    }
+  </div>
+</div>
