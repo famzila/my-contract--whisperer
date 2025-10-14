@@ -4,9 +4,11 @@
  * Reference: https://ngrx.io/guide/signals/signal-store
  */
 import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals';
-import { computed, inject } from '@angular/core';
+import { computed, inject, NgZone } from '@angular/core';
 import { patchState } from '@ngrx/signals';
+import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import type { Contract, ContractAnalysis, ContractClause, RiskLevel } from '../models/contract.model';
 import { ContractAnalysisService } from '../services/contract-analysis.service';
 import { ContractParserService, type ParsedContract } from '../services/contract-parser.service';
@@ -16,13 +18,22 @@ import { LanguageStore } from './language.store';
 import { OnboardingStore } from './onboarding.store';
 
 /**
+ * Section loading state for progressive analysis
+ */
+interface SectionState<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+}
+
+/**
  * Contract store state shape
  */
 interface ContractState {
   // Current contract
   contract: Contract | null;
   
-  // Analysis results
+  // Analysis results (legacy - for backward compatibility)
   analysis: ContractAnalysis | null;
   
   // Loading states
@@ -35,6 +46,18 @@ interface ContractState {
   
   // UI state
   selectedClauseId: string | null;
+  
+  // Progressive loading states (NEW)
+  useProgressiveLoading: boolean;
+  analysisProgress: number; // 0-100%
+  sectionsMetadata: SectionState<any> | null;
+  sectionsSummary: SectionState<any> | null;
+  sectionsRisks: SectionState<any> | null;
+  sectionsObligations: SectionState<any> | null;
+  sectionsOmissionsQuestions: SectionState<any> | null;
+  
+  // RxJS streaming (NEW)
+  destroySubject: Subject<void> | null;
 }
 
 /**
@@ -48,6 +71,16 @@ const initialState: ContractState = {
   uploadError: null,
   analysisError: null,
   selectedClauseId: null,
+  // Progressive loading
+  useProgressiveLoading: false,
+  analysisProgress: 0,
+  sectionsMetadata: null,
+  sectionsSummary: null,
+  sectionsRisks: null,
+  sectionsObligations: null,
+  sectionsOmissionsQuestions: null,
+  // RxJS streaming
+  destroySubject: null,
 };
 
 /**
@@ -58,12 +91,27 @@ export const ContractStore = signalStore(
   withState(initialState),
   
   // Computed values derived from state
-  withComputed(({ contract, analysis, isUploading, isAnalyzing, uploadError, analysisError }) => ({
+  withComputed(({ 
+    contract, 
+    analysis, 
+    isUploading, 
+    isAnalyzing, 
+    uploadError, 
+    analysisError,
+    sectionsMetadata,
+    sectionsSummary,
+    sectionsRisks,
+    sectionsObligations,
+    sectionsOmissionsQuestions,
+  }) => ({
     // Check if contract is loaded
     hasContract: computed(() => contract() !== null),
     
-    // Check if analysis is available
+    // Check if analysis is available (complete analysis)
     hasAnalysis: computed(() => analysis() !== null),
+    
+    // Check if we have enough data to show the dashboard (metadata is enough for progressive loading)
+    canShowDashboard: computed(() => contract() !== null && sectionsMetadata()?.data !== null),
     
     // Get risk score
     riskScore: computed(() => analysis()?.riskScore ?? 0),
@@ -124,6 +172,16 @@ export const ContractStore = signalStore(
     hasError: computed(() => 
       uploadError() !== null || analysisError() !== null
     ),
+    
+    // Progressive loading computed signals
+    isAnySectionLoading: computed(() => {
+      const meta = sectionsMetadata();
+      const summary = sectionsSummary();
+      const risks = sectionsRisks();
+      const oblig = sectionsObligations();
+      const omiss = sectionsOmissionsQuestions();
+      return meta?.loading || summary?.loading || risks?.loading || oblig?.loading || omiss?.loading || false;
+    }),
   })),
   
   // Methods to update state
@@ -136,7 +194,9 @@ export const ContractStore = signalStore(
     onboardingStore = inject(OnboardingStore),
     validationService = inject(ContractValidationService),
     partyExtractionService = inject(PartyExtractionService),
-    translate = inject(TranslateService)
+    translate = inject(TranslateService),
+    router = inject(Router),
+    ngZone = inject(NgZone)
   ) => ({
     /**
      * Set contract
@@ -377,23 +437,48 @@ export const ContractStore = signalStore(
     /**
      * Analyze a contract (main orchestration method)
      */
+    /**
+     * Analyze contract with RxJS streaming
+     * Shows results as they complete independently (not in tiers)
+     * Metadata is priority 1, all others stream as they finish
+     */
     async analyzeContract(parsedContract: ParsedContract): Promise<void> {
       patchState(store, { isUploading: true, uploadError: null });
 
       try {
-        patchState(store, { isAnalyzing: true, analysisError: null });
+        // Clean up any existing stream
+        if (store.destroySubject()) {
+          store.destroySubject()!.next();
+          store.destroySubject()!.complete();
+        }
+
+        // Create new destroy subject for this analysis
+        const destroySubject = new Subject<void>();
+        patchState(store, { destroySubject });
+
+        // Initialize progressive loading state
+        patchState(store, { 
+          isAnalyzing: true, 
+          analysisError: null,
+          useProgressiveLoading: true,
+          analysisProgress: 0,
+          sectionsMetadata: { data: null, loading: true, error: null },
+          sectionsSummary: { data: null, loading: true, error: null },
+          sectionsRisks: { data: null, loading: true, error: null },
+          sectionsObligations: { data: null, loading: true, error: null },
+          sectionsOmissionsQuestions: { data: null, loading: true, error: null },
+        });
         
-        // Step 1: Detect contract language (triggers language banner if needed)
+        // Step 1: Detect contract language
         console.log('🌍 Detecting contract language...');
         languageStore.detectContractLanguage(parsedContract.text);
         
-        // Step 2: Build analysis context from onboarding and language stores
+        // Step 2: Build analysis context
         const detectedParties = onboardingStore.detectedParties();
         const contractLang = languageStore.detectedContractLanguage() || 'en';
         
         console.log('\n📋 [Analysis Context] Building context...');
         console.log('  📄 Contract language:', contractLang);
-        console.log('  👤 User preferred language:', languageStore.preferredLanguage());
         console.log('  🎯 User selected output language:', onboardingStore.selectedOutputLanguage());
         
         const analysisContext = {
@@ -409,34 +494,111 @@ export const ContractStore = signalStore(
             : undefined,
         };
         
-        console.log('  ✅ Analysis will be done in:', analysisContext.analyzedInLanguage);
-        console.log('📋 [Analysis Context] Context ready\n');
+        // Create contract object
+        const contract: Contract = {
+          id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          text: parsedContract.text,
+          fileName: parsedContract.fileName,
+          fileSize: parsedContract.fileSize,
+          fileType: parsedContract.fileType,
+          uploadedAt: parsedContract.parsedAt,
+          wordCount: parsedContract.text.split(/\s+/).length,
+          estimatedReadingTime: Math.ceil(parsedContract.text.split(/\s+/).length / 200),
+        };
         
-        console.log('📊 Analysis Context:', analysisContext);
+        // Step 3: Start RxJS streaming analysis
+        console.log('🚀 Starting RxJS streaming analysis...');
         
-        // Step 3: Call the analysis service with context
-        const { contract, analysis } = await analysisService.analyzeContract(
+        analysisService.analyzeContractStreaming$(
           parsedContract,
-          analysisContext
-        );
-        
-        // Update store with results
-        patchState(store, { 
-          contract, 
-          analysis,
-          isUploading: false,
-          isAnalyzing: false,
-          uploadError: null,
-          analysisError: null,
+          analysisContext,
+          contract
+        ).pipe(
+          takeUntil(destroySubject)
+        ).subscribe({
+          next: (result) => {
+            console.log(`📦 [Stream] ${result.section} completed:`, result);
+            
+            // Update specific section as it completes
+            switch (result.section) {
+              case 'metadata':
+                patchState(store, {
+                  sectionsMetadata: { data: result.data, loading: false, error: null },
+                  analysisProgress: result.progress,
+                  contract, // Store contract immediately with metadata
+                  isUploading: false, // Clear upload state - we're navigating away!
+                  isAnalyzing: false, // Stop blocking loader - analysis continues via progressive UI!
+                });
+                
+                // 🚀 NAVIGATE TO ANALYSIS PAGE IMMEDIATELY!
+                // Dashboard will show metadata + skeleton loaders for other sections
+                // Analysis continues in background, shown via skeleton loaders (not blocking overlay)
+                
+                // Run navigation inside Angular zone to ensure it's detected
+                ngZone.run(() => {
+                  router.navigate(['/analysis'], { 
+                    skipLocationChange: false,
+                    replaceUrl: false 
+                  });
+                });
+                break;
+              
+              case 'summary':
+                patchState(store, {
+                  sectionsSummary: { data: result.data, loading: false, error: null },
+                  analysisProgress: result.progress,
+                });
+                break;
+              
+              case 'risks':
+                patchState(store, {
+                  sectionsRisks: { data: result.data, loading: false, error: null },
+                  analysisProgress: result.progress,
+                });
+                break;
+              
+              case 'obligations':
+                patchState(store, {
+                  sectionsObligations: { data: result.data, loading: false, error: null },
+                  analysisProgress: result.progress,
+                });
+                break;
+              
+              case 'omissionsAndQuestions':
+                patchState(store, {
+                  sectionsOmissionsQuestions: { data: result.data, loading: false, error: null },
+                  analysisProgress: result.progress,
+                });
+                break;
+            }
+          },
+          error: (error) => {
+            console.error('❌ RxJS streaming analysis failed:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Analysis failed';
+            patchState(store, { 
+              analysisError: errorMessage,
+              isUploading: false,
+              isAnalyzing: false,
+              analysisProgress: 0,
+            });
+            // Don't throw - let the UI handle the error gracefully
+          },
+          complete: () => {
+            console.log('✅ RxJS streaming analysis completed');
+            // Clean up destroy subject
+            destroySubject.next();
+            destroySubject.complete();
+            patchState(store, { destroySubject: null });
+          }
         });
         
-        console.log('✅ Contract analysis completed with language detection');
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Analysis failed';
         patchState(store, { 
           analysisError: errorMessage,
           isUploading: false,
           isAnalyzing: false,
+          analysisProgress: 0,
         });
         throw error;
       }

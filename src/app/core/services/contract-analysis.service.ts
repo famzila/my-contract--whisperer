@@ -1,5 +1,8 @@
 import { Injectable, inject } from '@angular/core';
+import { Observable, of, merge, concat, EMPTY } from 'rxjs';
+import { map, tap, catchError, switchMap, shareReplay } from 'rxjs/operators';
 import { AiOrchestratorService } from './ai/ai-orchestrator.service';
+import { PromptService } from './ai/prompt.service';
 import { ContractParserService, type ParsedContract } from './contract-parser.service';
 import { TranslationOrchestratorService } from './translation-orchestrator.service';
 import type { Contract, ContractAnalysis, ContractClause, Obligation, RiskLevel } from '../models/contract.model';
@@ -8,6 +11,7 @@ import { AppConfig } from '../config/app.config';
 import { MOCK_ANALYSIS } from '../mocks/mock-analysis.data';
 import type { AnalysisContext } from '../models/analysis-context.model';
 import { DEFAULT_ANALYSIS_CONTEXT } from '../models/analysis-context.model';
+import * as Schemas from '../schemas/analysis-schemas';
 
 /**
  * Contract Analysis Service
@@ -23,11 +27,14 @@ import { DEFAULT_ANALYSIS_CONTEXT } from '../models/analysis-context.model';
 })
 export class ContractAnalysisService {
   private aiOrchestrator = inject(AiOrchestratorService);
+  private promptService = inject(PromptService);
   private parser = inject(ContractParserService);
   private translationOrchestrator = inject(TranslationOrchestratorService);
 
   /**
    * Analyze a contract from parsed input with optional context
+   * Uses progressive schema-based analysis with three-tier loading
+   * This is a no-op wrapper - actual progressive analysis is called by the store
    */
   async analyzeContract(
     parsedContract: ParsedContract,
@@ -42,6 +49,7 @@ export class ContractAnalysisService {
       contractLanguage: 'en',
       userPreferredLanguage: 'en',
     };
+    
     // Create contract object
     const contract: Contract = {
       id: this.generateId(),
@@ -70,22 +78,9 @@ export class ContractAnalysisService {
     // Check AI services availability
     const aiStatus = await this.aiOrchestrator.checkAvailability();
     
-    console.log('🤖 AI Services Status:', {
-      prompt: aiStatus.prompt,
-      summarizer: aiStatus.summarizer,
-      languageDetector: aiStatus.languageDetector,
-      translator: aiStatus.translator,
-      writer: aiStatus.writer,
-      rewriter: aiStatus.rewriter,
-      allAvailable: aiStatus.allAvailable
-    });
-    
-    // We only need Prompt and Summarizer APIs for basic analysis
-    if (!aiStatus.prompt || !aiStatus.summarizer) {
-      console.warn('⚠️ Required AI services not available:', {
-        promptAvailable: aiStatus.prompt,
-        summarizerAvailable: aiStatus.summarizer
-      });
+    // We only need Prompt API for schema-based analysis
+    if (!aiStatus.prompt) {
+      console.warn('⚠️ Prompt API not available');
       console.warn('💡 Ensure you are using Chrome Canary with flags enabled at chrome://flags');
       return {
         contract,
@@ -93,171 +88,367 @@ export class ContractAnalysisService {
       };
     }
 
+    // Progressive analysis is now the default and only approach
+    // This method should not be called directly - use store.analyzeContract() instead
+    // which calls analyzeContractWithSchemasProgressive with callbacks
+    throw new Error(
+      'analyzeContract() should not be called directly. Use store.analyzeContract() instead for progressive loading.'
+    );
+  }
+
+  /**
+   * NEW: Progressive schema-based analysis with three-tier loading
+   * Tier 1: Metadata (fast, shows dashboard immediately)
+   * Tier 2: Summary + Risks (parallel, high priority)
+   * Tier 3: Obligations + Omissions + Questions (parallel, medium priority)
+   */
+  async analyzeContractWithSchemasProgressive(
+    parsedContract: ParsedContract,
+    analysisContext: AnalysisContext,
+    contract: Contract,
+    onProgress: (section: string, data: any, progress: number) => void
+  ): Promise<{ contract: Contract; analysis: ContractAnalysis }> {
     try {
-      console.log(`🔍 Starting AI analysis${analysisContext.userRole ? ` from ${analysisContext.userRole}'s perspective` : ''}...`);
-      
-      // Perform AI analysis with real services, passing user role context
-      const aiAnalysis = await this.aiOrchestrator.analyzeContract(
-        parsedContract.text,
-        analysisContext.userRole
-      );
-      
-      console.log('📊 AI Analysis received:', {
-        summaryLength: aiAnalysis.summary?.length,
-        clausesLength: aiAnalysis.clauses?.length,
+      console.log('🚀 Starting THREE-TIER progressive analysis...');
+
+      // Create session once
+      await this.promptService.createSession({
+        userRole: analysisContext.userRole || null,
       });
 
-      // Try to parse JSON response from AI
-      let structuredAnalysis: AIAnalysisResponse | null = null;
-      
-      console.log('\n📋 [JSON Parsing] Attempting to parse AI response...');
-      console.log('📄 [JSON Parsing] Raw AI response (first 500 chars):', aiAnalysis.clauses.substring(0, 500));
-      
-      // 🔧 CRITICAL FIX: Clean up markdown code blocks that AI sometimes adds
-      let cleanedResponse = aiAnalysis.clauses.trim();
-      
-      // Remove markdown code blocks if present
-      if (cleanedResponse.startsWith('```json')) {
-        console.log('🧹 [JSON Parsing] Removing markdown ```json code blocks...');
-        cleanedResponse = cleanedResponse.replace(/```json\n?/g, '').replace(/```\n?$/g, '');
-      } else if (cleanedResponse.startsWith('```')) {
-        console.log('🧹 [JSON Parsing] Removing markdown ``` code blocks...');
-        cleanedResponse = cleanedResponse.replace(/```\n?/g, '');
-      }
-      
-      cleanedResponse = cleanedResponse.trim();
-      
-      console.log('📄 [JSON Parsing] Cleaned response (first 200 chars):', cleanedResponse.substring(0, 200));
-      
-      try {
-        structuredAnalysis = JSON.parse(cleanedResponse);
-        console.log('✅ [JSON Parsing] Successfully parsed structured JSON response');
-        console.log('📊 [JSON Parsing] Parsed object keys:', structuredAnalysis ? Object.keys(structuredAnalysis) : []);
-      } catch (jsonError) {
-        console.error('❌ [JSON Parsing] Failed to parse JSON:', jsonError);
-        console.error('📄 [JSON Parsing] Cleaned response that still failed:', cleanedResponse.substring(0, 500));
-        console.warn('⚠️ [JSON Parsing] AI response is not valid JSON even after cleaning, falling back to text parsing');
-        console.warn('💡 [JSON Parsing] This means translation will NOT work - AI must return valid JSON!');
-      }
+      // ============================================================
+      // TIER 1: Metadata (Critical - ~1s)
+      // ============================================================
+      const metadata = await this.promptService.extractMetadata(parsedContract.text, analysisContext.userRole || undefined);
+      onProgress('metadata', metadata, 20);
 
-      // 🌍 TRANSLATION LOGIC
-      // Store original (untranslated) version
-      const originalStructuredAnalysis = structuredAnalysis;
+      // ============================================================
+      // TIER 2: Summary + Risks (High Priority - Parallel ~2-3s)
+      // ============================================================
+      const tier2Results = await Promise.allSettled([
+        this.promptService.extractSummary(parsedContract.text),
+        this.promptService.extractRisks(parsedContract.text),
+      ]);
       
-      console.log('\n🌍 [Translation] === TRANSLATION FLOW DEBUG ===');
-      console.log('📋 [Translation] Analysis Context:', {
-        contractLanguage: analysisContext.contractLanguage,
-        userPreferredLanguage: analysisContext.userPreferredLanguage,
-        analyzedInLanguage: analysisContext.analyzedInLanguage,  // Should always match contractLanguage now
-        userRole: analysisContext.userRole,
-      });
+      // Handle Tier 2 results
+      const summaryResult = tier2Results[0];
+      const risksResult = tier2Results[1];
       
-      // 🔑 KEY FIX: Check if we need to translate OUTPUT to user's preferred language
-      // We analyze in contract language, then translate output if user wants different language
-      const userSelectedOutputLanguage = analysisContext.userPreferredLanguage;  // User's chosen output language
-      const needsTranslation = this.translationOrchestrator.needsTranslation(
-        analysisContext.contractLanguage,  // Source: contract language (e.g., "en")
-        userSelectedOutputLanguage         // Target: user's preferred output (e.g., "fr")
-      );
-      
-      console.log(`🔍 [Translation] Analysis done in: ${analysisContext.contractLanguage}`);
-      console.log(`🔍 [Translation] User wants output in: ${userSelectedOutputLanguage}`);
-      console.log(`🔍 [Translation] needsTranslation(${analysisContext.contractLanguage} → ${userSelectedOutputLanguage}):`, needsTranslation);
-      console.log(`🔍 [Translation] structuredAnalysis exists:`, !!structuredAnalysis);
-      console.log(`🔍 [Translation] originalStructuredAnalysis exists:`, !!originalStructuredAnalysis);
-      
-      if (needsTranslation && structuredAnalysis && originalStructuredAnalysis) {
-        console.log(`🚀 [Translation] Starting translation: ${analysisContext.contractLanguage} → ${userSelectedOutputLanguage}`);
-        console.log('📊 [Translation] Original analysis sample (in contract language):', {
-          summaryParties: originalStructuredAnalysis.summary.parties.substring(0, 100) + '...',
-          firstRiskTitle: originalStructuredAnalysis.risks[0]?.title,
-          firstObligationDuty: originalStructuredAnalysis.obligations.employer[0]?.duty,
-        });
-        
-        // Translate the analysis output to user's preferred language
-        structuredAnalysis = await this.translationOrchestrator.translateAnalysis(
-          structuredAnalysis,
-          analysisContext.contractLanguage,    // Source: contract language
-          userSelectedOutputLanguage          // Target: user's preferred output
-        );
-        
-        console.log('✅ [Translation] Translation completed');
-        console.log('📊 [Translation] Translated analysis sample (in user\'s language):', {
-          summaryParties: structuredAnalysis.summary.parties.substring(0, 100) + '...',
-          firstRiskTitle: structuredAnalysis.risks[0]?.title,
-          firstObligationDuty: structuredAnalysis.obligations.employer[0]?.duty,
-        });
+      if (summaryResult.status === 'fulfilled') {
+        onProgress('summary', summaryResult.value, 40);
       } else {
-        if (!structuredAnalysis) {
-          console.error('❌ [Translation] CANNOT TRANSLATE: AI did not return valid JSON!');
-          console.error('💡 [Translation] The AI MUST return valid JSON for translation to work.');
-          console.error('📋 [Translation] Check the Prompt API system prompt and AI response format.');
-        } else {
-          console.log(`⏭️  [Translation] No translation needed (user wants ${userSelectedOutputLanguage}, contract is ${analysisContext.contractLanguage})`);
-        }
+        console.error('❌ Summary extraction failed:', summaryResult.reason);
+        onProgress('summary', null, 40); // Report as complete but with null data
       }
-      console.log('🌍 [Translation] === END TRANSLATION FLOW ===\n');
-
-      // Parse AI results and create structured analysis
-      const clauses = structuredAnalysis 
-        ? this.parseClausesFromJSON(structuredAnalysis)
-        : await this.parseClausesFromAI(aiAnalysis.clauses, parsedContract.text);
-        
-      const obligations = structuredAnalysis
-        ? this.parseObligationsFromJSON(structuredAnalysis)
-        : this.extractObligationsFromText(parsedContract.text, clauses, aiAnalysis.clauses);
-        
-      const riskScore = this.calculateRiskScore(clauses);
-
-      // Store structured JSON for UI display (translated if needed)
-      const summaryText = structuredAnalysis 
-        ? JSON.stringify(structuredAnalysis, null, 2)
-        : aiAnalysis.clauses;
       
-      // Store original (untranslated) summary for reference
-      const originalSummaryText = needsTranslation && originalStructuredAnalysis
-        ? JSON.stringify(originalStructuredAnalysis, null, 2)
-        : undefined;
+      if (risksResult.status === 'fulfilled') {
+        onProgress('risks', risksResult.value, 60);
+      } else {
+        console.error('❌ Risks extraction failed:', risksResult.reason);
+        onProgress('risks', null, 60);
+      }
+      
+      const summaryStructured = summaryResult.status === 'fulfilled' ? summaryResult.value : null;
+      const risks = risksResult.status === 'fulfilled' ? risksResult.value : null;
+      
 
+      // ============================================================
+      // TIER 3: Obligations + Omissions (Medium Priority - Parallel ~2-3s)
+      // ============================================================
+      const tier3Results = await Promise.allSettled([
+        this.promptService.extractObligations(parsedContract.text),
+        this.promptService.extractOmissionsAndQuestions(parsedContract.text),
+      ]);
+      
+      // Handle Tier 3 results
+      const obligationsResult = tier3Results[0];
+      const omissionsResult = tier3Results[1];
+      
+      if (obligationsResult.status === 'fulfilled') {
+        onProgress('obligations', obligationsResult.value, 80);
+      } else {
+        console.error('❌ Obligations extraction failed:', obligationsResult.reason);
+        console.log('Obligations extraction failed:', JSON.stringify(obligationsResult, null, 2));
+        onProgress('obligations', null, 80);
+      }
+      
+      if (omissionsResult.status === 'fulfilled') {
+        onProgress('omissionsAndQuestions', omissionsResult.value, 90);
+      } else {
+        console.error('❌ Omissions and Questions extraction failed:', omissionsResult.reason);
+        onProgress('omissionsAndQuestions', null, 90);
+      }
+      
+      const obligations = obligationsResult.status === 'fulfilled' ? obligationsResult.value : null;
+      const omissionsAndQuestions = omissionsResult.status === 'fulfilled' ? omissionsResult.value : null;
+      
+
+      // ============================================================
+      // Build Complete Analysis (with fallbacks for failed sections)
+      // ============================================================
+      const completeAnalysis: Schemas.CompleteAnalysis = {
+        metadata,
+        risks: risks || { risks: [] },
+        obligations: obligations || { obligations: { employer: [], employee: [] } },
+        omissionsAndQuestions: omissionsAndQuestions || { omissions: [], questions: [] },
+        summary: summaryStructured || { summary: { parties: '', role: '', responsibilities: [], compensation: {}, benefits: [], termination: {}, restrictions: {} } },
+      };
+
+      // Convert schema results to existing model format (with safe fallbacks)
+      const clauses = risks ? this.convertRisksToClauses(risks.risks) : [];
+      const riskScore = risks ? this.calculateRiskScoreFromRisks(risks.risks) : 0;
+      const obligationsModel = obligations ? this.convertObligationsToModel(obligations.obligations) : [];
+
+      // Transform omissions priorities (with safe fallback)
+      const omissionsTransformed = omissionsAndQuestions 
+        ? omissionsAndQuestions.omissions.map(omission => ({
+            ...omission,
+            priority: this.capitalizePriority(omission.priority),
+          }))
+        : [];
+
+      // Add constant disclaimer
+      const disclaimer = 'I am an AI assistant, not a lawyer. This information is for educational purposes only. Consult a qualified attorney for legal advice.';
+
+      // Build final analysis
       const analysis: ContractAnalysis = {
         id: contract.id,
-        summary: summaryText || 'Unable to generate summary',
-        originalSummary: originalSummaryText,  // 👈 NEW: Original for toggle
+        summary: JSON.stringify(completeAnalysis, null, 2),
         clauses,
         riskScore,
-        obligations,
-        omissions: structuredAnalysis?.omissions || [],
-        questions: structuredAnalysis?.questions || [],
-        metadata: structuredAnalysis?.metadata,
-        contextWarnings: structuredAnalysis?.contextWarnings,
-        disclaimer: structuredAnalysis?.disclaimer,
+        obligations: obligationsModel,
+        omissions: omissionsTransformed,
+        questions: omissionsAndQuestions ? omissionsAndQuestions.questions : [],
+        metadata: metadata,
+        disclaimer,
         analyzedAt: new Date(),
-        
-        // 👇 NEW: Translation metadata
-        translationInfo: needsTranslation ? {
-          wasTranslated: true,
-          sourceLanguage: analysisContext.contractLanguage,     // Original contract language
-          targetLanguage: userSelectedOutputLanguage,           // User's chosen output language
-          translatedAt: new Date(),
-        } : undefined,
       };
 
-      console.log('✅ Analysis complete:', {
-        clauseCount: clauses.length,
-        obligationCount: obligations.length,
-        riskScore,
-        isStructured: !!structuredAnalysis,
-      });
+      // Cleanup
+      this.promptService.destroy();
+
+      onProgress('complete', analysis, 100);
 
       return { contract, analysis };
+
     } catch (error) {
-      console.error('❌ AI Analysis failed:', error);
-      // Fallback to mock analysis on error
-      return {
-        contract,
-        analysis: this.createMockAnalysis(contract.id, parsedContract.text),
-      };
+      console.error('❌ Progressive schema-based analysis failed:', error);
+      this.promptService.destroy();
+      throw error;
     }
+  }
+
+  /**
+   * ========================================
+   * NEW: RxJS Streaming Analysis
+   * ========================================
+   * Stream-based analysis that emits results as they complete
+   * Metadata is priority 1 (must complete first)
+   * All other sections stream independently as they finish
+   */
+  analyzeContractStreaming$(
+    parsedContract: ParsedContract,
+    analysisContext: AnalysisContext,
+    contract: Contract
+  ): Observable<{
+    section: 'metadata' | 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions' | 'complete';
+    data: any;
+    progress: number;
+  }> {
+    // Create session once and share it
+    const session$ = of(null).pipe(
+      tap(() => console.log('🚀 Starting RxJS streaming analysis...')),
+      switchMap(() => this.promptService.createSession({ userRole: analysisContext.userRole || null })),
+      shareReplay(1)
+    );
+
+    // PRIORITY 1: Metadata (must complete first)
+    const metadata$ = session$.pipe(
+      switchMap(() => this.promptService.extractMetadata$(parsedContract.text, analysisContext.userRole || undefined)),
+      map(metadata => ({
+        section: 'metadata' as const,
+        data: metadata,
+        progress: 20
+      })),
+      tap(result => console.log('✅ Metadata complete', result)),
+      catchError(error => {
+        console.error('❌ Metadata extraction failed:', error);
+        throw error; // Metadata is critical, so we throw
+      })
+    );
+
+    // STREAMING: Summary, Risks, Obligations, Omissions (all independent)
+    const summary$ = session$.pipe(
+      switchMap(() => this.promptService.extractSummary$(parsedContract.text)),
+      map(summary => ({
+        section: 'summary' as const,
+        data: summary,
+        progress: 40
+      })),
+      tap(result => console.log('✅ Summary complete', result)),
+      catchError(error => {
+        console.error('❌ Summary extraction failed:', error);
+        // Return null data - UI will show error message
+        return of({ section: 'summary' as const, data: null, progress: 40 });
+      })
+    );
+
+    const risks$ = session$.pipe(
+      switchMap(() => this.promptService.extractRisks$(parsedContract.text)),
+      map(risks => ({
+        section: 'risks' as const,
+        data: risks,
+        progress: 60
+      })),
+      tap(result => console.log('✅ Risks complete', result)),
+      catchError(error => {
+        console.error('❌ Risks extraction failed:', error);
+        // Return null data - UI will show error message
+        return of({ section: 'risks' as const, data: null, progress: 60 });
+      })
+    );
+
+    const obligations$ = session$.pipe(
+      switchMap(() => this.promptService.extractObligations$(parsedContract.text)),
+      map(obligations => ({
+        section: 'obligations' as const,
+        data: obligations,
+        progress: 80
+      })),
+      tap(result => console.log('✅ Obligations complete', result)),
+      catchError(error => {
+        console.error('❌ Obligations extraction failed:', error);
+        // Return null data - UI will show error message
+        return of({ section: 'obligations' as const, data: null, progress: 80 });
+      })
+    );
+
+    const omissionsAndQuestions$ = session$.pipe(
+      switchMap(() => this.promptService.extractOmissionsAndQuestions$(parsedContract.text)),
+      map(omissionsAndQuestions => ({
+        section: 'omissionsAndQuestions' as const,
+        data: omissionsAndQuestions,
+        progress: 90
+      })),
+      tap(result => console.log('✅ Omissions/Questions complete', result)),
+      catchError(error => {
+        console.error('❌ Omissions/Questions extraction failed:', error);
+        // Return null data - UI will show error message
+        return of({ section: 'omissionsAndQuestions' as const, data: null, progress: 90 });
+      })
+    );
+
+    // Strategy: 
+    // 1. Metadata MUST complete first (use concat)
+    // 2. Then stream all others as they complete (use merge)
+    return concat(
+      metadata$,
+      merge(
+        summary$,
+        risks$,
+        obligations$,
+        omissionsAndQuestions$
+      )
+    );
+  }
+
+  /**
+   * Helper: Convert schema risks to ContractClause format
+   */
+  private convertRisksToClauses(risks: Array<{
+    title: string;
+    severity: 'high' | 'medium' | 'low';
+    icon: string;
+    description: string;
+    impact: string;
+  }>): ContractClause[] {
+    return risks.map(risk => ({
+      id: this.generateId(),
+      type: this.normalizeClauseType(risk.title),
+      content: risk.description,
+      plainLanguage: `${risk.description}\n\nImpact: ${risk.impact}`,
+      riskLevel: risk.severity as RiskLevel,
+      confidence: 0.95,
+    }));
+  }
+
+  /**
+   * Helper: Calculate risk score from schema risks
+   */
+  private calculateRiskScoreFromRisks(risks: Array<{ severity: 'high' | 'medium' | 'low' }>): number {
+    if (risks.length === 0) return 0;
+
+    const weights = { high: 100, medium: 50, low: 25 };
+    const total = risks.reduce((sum, risk) => sum + weights[risk.severity], 0);
+    return Math.round(total / risks.length);
+  }
+
+  /**
+   * Helper: Convert schema obligations to Obligation model format
+   */
+  private convertObligationsToModel(obligations: {
+    employer: Array<{
+      duty: string;
+      amount?: number | null;
+      frequency?: string | null;
+      startDate?: string | null;
+      duration?: string | null;
+      scope?: string | null;
+    }>;
+    employee: Array<{
+      duty: string;
+      scope?: string | null;
+      frequency?: string | null;
+    }>;
+  }): Obligation[] {
+    const result: Obligation[] = [];
+
+    // Convert employer obligations
+    obligations.employer.forEach((obl) => {
+      let description = obl.duty;
+      if (obl.amount) description += ` ($${obl.amount})`;
+      if (obl.frequency) description += ` - ${obl.frequency}`;
+      if (obl.scope) description += ` (${obl.scope})`;
+
+      result.push({
+        id: this.generateId(),
+        description,
+        party: 'their' as const,
+        recurring: !!obl.frequency,
+        completed: false,
+        priority: 'medium' as const,
+      });
+    });
+
+    // Convert employee obligations
+    obligations.employee.forEach((obl) => {
+      let description = obl.duty;
+      if (obl.scope) description += ` (${obl.scope})`;
+
+      result.push({
+        id: this.generateId(),
+        description,
+        party: 'your' as const,
+        recurring: !!obl.frequency,
+        completed: false,
+        priority: 'medium' as const,
+      });
+    });
+
+    return result;
+  }
+
+  /**
+   * Helper: Capitalize priority for model compatibility
+   * Schema uses lowercase ("high"), model uses capitalized ("High")
+   */
+  private capitalizePriority(priority: 'high' | 'medium' | 'low'): 'High' | 'Medium' | 'Low' {
+    const map: Record<'high' | 'medium' | 'low', 'High' | 'Medium' | 'Low'> = {
+      high: 'High',
+      medium: 'Medium',
+      low: 'Low',
+    };
+    return map[priority];
   }
 
   /**
@@ -495,23 +686,26 @@ export class ContractAnalysisService {
   private assessRiskLevel(description: string): RiskLevel {
     const desc = description.toLowerCase();
     
-    // High risk indicators
-    if (desc.includes('penalty') || desc.includes('forfeit') || desc.includes('indemnif') || 
-        desc.includes('not liable') || desc.includes('no liability')) {
-      return 'high';
-    }
-    
-    // Medium risk indicators
-    if (desc.includes('may') || desc.includes('automatically') || desc.includes('unless')) {
-      return 'medium';
-    }
-    
-    // Low risk indicators
-    if (desc.includes('option') || desc.includes('reasonable') || desc.includes('mutual')) {
-      return 'low';
-    }
+    if (this.containsHighRiskIndicators(desc)) return 'high';
+    if (this.containsMediumRiskIndicators(desc)) return 'medium';
+    if (this.containsLowRiskIndicators(desc)) return 'low';
     
     return 'safe';
+  }
+
+  private containsHighRiskIndicators(text: string): boolean {
+    const highRiskKeywords = ['penalty', 'forfeit', 'indemnif', 'not liable', 'no liability'];
+    return highRiskKeywords.some(keyword => text.includes(keyword));
+  }
+
+  private containsMediumRiskIndicators(text: string): boolean {
+    const mediumRiskKeywords = ['may', 'automatically', 'unless'];
+    return mediumRiskKeywords.some(keyword => text.includes(keyword));
+  }
+
+  private containsLowRiskIndicators(text: string): boolean {
+    const lowRiskKeywords = ['option', 'reasonable', 'mutual'];
+    return lowRiskKeywords.some(keyword => text.includes(keyword));
   }
 
   /**

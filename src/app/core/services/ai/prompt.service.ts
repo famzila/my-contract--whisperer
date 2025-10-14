@@ -1,9 +1,12 @@
 import { Injectable } from '@angular/core';
+import { Observable, from, defer } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import type {
   AILanguageModel,
   AILanguageModelCreateOptions,
   AIPromptOptions,
 } from '../../models/ai.types';
+import * as Schemas from '../../schemas/analysis-schemas';
 
 /**
  * Service for Chrome Built-in Prompt API (Gemini Nano)
@@ -283,6 +286,164 @@ Contract:
 ${contractText}`;
 
     return await this.prompt(prompt);
+  }
+
+  // ============================================================================
+  // NEW: Schema-based extraction methods
+  // ============================================================================
+
+  /**
+   * Generic method to prompt with schema constraint
+   * Uses responseConstraint for structured output
+   */
+  private async promptWithSchema<T>(
+    prompt: string,
+    schema: object
+  ): Promise<T> {
+    if (!this.session) {
+      throw new Error('Session not initialized. Call createSession() first.');
+    }
+
+    const resultString = await this.session.prompt(prompt, {
+      responseConstraint: schema,
+    });
+
+    const parsed = JSON.parse(resultString);
+    return parsed as T;
+  }
+
+  /**
+   * 1. Extract metadata with schema
+   */
+  async extractMetadata(
+    contractText: string,
+    userRole?: string
+  ): Promise<Schemas.ContractMetadata> {
+    const roleContext = userRole ? `\n\nAnalyze this contract from the perspective of: ${userRole}` : '';
+    
+    const prompt = `Extract metadata from this contract:
+
+${contractText}${roleContext}
+
+Identify contract type, dates, parties, and jurisdiction.`;
+
+    return this.promptWithSchema<Schemas.ContractMetadata>(
+      prompt,
+      Schemas.METADATA_SCHEMA
+    );
+  }
+
+  /**
+   * 2. Extract risks with schema
+   */
+  async extractRisks(
+    contractText: string
+  ): Promise<Schemas.RisksAnalysis> {
+    const prompt = `Analyze risks in this contract:
+
+${contractText}
+
+Identify all potential risks, prioritize by severity (high, medium, low), and explain their impact.`;
+
+    return this.promptWithSchema<Schemas.RisksAnalysis>(
+      prompt,
+      Schemas.RISKS_SCHEMA
+    );
+  }
+
+  /**
+   * 3. Extract obligations with schema
+   */
+  async extractObligations(
+    contractText: string
+  ): Promise<Schemas.ObligationsAnalysis> {
+    const prompt = `Extract obligations from this contract:
+
+${contractText}
+
+List all obligations for each party, including amounts, frequencies, and scope.`;
+
+    return this.promptWithSchema<Schemas.ObligationsAnalysis>(
+      prompt,
+      Schemas.OBLIGATIONS_SCHEMA
+    );
+  }
+
+  /**
+   * 4. Extract omissions and questions with schema
+   */
+  async extractOmissionsAndQuestions(
+    contractText: string
+  ): Promise<Schemas.OmissionsAndQuestions> {
+    const prompt = `Analyze this contract for missing clauses and generate questions:
+
+${contractText}
+
+Identify important omissions and suggest 5-8 key questions to ask before signing.`;
+
+    return this.promptWithSchema<Schemas.OmissionsAndQuestions>(
+      prompt,
+      Schemas.OMISSIONS_QUESTIONS_SCHEMA
+    );
+  }
+
+  /**
+   * 5. Extract summary with schema
+   */
+  async extractSummary(
+    contractText: string
+  ): Promise<Schemas.ContractSummary> {
+    const prompt = `Generate a comprehensive summary of this contract:
+
+${contractText}
+
+Include parties, responsibilities, compensation, benefits, termination terms, and restrictions.`;
+
+    return this.promptWithSchema<Schemas.ContractSummary>(
+      prompt,
+      Schemas.SUMMARY_SCHEMA
+    );
+  }
+
+  /**
+   * ========================================
+   * RxJS Observable versions for streaming
+   * ========================================
+   */
+
+  /**
+   * Extract metadata as Observable
+   */
+  extractMetadata$(contractText: string, userRole?: string): Observable<Schemas.ContractMetadata> {
+    return defer(() => from(this.extractMetadata(contractText, userRole)));
+  }
+
+  /**
+   * Extract risks as Observable
+   */
+  extractRisks$(contractText: string): Observable<Schemas.RisksAnalysis> {
+    return defer(() => from(this.extractRisks(contractText)));
+  }
+
+  /**
+   * Extract obligations as Observable
+   */
+  extractObligations$(contractText: string): Observable<Schemas.ObligationsAnalysis> {
+    return defer(() => from(this.extractObligations(contractText)));
+  }
+
+  /**
+   * Extract omissions and questions as Observable
+   */
+  extractOmissionsAndQuestions$(contractText: string): Observable<Schemas.OmissionsAndQuestions> {
+    return defer(() => from(this.extractOmissionsAndQuestions(contractText)));
+  }
+
+  /**
+   * Extract summary as Observable
+   */
+  extractSummary$(contractText: string): Observable<Schemas.ContractSummary> {
+    return defer(() => from(this.extractSummary(contractText)));
   }
 
   /**

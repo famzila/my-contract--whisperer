@@ -56,3 +56,24 @@ export const SUPPORTED_APP_LANGUAGES = [
 export function isAppLanguageSupported(langCode: string): boolean {
   return (SUPPORTED_APP_LANGUAGES as readonly string[]).includes(langCode);
 }
+
+/**
+ * Language code to translation key mapping
+ */
+export const LANGUAGE_TRANSLATION_KEYS: Record<string, string> = {
+  'en': 'languages.english',
+  'fr': 'languages.french',
+  'ar': 'languages.arabic',
+  'es': 'languages.spanish',
+  'de': 'languages.german',
+  'ja': 'languages.japanese',
+  'zh': 'languages.chinese',
+  'ko': 'languages.korean',
+} as const;
+
+/**
+ * Get translation key for a language code
+ */
+export function getLanguageTranslationKey(languageCode: string): string {
+  return LANGUAGE_TRANSLATION_KEYS[languageCode] || languageCode.toUpperCase();
+}

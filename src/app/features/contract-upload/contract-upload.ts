@@ -24,7 +24,7 @@ import { UiStore } from '../../core/stores/ui.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { LanguageStore } from '../../core/stores/language.store';
 import { ContractParserService } from '../../core/services/contract-parser.service';
-import { isAppLanguageSupported } from '../../core/constants/languages';
+import { isAppLanguageSupported, getLanguageTranslationKey } from '../../core/constants/languages';
 
 type UploadMode = 'file' | 'text';
 
@@ -68,37 +68,58 @@ export class ContractUpload {
 
   constructor() {
     effect(() => {
-      // Get onboarding state once
-      const isValidContract = this.onboardingStore.isValidContract();
-      const needsLanguageSelection = this.onboardingStore.needsLanguageSelection();
-      const needsPartySelection = this.onboardingStore.needsPartySelection();
-      const selectedOutputLanguage = this.onboardingStore.selectedOutputLanguage();
-      const detectedParties = this.onboardingStore.detectedParties();
+      if (!this.shouldProcessOnboarding()) return;
       
-      // Only proceed if we have a valid contract
-      if (isValidContract !== true) return;
+      const onboardingState = this.getOnboardingState();
       
-      // Priority 1: Language mismatch (highest priority)
-      if (needsLanguageSelection) {
+      // Handle onboarding flow with clear priority order
+      if (this.shouldShowLanguageMismatchModal(onboardingState)) {
         this.showLanguageMismatchModal();
-        return;
-      }
-      
-      // Priority 2: Party extraction loading state
-      const isLoadingParties = !needsLanguageSelection && 
-                              selectedOutputLanguage !== null &&
-                              detectedParties === null;
-      
-      if (isLoadingParties && !this.partySelectorDialogRef) {
-        this.openPartySelector();
-        return;
-      }
-      
-      // Priority 3: Party selection (when parties are detected)
-      if (needsPartySelection && !this.partySelectorDialogRef) {
+      } else if (this.shouldShowPartySelector(onboardingState)) {
         this.openPartySelector();
       }
     });
+  }
+
+  /**
+   * Check if we should process onboarding flow
+   */
+  private shouldProcessOnboarding(): boolean {
+    return this.onboardingStore.isValidContract() === true;
+  }
+
+  /**
+   * Get current onboarding state
+   */
+  private getOnboardingState() {
+    return {
+      needsLanguageSelection: this.onboardingStore.needsLanguageSelection(),
+      needsPartySelection: this.onboardingStore.needsPartySelection(),
+      selectedOutputLanguage: this.onboardingStore.selectedOutputLanguage(),
+      detectedParties: this.onboardingStore.detectedParties(),
+    };
+  }
+
+  /**
+   * Check if language mismatch modal should be shown
+   */
+  private shouldShowLanguageMismatchModal(state: ReturnType<typeof this.getOnboardingState>): boolean {
+    return state.needsLanguageSelection;
+  }
+
+  /**
+   * Check if party selector should be shown
+   */
+  private shouldShowPartySelector(state: ReturnType<typeof this.getOnboardingState>): boolean {
+    if (this.partySelectorDialogRef) return false; // Already open
+    
+    // Priority 2: Party extraction loading state
+    const isLoadingParties = !state.needsLanguageSelection && 
+                            state.selectedOutputLanguage !== null &&
+                            state.detectedParties === null;
+    
+    // Priority 3: Party selection (when parties are detected)
+    return isLoadingParties || state.needsPartySelection;
   }
 
   /**
@@ -229,15 +250,22 @@ export class ContractUpload {
     }
     
     // Now trigger analysis with the selected role
-    this.uiStore.showToast('Analyzing contract...', 'info');
+    this.uiStore.showToast('Starting analysis...', 'info');
     
     try {
-      // Re-parse and analyze with selected role
+      // Re-parse and analyze with selected role (progressive loading)
       const parsedContract = this.parserService.parseText(pendingText, 'pending-analysis');
-      await this.contractStore.analyzeContract(parsedContract);
       
-      this.uiStore.showToast('Contract analyzed successfully!', 'success');
-      await this.router.navigate(['/analysis']);
+      // Start analysis - navigation happens automatically when metadata is ready!
+      // Don't await - let it run in background while we navigate
+      this.contractStore.analyzeContract(parsedContract).catch((error) => {
+        console.error('❌ Analysis error:', error);
+        // Don't navigate back to upload - user is already on analysis page
+        // Just show toast - they can see what sections loaded successfully
+        this.uiStore.showToast('Some sections failed to load. Please try refreshing.', 'warning');
+      });
+      
+      // Note: Navigation to /analysis happens automatically in the store when metadata is ready (~1s)
     } catch (error) {
       this.uiStore.showToast('Analysis failed', 'error');
     }
@@ -313,20 +341,8 @@ export class ContractUpload {
   getLanguageName(code: string | null): string {
     if (!code) return this.translate.instant('languages.unknown');
     
-    // Map language codes to translation keys
-    const languageKeyMap: Record<string, string> = {
-      'en': 'languages.english',
-      'fr': 'languages.french',
-      'ar': 'languages.arabic',
-      'es': 'languages.spanish',
-      'de': 'languages.german',
-      'ja': 'languages.japanese',
-      'zh': 'languages.chinese',
-      'ko': 'languages.korean',
-    };
-    
-    const translationKey = languageKeyMap[code];
-    return translationKey ? this.translate.instant(translationKey) : code.toUpperCase();
+    const translationKey = getLanguageTranslationKey(code);
+    return this.translate.instant(translationKey);
   }
 
   /**

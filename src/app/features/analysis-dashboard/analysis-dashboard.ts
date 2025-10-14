@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
@@ -7,10 +7,11 @@ import { ContractStore, EmailDraftStore, UiStore } from '../../core/stores';
 import { LanguageStore } from '../../core/stores/language.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { Card, LoadingSpinner, Button } from '../../shared/components';
+import { SkeletonLoader } from '../../shared/components/skeleton-loader';
 import type { ContractClause } from '../../core/models/contract.model';
 import type { AIAnalysisResponse, RiskSeverity, RiskEmoji } from '../../core/models/ai-analysis.model';
 import { AppConfig } from '../../core/config/app.config';
-import { isAppLanguageSupported } from '../../core/constants/languages';
+import { isAppLanguageSupported, getLanguageTranslationKey } from '../../core/constants/languages';
 import { 
   Theater, 
   Globe, 
@@ -41,12 +42,23 @@ import {
   Home,
   Key,
   Handshake,
-  Check
+  Check,
+  AlertCircle,
+  Calendar
 } from '../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'app-analysis-dashboard',
-  imports: [CommonModule, LucideAngularModule, Card, LoadingSpinner, Button, TranslatePipe],
+  imports: [
+    CommonModule, 
+    LucideAngularModule, 
+    Card, 
+    LoadingSpinner, 
+    Button, 
+    TranslatePipe,
+    SkeletonLoader,
+    DatePipe
+  ],
   templateUrl: './analysis-dashboard.html',
   styleUrl: './analysis-dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -95,6 +107,8 @@ export class AnalysisDashboard implements OnInit {
   readonly KeyIcon = Key;
   readonly HandshakeIcon = Handshake;
   readonly CheckIcon = Check;
+  readonly AlertCircleIcon = AlertCircle;
+  readonly CalendarIcon = Calendar;
   
   // Local UI state only
   selectedTab = signal<'summary' | 'risks' | 'obligations' | 'omissions' | 'questions' | 'disclaimer'>('summary');
@@ -103,6 +117,13 @@ export class AnalysisDashboard implements OnInit {
   
   // Parsed structured data from AI JSON response
   structuredData = signal<AIAnalysisResponse | null>(null);
+  
+  // 🚀 Progressive loading states (computed from store)
+  isMetadataLoading = computed(() => this.contractStore.sectionsMetadata()?.loading || false);
+  isSummaryLoading = computed(() => this.contractStore.sectionsSummary()?.loading || false);
+  isRisksLoading = computed(() => this.contractStore.sectionsRisks()?.loading || false);
+  isObligationsLoading = computed(() => this.contractStore.sectionsObligations()?.loading || false);
+  isOmissionsLoading = computed(() => this.contractStore.sectionsOmissionsQuestions()?.loading || false);
   
   // 🌍 Translation state
   showingOriginal = signal(false);  // Toggle between translated and original
@@ -133,14 +154,17 @@ export class AnalysisDashboard implements OnInit {
   isMockMode = AppConfig.useMockAI;
 
   ngOnInit(): void {
-    // Redirect if no contract/analysis
-    if (!this.contractStore.hasContract() || !this.contractStore.hasAnalysis()) {
+    // With progressive loading, we only need metadata to show the page
+    // Analysis sections will load progressively with skeleton loaders
+    if (!this.contractStore.canShowDashboard()) {
       this.router.navigate(['/upload']);
       return;
     }
     
-    // Parse AI response into sections
-    this.parseAIResponse();
+    // Parse AI response into sections (will happen progressively as data arrives)
+    if (this.contractStore.hasAnalysis()) {
+      this.parseAIResponse();
+    }
   }
 
   /**
@@ -157,39 +181,16 @@ export class AnalysisDashboard implements OnInit {
     const code = this.contractStore.analysis()?.translationInfo?.sourceLanguage;
     if (!code) return this.translate.instant('languages.unknown');
 
-    // Map language codes to translation keys
-    const languageKeyMap: Record<string, string> = {
-      'en': 'languages.english',
-      'fr': 'languages.french',
-      'ar': 'languages.arabic',
-      'es': 'languages.spanish',
-      'de': 'languages.german',
-      'ja': 'languages.japanese',
-      'zh': 'languages.chinese',
-      'ko': 'languages.korean',
-    };
-
-    const translationKey = languageKeyMap[code];
-    return translationKey ? this.translate.instant(translationKey) : code.toUpperCase();
+    const translationKey = getLanguageTranslationKey(code);
+    return this.translate.instant(translationKey);
   }
 
   /**
    * Get language name by code (for banner)
    */
   private getLanguageNameByCode(code: string): string {
-    const languageKeyMap: Record<string, string> = {
-      'en': 'languages.english',
-      'fr': 'languages.french',
-      'ar': 'languages.arabic',
-      'es': 'languages.spanish',
-      'de': 'languages.german',
-      'ja': 'languages.japanese',
-      'zh': 'languages.chinese',
-      'ko': 'languages.korean',
-    };
-
-    const translationKey = languageKeyMap[code];
-    return translationKey ? this.translate.instant(translationKey) : code.toUpperCase();
+    const translationKey = getLanguageTranslationKey(code);
+    return this.translate.instant(translationKey);
   }
 
   /**
@@ -207,7 +208,6 @@ export class AnalysisDashboard implements OnInit {
    */
   toggleOriginal(): void {
     this.showingOriginal.update(v => !v);
-    console.log(`🌍 [Translation Toggle] Showing: ${this.showingOriginal() ? 'Original' : 'Translated'}`);
     
     // Re-parse AI response to show original or translated
     this.parseAIResponse();
@@ -224,14 +224,6 @@ export class AnalysisDashboard implements OnInit {
     const useOriginal = this.showingOriginal() && analysis.originalSummary;
     const summaryToUse = useOriginal ? analysis.originalSummary : analysis.summary;
     
-    console.log('🔍 Parsing analysis:', { 
-      hasMetadata: !!analysis.metadata, 
-      hasOmissions: !!analysis.omissions,
-      summaryType: typeof summaryToUse,
-      useOriginal,
-      wasTranslated: this.wasTranslated(),
-    });
-    
     // First, try to parse summary as JSON if it's a string
     let parsedFromSummary: AIAnalysisResponse | null = null;
     if (typeof summaryToUse === 'string') {
@@ -242,17 +234,14 @@ export class AnalysisDashboard implements OnInit {
         // Remove markdown code blocks (```json ... ``` or ``` ... ```)
         if (cleanedSummary.startsWith('```')) {
           cleanedSummary = cleanedSummary.replace(/^```(?:json)?\s*\n?/g, '').replace(/\n?```\s*$/g, '');
-          console.log('🧹 Cleaned markdown code blocks from summary');
         }
         
         parsedFromSummary = JSON.parse(cleanedSummary);
-        console.log('✅ Parsed JSON from summary string');
         
         // CRITICAL FIX: Check if summary.parties is ALSO a JSON string (double-wrapped)
         if (parsedFromSummary && parsedFromSummary.summary && typeof parsedFromSummary.summary.parties === 'string') {
           const partiesStr = parsedFromSummary.summary.parties.trim();
           if (partiesStr.startsWith('```') || partiesStr.startsWith('{')) {
-            console.log('🚨 Detected double-wrapped JSON in summary.parties, attempting to parse...');
             try {
               // Try to extract the inner JSON
               let innerJson = partiesStr;
@@ -261,22 +250,22 @@ export class AnalysisDashboard implements OnInit {
               }
               const innerParsed = JSON.parse(innerJson);
               // Replace the entire parsed structure with the inner one
-              console.log('✅ Successfully unwrapped double-nested JSON');
               parsedFromSummary = innerParsed;
             } catch (innerError) {
-              console.warn('⚠️ Could not parse inner JSON, using outer structure');
+              // Could not parse inner JSON, using outer structure
             }
           }
         }
       } catch (error) {
-        console.log('⚠️ Summary is not JSON, will use structured fields');
+        // Summary is not JSON, will use structured fields
       }
     }
     
-    // If we successfully parsed JSON from summary, use that directly
+    // If we successfully parsed JSON from summary, transform it
+    // (We now always use the new schema format)
     if (parsedFromSummary) {
-      this.structuredData.set(parsedFromSummary);
-      console.log('✅ Using parsed JSON data:', parsedFromSummary);
+      const transformed = this.transformNewSchemaFormat(parsedFromSummary);
+      this.structuredData.set(transformed);
       return;
     }
     
@@ -348,13 +337,73 @@ export class AnalysisDashboard implements OnInit {
       };
       
       this.structuredData.set(structured);
-      console.log('✅ Successfully built structured data from analysis fields');
       return;
     }
     
     // No structured data available
-    console.warn('⚠️ No structured data available in analysis');
     this.structuredData.set(null);
+  }
+
+  /**
+   * Transform new schema format to expected AIAnalysisResponse format
+   * Converts lowercase severity to capitalized, adds emoji for backward compatibility
+   */
+  private transformNewSchemaFormat(parsed: any): AIAnalysisResponse {
+
+    // Transform risks: lowercase severity → capitalized, add emoji from icon
+    const transformedRisks = parsed.risks.risks.map((risk: any) => ({
+      ...risk,
+      severity: this.capitalizeSeverity(risk.severity) as RiskSeverity,
+      emoji: this.getEmojiFromIcon(risk.icon) as RiskEmoji,
+    }));
+
+    // Transform omissions: lowercase priority → capitalized
+    const transformedOmissions = parsed.omissionsAndQuestions.omissions.map((omission: any) => ({
+      ...omission,
+      priority: this.capitalizeSeverity(omission.priority) as 'High' | 'Medium' | 'Low',
+    }));
+
+    return {
+      metadata: parsed.metadata,
+      summary: parsed.summary.summary,
+      risks: transformedRisks,
+      obligations: parsed.obligations.obligations,
+      omissions: transformedOmissions,
+      questions: parsed.omissionsAndQuestions.questions,
+      disclaimer: this.translate.instant('analysis.disclaimer.text'),
+    };
+  }
+
+  /**
+   * Capitalize severity/priority (high → High, medium → Medium, low → Low)
+   */
+  private capitalizeSeverity(severity: string): string {
+    return severity.charAt(0).toUpperCase() + severity.slice(1);
+  }
+
+  /**
+   * Get emoji from Lucide icon name for backward compatibility
+   */
+  private getEmojiFromIcon(iconName: string): string {
+    const iconToEmoji: Record<string, string> = {
+      'alert-triangle': '🚨',
+      'alert-circle': '⚠️',
+      'info': 'ℹ️',
+    };
+    return iconToEmoji[iconName] || '⚠️';
+  }
+
+  /**
+   * Get Lucide icon component from icon name
+   * Used in template to render icons from schema
+   */
+  getRiskLucideIcon(iconName: string): any {
+    const iconMap: Record<string, any> = {
+      'alert-triangle': AlertTriangle,
+      'alert-circle': AlertCircle,
+      'info': Info,
+    };
+    return iconMap[iconName] || AlertCircle;
   }
 
   /**
@@ -497,38 +546,81 @@ export class AnalysisDashboard implements OnInit {
   }
   
   /**
-   * Get risks from structured data
+   * Get risks - use progressive loading data if available, fallback to structured data
    */
   getRisks() {
+    // First try progressive loading risks (available after Tier 2)
+    const progressiveRisks = this.contractStore.sectionsRisks()?.data;
+    if (progressiveRisks) {
+      return progressiveRisks.risks || [];
+    }
+    
+    // Fallback to structured data (when complete analysis is done)
     return this.structuredData()?.risks || [];
   }
   
   /**
-   * Get omissions from structured data
+   * Get omissions - use progressive loading data if available, fallback to structured data
    */
   getOmissions() {
+    // First try progressive loading omissions (available after Tier 3)
+    const progressiveOmissions = this.contractStore.sectionsOmissionsQuestions()?.data;
+    if (progressiveOmissions) {
+      return progressiveOmissions.omissions || [];
+    }
+    
+    // Fallback to structured data (when complete analysis is done)
     return this.structuredData()?.omissions || [];
   }
   
   /**
-   * Get questions from structured data
+   * Get questions - use progressive loading data if available, fallback to structured data
    */
   getQuestions(): string[] {
+    // First try progressive loading questions (available after Tier 3)
+    const progressiveQuestions = this.contractStore.sectionsOmissionsQuestions()?.data;
+    if (progressiveQuestions) {
+      return progressiveQuestions.questions || [];
+    }
+    
+    // Fallback to structured data (when complete analysis is done)
     return this.structuredData()?.questions || [];
   }
   
   /**
-   * Get summary data
+   * Get summary - use progressive loading data if available, fallback to structured data
    */
   getSummary() {
+    // First try progressive loading summary (available after Tier 2)
+    const progressiveSummary = this.contractStore.sectionsSummary()?.data;
+    if (progressiveSummary !== undefined) {
+      // Handle nested summary structure from AI response
+      if (progressiveSummary && typeof progressiveSummary === 'object' && 'summary' in progressiveSummary) {
+        return progressiveSummary.summary; // Extract the nested summary object
+      }
+      return progressiveSummary; // Can be null if extraction failed
+    }
+    
+    // Fallback to structured data (when complete analysis is done)
     return this.structuredData()?.summary || null;
   }
   
   /**
-   * Get obligations data
+   * Get obligations - use progressive loading data if available, fallback to structured data
    */
   getObligations() {
-    return this.structuredData()?.obligations || { employer: [], employee: [] };
+    // First try progressive loading obligations (available after Tier 3)
+    const progressiveObligations = this.contractStore.sectionsObligations()?.data;
+    if (progressiveObligations !== undefined) {
+      // Handle nested obligations structure from AI response
+      if (progressiveObligations && typeof progressiveObligations === 'object' && 'obligations' in progressiveObligations) {
+        return progressiveObligations.obligations; // Extract the nested obligations object
+      }
+      return progressiveObligations; // Can be null if extraction failed
+    }
+    
+    // Fallback to structured data (when complete analysis is done)
+    return this.structuredData()?.obligations || null;
   }
   
   /**
@@ -539,9 +631,16 @@ export class AnalysisDashboard implements OnInit {
   }
   
   /**
-   * Get metadata
+   * Get metadata - use progressive loading data if available, fallback to structured data
    */
   getMetadata() {
+    // First try progressive loading metadata (available immediately)
+    const progressiveMetadata = this.contractStore.sectionsMetadata()?.data;
+    if (progressiveMetadata) {
+      return progressiveMetadata;
+    }
+    
+    // Fallback to structured data (when complete analysis is done)
     return this.structuredData()?.metadata || null;
   }
   
@@ -557,7 +656,7 @@ export class AnalysisDashboard implements OnInit {
         icon: this.ScaleIcon,
         text: 'Both Parties',
         className: 'px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full border border-green-200'
-      } : null;
+      } : 'your';
     }
     
     // Find which party matches the selected role
@@ -582,6 +681,7 @@ export class AnalysisDashboard implements OnInit {
       'tenant': this.HomeIcon,
       'landlord': this.KeyIcon,
       'partner': this.HandshakeIcon,
+      'your': this.UserIcon,
     };
     
     // Color based on role
@@ -593,6 +693,7 @@ export class AnalysisDashboard implements OnInit {
       'tenant': 'bg-teal-100 text-teal-800 border-teal-200',
       'landlord': 'bg-emerald-100 text-emerald-800 border-emerald-200',
       'partner': 'bg-pink-100 text-pink-800 border-pink-200',
+      'your': 'bg-gray-100 text-gray-800 border-gray-200',
     };
     
     const icon = iconMap[role] || '👤';
@@ -711,42 +812,42 @@ export class AnalysisDashboard implements OnInit {
    * Get high priority risks
    */
   getHighRisks() {
-    return this.getRisks().filter(r => r.severity === 'High');
+    return this.getRisks().filter((r: { severity: string; }) => r.severity === 'high');
   }
   
   /**
    * Get medium priority risks
    */
   getMediumRisks() {
-    return this.getRisks().filter(r => r.severity === 'Medium');
+    return this.getRisks().filter((r: { severity: string; }) => r.severity === 'medium');
   }
   
   /**
    * Get low priority risks
    */
   getLowRisks() {
-    return this.getRisks().filter(r => r.severity === 'Low');
+    return this.getRisks().filter((r: { severity: string; }) => r.severity === 'low');
   }
   
   /**
    * Get high priority omissions
    */
   getHighPriorityOmissions() {
-    return this.getOmissions().filter(o => o.priority === 'High');
+    return this.getOmissions().filter((o: { priority: string; }) => o.priority === 'high');
   }
   
   /**
    * Get medium priority omissions
    */
   getMediumPriorityOmissions() {
-    return this.getOmissions().filter(o => o.priority === 'Medium');
+    return this.getOmissions().filter((o: { priority: string; }) => o.priority === 'medium');
   }
   
   /**
    * Get low priority omissions
    */
   getLowPriorityOmissions() {
-    return this.getOmissions().filter(o => o.priority === 'Low');
+    return this.getOmissions().filter((o: { priority: string; }) => o.priority === 'low');
   }
   
   /**
@@ -897,5 +998,13 @@ export class AnalysisDashboard implements OnInit {
    */
   setRewriteLength(length: 'short' | 'medium' | 'long'): void {
     this.emailStore.setRewriteLength(length);
+  }
+  
+  /**
+   * Get today's date for display
+   * Returns current date that will be formatted by Angular's DatePipe
+   */
+  getTodayDate(): Date {
+    return new Date();
   }
 }

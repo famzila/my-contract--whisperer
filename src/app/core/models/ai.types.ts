@@ -25,6 +25,7 @@ export interface AIPromptOptions {
   temperature?: number;
   topK?: number;
   signal?: AbortSignal;
+  responseConstraint?: object; // JSON Schema for structured output
 }
 
 export interface AILanguageModelCreateOptions {

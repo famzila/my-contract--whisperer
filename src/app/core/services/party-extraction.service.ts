@@ -215,33 +215,46 @@ Rules:
     const lowerParty = partyText.toLowerCase();
     const lowerFull = fullText.toLowerCase();
     
-    // Check for explicit role keywords
-    if (lowerParty.includes('inc') || lowerParty.includes('corp') || lowerParty.includes('llc') || lowerParty.includes('ltd')) {
-      // It's a company
-      if (lowerFull.includes('employment') || lowerFull.includes('employee')) {
-        return 'Employer';
-      }
-      if (lowerFull.includes('rental') || lowerFull.includes('lease')) {
-        return position === 'first' ? 'Landlord' : 'Tenant';
-      }
-      if (lowerFull.includes('service') || lowerFull.includes('contractor')) {
-        return 'Client';
-      }
+    if (this.isCompany(lowerParty)) {
+      return this.getCompanyRole(lowerFull, position);
     } else {
-      // It's a person
-      if (lowerFull.includes('employment') || lowerFull.includes('employee')) {
-        return 'Employee';
-      }
-      if (lowerFull.includes('rental') || lowerFull.includes('lease')) {
-        return 'Tenant';
-      }
-      if (lowerFull.includes('service') || lowerFull.includes('contractor')) {
-        return 'Contractor';
-      }
+      return this.getPersonRole(lowerFull);
     }
-    
-    // Default based on position
+  }
+
+  private isCompany(partyText: string): boolean {
+    const companyKeywords = ['inc', 'corp', 'llc', 'ltd'];
+    return companyKeywords.some(keyword => partyText.includes(keyword));
+  }
+
+  private getCompanyRole(fullText: string, position: 'first' | 'second'): string {
+    if (this.containsKeywords(fullText, ['employment', 'employee'])) {
+      return 'Employer';
+    }
+    if (this.containsKeywords(fullText, ['rental', 'lease'])) {
+      return position === 'first' ? 'Landlord' : 'Tenant';
+    }
+    if (this.containsKeywords(fullText, ['service', 'contractor'])) {
+      return 'Client';
+    }
     return position === 'first' ? 'Party 1' : 'Party 2';
+  }
+
+  private getPersonRole(fullText: string): string {
+    if (this.containsKeywords(fullText, ['employment', 'employee'])) {
+      return 'Employee';
+    }
+    if (this.containsKeywords(fullText, ['rental', 'lease'])) {
+      return 'Tenant';
+    }
+    if (this.containsKeywords(fullText, ['service', 'contractor'])) {
+      return 'Contractor';
+    }
+    return 'Unknown';
+  }
+
+  private containsKeywords(text: string, keywords: string[]): boolean {
+    return keywords.some(keyword => text.includes(keyword));
   }
 
   /**

@@ -108,6 +108,7 @@
     "contractType": "Contract Type",
     "effectiveDate": "Effective Date",
     "endDate": "End Date",
+    "noEndDate": "No end date",
     "expiringSoon": "Expiring Soon",
     "jurisdiction": "Jurisdiction",
     "parties": "Parties",
@@ -147,7 +148,8 @@
       "restrictions": "Restrictions",
       "confidentiality": "Confidentiality",
       "nonCompete": "Non-Compete",
-      "nonSolicitation": "Non-Solicitation"
+      "nonSolicitation": "Non-Solicitation",
+      "extractionError": "We're sorry, we couldn't extract summary information. Please try again!"
     },
     "risks": {
       "title": "Risk Flags",
@@ -157,7 +159,8 @@
       "lowPriority": "Low Priority Risks",
       "impact": "Impact",
       "riskLevel": "Risk level",
-      "noRisks": "No significant risks identified in this contract."
+      "noRisks": "No significant risks identified in this contract.",
+      "extractionError": "We're sorry, we couldn't extract risks information. Please try again!"
     },
     "obligations": {
       "title": "Obligations",
@@ -169,7 +172,8 @@
       "paySalary": "Pay Salary",
       "provideBenefits": "Provide Benefits",
       "maintainConfidentiality": "Maintain Confidentiality",
-      "complyWithContract": "Comply with Contract"
+      "complyWithContract": "Comply with Contract",
+      "extractionError": "We're sorry, we couldn't extract obligations information. Please try again!"
     },
     "omissions": {
       "title": "What's Missing",
@@ -178,7 +182,8 @@
       "mediumPriority": "Medium Priority Omissions",
       "lowPriority": "Low Priority Omissions",
       "whyMatters": "Why this matters",
-      "noOmissions": "All important details appear to be covered in this contract."
+      "noOmissions": "All important details appear to be covered in this contract.",
+      "extractionError": "We're sorry, we couldn't extract omissions information. Please try again!"
     },
     "questions": {
       "title": "Questions You Should Ask",
@@ -195,7 +200,8 @@
       "copy": "Copy",
       "noQuestions": "No specific questions identified for this contract.",
       "emailUnavailable": "Email Drafting Unavailable",
-      "emailUnavailableMessage": "This feature is designed for contract recipients who need clarification. You're currently viewing as the contract provider or from both perspectives (the party who likely created this contract). Switch to the other party's perspective to draft clarification emails."
+      "emailUnavailableMessage": "This feature is designed for contract recipients who need clarification. You're currently viewing as the contract provider or from both perspectives (the party who likely created this contract). Switch to the other party's perspective to draft clarification emails.",
+      "extractionError": "We're sorry, we couldn't extract questions information. Please try again!"
     },
     "disclaimer": {
       "title": "Legal Disclaimer",

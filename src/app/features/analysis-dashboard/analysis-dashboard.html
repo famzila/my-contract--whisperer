@@ -29,7 +29,7 @@
             }
           </div>
           @if (contractStore.contract()?.text) {
-            <p class="text-gray-600 mt-2">{{ translate.instant('analysis.analyzedOn') }} {{ formatDate(contractStore.analysis()?.analyzedAt) }}</p>
+            <p class="text-gray-600 mt-2">{{ translate.instant('analysis.analyzedOn') }} {{ getTodayDate() | date:'medium' }}</p>
           }
         </div>
         
@@ -72,18 +72,23 @@
                   <p class="text-gray-900 font-medium">{{ getMetadata()!.effectiveDate }}</p>
                 </div>
               }
-              @if (getMetadata()!.endDate) {
-                <div>
-                  <h3 class="text-sm font-semibold text-gray-600 mb-1">{{ translate.instant('analysis.endDate') }}</h3>
-                  <p class="text-gray-900 font-medium">{{ getMetadata()!.endDate }}</p>
+              <div>
+                <h3 class="text-sm font-semibold text-gray-600 mb-1">{{ translate.instant('analysis.endDate') }}</h3>
+                @if (getMetadata()?.endDate) {
+                  <p class="text-gray-900 font-medium">{{ getMetadata()?.endDate }}</p>
                   @if (isContractExpiringSoon()) {
                     <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded mt-1 gap-1">
                       <lucide-icon [img]="AlertTriangleIcon" class="w-3 h-3"></lucide-icon>
                       {{ translate.instant('analysis.expiringSoon') }}
                     </span>
                   }
-                </div>
-              }
+                } @else {
+                  <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded gap-1">
+                    <lucide-icon [img]="CalendarIcon" class="w-3 h-3"></lucide-icon>
+                    {{ translate.instant('analysis.noEndDate') }}
+                  </span>
+                }
+              </div>
               @if (getMetadata()!.jurisdiction) {
                 <div>
                   <h3 class="text-sm font-semibold text-gray-600 mb-1">{{ translate.instant('analysis.jurisdiction') }}</h3>
@@ -148,7 +153,7 @@
     }
 
     <!-- Tab Navigation -->
-    @if (!contractStore.isAnalyzing() && contractStore.hasAnalysis() && structuredData()) {
+    @if (!contractStore.isAnalyzing() && contractStore.canShowDashboard()) {
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
         <div class="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300">
           <button
@@ -159,6 +164,9 @@
             class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200 flex items-center justify-center gap-2">
             <lucide-icon [img]="ClipboardIcon" class="w-5 h-5"></lucide-icon>
             {{ translate.instant('analysis.tabs.summary') }}
+            @if (isSummaryLoading()) {
+              <app-loading-spinner size="sm" color="gray"></app-loading-spinner>
+            }
           </button>
           <button
             (click)="selectTab('risks')"
@@ -168,6 +176,9 @@
             class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200 flex items-center justify-center gap-2">
             <lucide-icon [img]="AlertTriangleIcon" class="w-5 h-5"></lucide-icon>
             {{ translate.instant('analysis.tabs.risks') }}
+            @if (isRisksLoading()) {
+              <app-loading-spinner size="sm" color="gray"></app-loading-spinner>
+            }
           </button>
           <button
             (click)="selectTab('obligations')"
@@ -177,6 +188,9 @@
             class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200 flex items-center justify-center gap-2">
             <lucide-icon [img]="ClockIcon" class="w-5 h-5"></lucide-icon>
             {{ translate.instant('analysis.tabs.obligations') }}
+            @if (isObligationsLoading()) {
+              <app-loading-spinner size="sm" color="gray"></app-loading-spinner>
+            }
           </button>
           <button
             (click)="selectTab('omissions')"
@@ -186,6 +200,9 @@
             class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200 flex items-center justify-center gap-2">
             <lucide-icon [img]="FileXIcon" class="w-5 h-5"></lucide-icon>
             {{ translate.instant('analysis.tabs.omissions') }}
+            @if (isOmissionsLoading()) {
+              <app-loading-spinner size="sm" color="gray"></app-loading-spinner>
+            }
           </button>
           <button
             (click)="selectTab('questions')"
@@ -195,7 +212,9 @@
             class="flex-1 min-w-fit px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200 flex items-center justify-center gap-2">
             <lucide-icon [img]="InfoIcon" class="w-5 h-5"></lucide-icon>
             {{ translate.instant('analysis.tabs.questions') }}
-            @if (getQuestions().length > 0) {
+            @if (isOmissionsLoading()) {
+              <app-loading-spinner size="sm" color="gray"></app-loading-spinner>
+            } @else if (getQuestions() && getQuestions().length > 0) {
               <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-gray-200 text-gray-700 rounded-full">
                 {{ getQuestions().length }}
               </span>
@@ -217,14 +236,47 @@
       <div class="animate-fade-in">
         
         <!-- Summary Tab -->
-        @if (selectedTab() === 'summary' && getSummary()) {
-          <div class="space-y-6">
-            <app-card>
-              <div class="p-8">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                  <lucide-icon [img]="ClipboardIcon" class="w-8 h-8 text-blue-600"></lucide-icon>
-                  {{ translate.instant('analysis.summary.title') }}
-                </h2>
+        @if (selectedTab() === 'summary') {
+          <!-- Show skeleton loader while loading -->
+          @if (isSummaryLoading()) {
+            <div class="space-y-6">
+              <app-card>
+                <div class="p-8">
+                  <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                    <lucide-icon [img]="ClipboardIcon" class="w-8 h-8 text-blue-600"></lucide-icon>
+                    {{ translate.instant('analysis.summary.title') }}
+                  </h2>
+                  <app-skeleton-loader 
+                    type="list" 
+                    [items]="5" 
+                    listItemPadding="p-1" 
+                    loadingText="Loading summary...">
+                  </app-skeleton-loader>
+                </div>
+              </app-card>
+            </div>
+          } @else if (getSummary() === null) {
+            <!-- Show error message -->
+            <div class="space-y-6">
+              <app-card>
+                <div class="p-8 text-center">
+                  <div class="text-red-400 mb-4">
+                    <lucide-icon [img]="AlertTriangleIcon" class="w-16 h-16 mx-auto"></lucide-icon>
+                  </div>
+                  <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ translate.instant('analysis.summary.title') }}</h2>
+                  <p class="text-red-600 text-lg">{{ translate.instant('analysis.summary.extractionError') }}</p>
+                </div>
+              </app-card>
+            </div>
+          } @else if (getSummary()) {
+            <!-- Show actual summary -->
+            <div class="space-y-6">
+              <app-card>
+                <div class="p-8">
+                  <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                    <lucide-icon [img]="ClipboardIcon" class="w-8 h-8 text-blue-600"></lucide-icon>
+                    {{ translate.instant('analysis.summary.title') }}
+                  </h2>
                 
                 <!-- Perspective Context Banner -->
                 @if (getPerspectiveContext()) {
@@ -246,7 +298,7 @@
                       <lucide-icon [img]="UsersIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
                       {{ translate.instant('analysis.summary.parties') }}
                     </h3>
-                    <p class="text-gray-700">{{ getSummary()!.parties }}</p>
+                    <p class="text-gray-700">{{ getSummary()?.parties || 'N/A' }}</p>
                   </div>
                   
                   <!-- Role -->
@@ -255,18 +307,18 @@
                       <lucide-icon [img]="BriefcaseIcon" class="w-5 h-5 text-green-600"></lucide-icon>
                       {{ translate.instant('analysis.summary.roleRelationship') }}
                     </h3>
-                    <p class="text-gray-700">{{ getSummary()!.role }}</p>
+                    <p class="text-gray-700">{{ getSummary()?.role || 'N/A' }}</p>
                   </div>
                   
                   <!-- Responsibilities -->
-                  @if (getSummary()!.responsibilities.length > 0) {
+                  @if (getSummary()?.responsibilities?.length > 0) {
                     <div>
                       <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
                         <lucide-icon [img]="ClipboardIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
                         {{ translate.instant('analysis.summary.keyResponsibilities') }}
                       </h3>
                       <ul class="list-disc list-inside space-y-1 text-gray-700">
-                        @for (resp of getSummary()!.responsibilities; track $index) {
+                        @for (resp of getSummary()?.responsibilities || []; track $index) {
                           <li>{{ resp }}</li>
                         }
                       </ul>
@@ -280,22 +332,22 @@
                       {{ translate.instant('analysis.summary.compensationBenefits') }}
                     </h3>
                     <div class="space-y-2 text-gray-700">
-                      @if (getSummary()!.compensation.baseSalary) {
-                        <p><strong>{{ translate.instant('analysis.summary.baseSalary') }}:</strong> ${{ getSummary()!.compensation.baseSalary }}</p>
+                      @if (getSummary()?.compensation?.baseSalary) {
+                        <p><strong>{{ translate.instant('analysis.summary.baseSalary') }}:</strong> ${{ getSummary()?.compensation?.baseSalary }}</p>
                       }
-                      @if (getSummary()!.compensation.bonus) {
-                        <p><strong>{{ translate.instant('analysis.summary.bonus') }}:</strong> {{ getSummary()!.compensation.bonus }}</p>
+                      @if (getSummary()?.compensation?.bonus) {
+                        <p><strong>{{ translate.instant('analysis.summary.bonus') }}:</strong> {{ getSummary()?.compensation?.bonus }}</p>
                       }
-                      @if (getSummary()!.compensation.equity) {
-                        <p><strong>{{ translate.instant('analysis.summary.equity') }}:</strong> {{ getSummary()!.compensation.equity }}</p>
+                      @if (getSummary()?.compensation?.equity) {
+                        <p><strong>{{ translate.instant('analysis.summary.equity') }}:</strong> {{ getSummary()?.compensation?.equity }}</p>
                       }
-                      @if (getSummary()!.compensation.other) {
-                        <p><strong>{{ translate.instant('analysis.summary.other') }}:</strong> {{ getSummary()!.compensation.other }}</p>
+                      @if (getSummary()?.compensation?.other) {
+                        <p><strong>{{ translate.instant('analysis.summary.other') }}:</strong> {{ getSummary()?.compensation?.other }}</p>
                       }
                     </div>
-                    @if (getSummary()!.benefits && getSummary()!.benefits.length > 0) {
+                    @if (getSummary()?.benefits && getSummary()?.benefits?.length > 0) {
                       <ul class="list-disc list-inside space-y-1 text-gray-700 mt-3">
-                        @for (benefit of getSummary()!.benefits; track $index) {
+                        @for (benefit of getSummary()?.benefits || []; track $index) {
                           <li>{{ benefit }}</li>
                         }
                       </ul>
@@ -309,14 +361,14 @@
                       {{ translate.instant('analysis.summary.terminationConditions') }}
                     </h3>
                     <div class="space-y-2 text-gray-700">
-                      @if (getSummary()!.termination.atWill) {
-                        <p><strong>{{ translate.instant('analysis.summary.atWill') }}:</strong> {{ getSummary()!.termination.atWill }}</p>
+                      @if (getSummary()?.termination?.atWill) {
+                        <p><strong>{{ translate.instant('analysis.summary.atWill') }}:</strong> {{ getSummary()?.termination?.atWill }}</p>
                       }
-                      @if (getSummary()!.termination.forCause) {
-                        <p><strong>{{ translate.instant('analysis.summary.forCause') }}:</strong> {{ getSummary()!.termination.forCause }}</p>
+                      @if (getSummary()?.termination?.forCause) {
+                        <p><strong>{{ translate.instant('analysis.summary.forCause') }}:</strong> {{ getSummary()?.termination?.forCause }}</p>
                       }
-                      @if (getSummary()!.termination.severance) {
-                        <p><strong>{{ translate.instant('analysis.summary.severance') }}:</strong> {{ getSummary()!.termination.severance }}</p>
+                      @if (getSummary()?.termination?.severance) {
+                        <p><strong>{{ translate.instant('analysis.summary.severance') }}:</strong> {{ getSummary()?.termination?.severance }}</p>
                       }
                     </div>
                   </div>
@@ -328,17 +380,17 @@
                       {{ translate.instant('analysis.summary.restrictions') }}
                     </h3>
                     <div class="space-y-2 text-gray-700">
-                      @if (getSummary()!.restrictions.confidentiality) {
-                        <p><strong>{{ translate.instant('analysis.summary.confidentiality') }}:</strong> {{ getSummary()!.restrictions.confidentiality }}</p>
+                      @if (getSummary()?.restrictions?.confidentiality) {
+                        <p><strong>{{ translate.instant('analysis.summary.confidentiality') }}:</strong> {{ getSummary()?.restrictions?.confidentiality }}</p>
                       }
-                      @if (getSummary()!.restrictions.nonCompete) {
-                        <p><strong>{{ translate.instant('analysis.summary.nonCompete') }}:</strong> {{ getSummary()!.restrictions.nonCompete }}</p>
+                      @if (getSummary()?.restrictions?.nonCompete) {
+                        <p><strong>{{ translate.instant('analysis.summary.nonCompete') }}:</strong> {{ getSummary()?.restrictions?.nonCompete }}</p>
                       }
-                      @if (getSummary()!.restrictions.nonSolicitation) {
-                        <p><strong>{{ translate.instant('analysis.summary.nonSolicitation') }}:</strong> {{ getSummary()!.restrictions.nonSolicitation }}</p>
+                      @if (getSummary()?.restrictions?.nonSolicitation) {
+                        <p><strong>{{ translate.instant('analysis.summary.nonSolicitation') }}:</strong> {{ getSummary()?.restrictions?.nonSolicitation }}</p>
                       }
-                      @if (getSummary()!.restrictions.other) {
-                        <p><strong>{{ translate.instant('analysis.summary.other') }}:</strong> {{ getSummary()!.restrictions.other }}</p>
+                      @if (getSummary()?.restrictions?.other) {
+                        <p><strong>{{ translate.instant('analysis.summary.other') }}:</strong> {{ getSummary()?.restrictions?.other }}</p>
                       }
                     </div>
                   </div>
@@ -346,20 +398,50 @@
               </div>
             </app-card>
           </div>
+          } @else {
+            <!-- No summary data available -->
+            <div class="space-y-6">
+              <app-card>
+                <div class="p-8 text-center text-gray-500">
+                  <span class="text-4xl mb-4 block">📄</span>
+                  <p>{{ translate.instant('analysis.summary.noData') }}</p>
+                </div>
+              </app-card>
+            </div>
+          }
         }
 
         <!-- Risks Tab -->
         @if (selectedTab() === 'risks') {
-          <div class="space-y-6">
-            <div class="text-center mb-6">
-              <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
-                <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 text-red-600"></lucide-icon>
-                {{ translate.instant('analysis.risks.title') }}
-              </h2>
-              <p class="text-gray-600 mt-2">{{ translate.instant('analysis.risks.subtitle') }}</p>
+          <!-- Show skeleton loader while loading -->
+          @if (isRisksLoading()) {
+            <div class="space-y-6">
+              <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                  <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 text-red-600"></lucide-icon>
+                  {{ translate.instant('analysis.risks.title') }}
+                </h2>
+                <p class="text-gray-600 mt-2">{{ translate.instant('analysis.risks.subtitle') }}</p>
+              </div>
+              <app-skeleton-loader 
+                type="list" 
+                [items]="3" 
+                listItemPadding="p-4" 
+                loadingText="Loading risks...">
+              </app-skeleton-loader>
             </div>
-            
-            @if (getRisks().length > 0) {
+          } @else {
+            <!-- Show actual risks -->
+            <div class="space-y-6">
+              <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                  <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 text-red-600"></lucide-icon>
+                  {{ translate.instant('analysis.risks.title') }}
+                </h2>
+                <p class="text-gray-600 mt-2">{{ translate.instant('analysis.risks.subtitle') }}</p>
+              </div>
+              
+              @if (getRisks()?.length > 0) {
               <!-- High Risks -->
               @if (getHighRisks().length > 0) {
                 <div class="space-y-3">
@@ -372,7 +454,11 @@
                       <div class="flex border-l-4 border-error bg-error/5 rtl:border-l-0 rtl:border-r-4">
                         <div class="flex-1 p-6">
                           <div class="flex items-start gap-3">
-                            <!-- <span class="text-2xl">{{ risk.emoji }}</span> -->
+                            @if (risk.icon) {
+                              <div class="flex-shrink-0">
+                                <lucide-icon [img]="getRiskLucideIcon(risk.icon)" class="w-6 h-6 text-red-600"></lucide-icon>
+                              </div>
+                            }
                             <div class="flex-1">
                               <h4 class="font-semibold text-gray-900 mb-2">{{ risk.title }}</h4>
                               <p class="text-gray-700 leading-relaxed mb-2">{{ risk.description }}</p>
@@ -404,7 +490,11 @@
                       <div class="flex border-l-4 border-warning bg-warning/5 rtl:border-l-0 rtl:border-r-4">
                         <div class="flex-1 p-6">
                           <div class="flex items-start gap-3">
-                            <!-- <span class="text-2xl">{{ risk.emoji }}</span> -->
+                            @if (risk.icon) {
+                              <div class="flex-shrink-0">
+                                <lucide-icon [img]="getRiskLucideIcon(risk.icon)" class="w-6 h-6 text-amber-600"></lucide-icon>
+                              </div>
+                            }
                             <div class="flex-1">
                               <h4 class="font-semibold text-gray-900 mb-2">{{ risk.title }}</h4>
                               <p class="text-gray-700 leading-relaxed mb-2">{{ risk.description }}</p>
@@ -436,7 +526,11 @@
                       <div class="flex border-l-4 border-info bg-info/5 rtl:border-l-0 rtl:border-r-4">
                         <div class="flex-1 p-6">
                           <div class="flex items-start gap-3">
-                            <!-- <span class="text-2xl">{{ risk.emoji }}</span> -->
+                            @if (risk.icon) {
+                              <div class="flex-shrink-0">
+                                <lucide-icon [img]="getRiskLucideIcon(risk.icon)" class="w-6 h-6 text-blue-600"></lucide-icon>
+                              </div>
+                            }
                             <div class="flex-1">
                               <h4 class="font-semibold text-gray-900 mb-2">{{ risk.title }}</h4>
                               <p class="text-gray-700 leading-relaxed">{{ risk.description }}</p>
@@ -457,20 +551,38 @@
               </app-card>
             }
           </div>
+          }
         }
 
         <!-- Obligations Tab -->
         @if (selectedTab() === 'obligations') {
-          <div class="space-y-6">
-            <div class="text-center mb-6">
-              <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
-                <lucide-icon [img]="ClockIcon" class="w-8 h-8 text-green-600"></lucide-icon>
-                {{ translate.instant('analysis.obligations.title') }}
-              </h2>
-              <p class="text-gray-600 mt-2">{{ translate.instant('analysis.obligations.subtitle') }}</p>
+          @if (isObligationsLoading()) {
+            <div class="space-y-6">
+              <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                  <lucide-icon [img]="ClockIcon" class="w-8 h-8 text-green-600"></lucide-icon>
+                  {{ translate.instant('analysis.obligations.title') }}
+                </h2>
+                <p class="text-gray-600 mt-2">{{ translate.instant('analysis.obligations.subtitle') }}</p>
+              </div>
+              <app-skeleton-loader 
+                type="list" 
+                [items]="4" 
+                listItemPadding="p-4" 
+                loadingText="Loading obligations...">
+              </app-skeleton-loader>
             </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          } @else {
+            <div class="space-y-6">
+              <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                  <lucide-icon [img]="ClockIcon" class="w-8 h-8 text-green-600"></lucide-icon>
+                  {{ translate.instant('analysis.obligations.title') }}
+                </h2>
+                <p class="text-gray-600 mt-2">{{ translate.instant('analysis.obligations.subtitle') }}</p>
+              </div>
+              
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <!-- Employer/Party 1 -->
               <app-card>
                 <div class="p-6 bg-gradient-to-br from-blue-50 to-white h-full">
@@ -479,41 +591,57 @@
                     {{ translate.instant('analysis.obligations.employer') }}
                   </h3>
                   <div class="space-y-3">
-                    @for (obligation of getObligations().employer; track $index) {
-                      <div class="bg-white rounded-lg p-4 border border-blue-200">
-                        <p class="font-medium text-gray-900 mb-1">{{ obligation.duty }}</p>
-                        <div class="text-sm text-gray-600 space-y-1">
-                          @if (obligation.amount) {
-                            <p class="flex items-center gap-2">
-                              <lucide-icon [img]="DollarSignIcon" class="w-4 h-4 text-green-600"></lucide-icon>
-                              ${{ obligation.amount.toLocaleString() }}
-                            </p>
-                          }
-                          @if (obligation.frequency) {
-                            <p class="flex items-center gap-2">
-                              <lucide-icon [img]="RefreshCwIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-                              {{ obligation.frequency }}
-                            </p>
-                          }
-                          @if (obligation.startDate) {
-                            <p class="flex items-center gap-2">
-                              <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-                              {{ translate.instant('analysis.obligations.starts') }}: {{ obligation.startDate }}
-                            </p>
-                          }
-                          @if (obligation.duration) {
-                            <p class="flex items-center gap-2">
-                              <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-                              {{ translate.instant('analysis.obligations.duration') }}: {{ obligation.duration }}
-                            </p>
-                          }
-                          @if (obligation.scope) {
-                            <p class="flex items-center gap-2">
-                              <lucide-icon [img]="ClipboardIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-                              {{ obligation.scope }}
-                            </p>
-                          }
+                    @if (getObligations() === null) {
+                      <div class="bg-white rounded-lg p-6 border border-red-200 text-center">
+                        <div class="text-red-400 mb-2">
+                          <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 mx-auto"></lucide-icon>
                         </div>
+                        <p class="text-red-600 text-sm">{{ translate.instant('analysis.obligations.extractionError') }}</p>
+                      </div>
+                    } @else if (getObligations()?.employer?.length > 0) {
+                      @for (obligation of getObligations()?.employer || []; track $index) {
+                        <div class="bg-white rounded-lg p-4 border border-blue-200">
+                          <p class="font-medium text-gray-900 mb-1">{{ obligation.duty }}</p>
+                          <div class="text-sm text-gray-600 space-y-1">
+                            @if (obligation.amount) {
+                              <p class="flex items-center gap-2">
+                                <lucide-icon [img]="DollarSignIcon" class="w-4 h-4 text-green-600"></lucide-icon>
+                                ${{ obligation.amount.toLocaleString() }}
+                              </p>
+                            }
+                            @if (obligation.frequency) {
+                              <p class="flex items-center gap-2">
+                                <lucide-icon [img]="RefreshCwIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+                                {{ obligation.frequency }}
+                              </p>
+                            }
+                            @if (obligation.startDate) {
+                              <p class="flex items-center gap-2">
+                                <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+                                {{ translate.instant('analysis.obligations.starts') }}: {{ obligation.startDate }}
+                              </p>
+                            }
+                            @if (obligation.duration) {
+                              <p class="flex items-center gap-2">
+                                <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+                                {{ translate.instant('analysis.obligations.duration') }}: {{ obligation.duration }}
+                              </p>
+                            }
+                            @if (obligation.scope) {
+                              <p class="flex items-center gap-2">
+                                <lucide-icon [img]="ClipboardIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+                                {{ obligation.scope }}
+                              </p>
+                            }
+                          </div>
+                        </div>
+                      }
+                    } @else {
+                      <div class="bg-white rounded-lg p-6 border border-blue-200 text-center">
+                        <div class="text-gray-400 mb-2">
+                          <lucide-icon [img]="CheckCircleIcon" class="w-8 h-8 mx-auto"></lucide-icon>
+                        </div>
+                        <p class="text-gray-500 text-sm">No employer obligations found.</p>
                       </div>
                     }
                   </div>
@@ -528,23 +656,39 @@
                     {{ translate.instant('analysis.obligations.employee') }}
                   </h3>
                   <div class="space-y-3">
-                    @for (obligation of getObligations().employee; track $index) {
-                      <div class="bg-white rounded-lg p-4 border border-purple-200">
-                        <p class="font-medium text-gray-900 mb-1">{{ obligation.duty }}</p>
-                        <div class="text-sm text-gray-600 space-y-1">
-                          @if (obligation.scope) {
-                            <p class="flex items-center gap-2">
-                              <lucide-icon [img]="ClipboardIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-                              {{ obligation.scope }}
-                            </p>
-                          }
-                          @if (obligation.duration) {
-                            <p class="flex items-center gap-2">
-                              <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-                              {{ obligation.duration }}
-                            </p>
-                          }
+                    @if (getObligations() === null) {
+                      <div class="bg-white rounded-lg p-6 border border-red-200 text-center">
+                        <div class="text-red-400 mb-2">
+                          <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 mx-auto"></lucide-icon>
                         </div>
+                        <p class="text-red-600 text-sm">{{ translate.instant('analysis.obligations.extractionError') }}</p>
+                      </div>
+                    } @else if (getObligations()?.employee?.length > 0) {
+                      @for (obligation of getObligations()?.employee || []; track $index) {
+                        <div class="bg-white rounded-lg p-4 border border-purple-200">
+                          <p class="font-medium text-gray-900 mb-1">{{ obligation.duty }}</p>
+                          <div class="text-sm text-gray-600 space-y-1">
+                            @if (obligation.scope) {
+                              <p class="flex items-center gap-2">
+                                <lucide-icon [img]="ClipboardIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+                                {{ obligation.scope }}
+                              </p>
+                            }
+                            @if (obligation.duration) {
+                              <p class="flex items-center gap-2">
+                                <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+                                {{ obligation.duration }}
+                              </p>
+                            }
+                          </div>
+                        </div>
+                      }
+                    } @else {
+                      <div class="bg-white rounded-lg p-6 border border-purple-200 text-center">
+                        <div class="text-gray-400 mb-2">
+                          <span class="text-2xl">🧑‍💻</span>
+                        </div>
+                        <p class="text-gray-500 text-sm">No employee obligations found.</p>
                       </div>
                     }
                   </div>
@@ -552,20 +696,38 @@
               </app-card>
             </div>
           </div>
+          }
         }
 
         <!-- Omissions Tab -->
         @if (selectedTab() === 'omissions') {
-          <div class="space-y-6">
-            <div class="text-center mb-6">
-              <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
-                <lucide-icon [img]="FileXIcon" class="w-8 h-8 text-amber-600"></lucide-icon>
-                {{ translate.instant('analysis.omissions.title') }}
-              </h2>
-              <p class="text-gray-600 mt-2">{{ translate.instant('analysis.omissions.subtitle') }}</p>
+          @if (isOmissionsLoading()) {
+            <div class="space-y-6">
+              <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                  <lucide-icon [img]="FileXIcon" class="w-8 h-8 text-amber-600"></lucide-icon>
+                  {{ translate.instant('analysis.omissions.title') }}
+                </h2>
+                <p class="text-gray-600 mt-2">{{ translate.instant('analysis.omissions.subtitle') }}</p>
+              </div>
+              <app-skeleton-loader 
+                type="list" 
+                [items]="3" 
+                listItemPadding="p-4" 
+                loadingText="Loading omissions...">
+              </app-skeleton-loader>
             </div>
-            
-            @if (getOmissions().length > 0) {
+          } @else {
+            <div class="space-y-6">
+              <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                  <lucide-icon [img]="FileXIcon" class="w-8 h-8 text-amber-600"></lucide-icon>
+                  {{ translate.instant('analysis.omissions.title') }}
+                </h2>
+                <p class="text-gray-600 mt-2">{{ translate.instant('analysis.omissions.subtitle') }}</p>
+              </div>
+              
+              @if (getOmissions()?.length > 0) {
               <!-- High Priority Omissions -->
               @if (getHighPriorityOmissions().length > 0) {
                 <div class="space-y-3">
@@ -655,6 +817,7 @@
               </app-card>
             }
           </div>
+          }
         }
 
         <!-- Questions Tab -->
@@ -666,7 +829,7 @@
                 <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ translate.instant('analysis.questions.questionsToAsk') }}</h2>
                 <p class="text-gray-600">{{ translate.instant('analysis.questions.importantClarifications') }}</p>
               </div>
-              @if (getQuestions().length > 0) {
+              @if (getQuestions() && getQuestions().length > 0) {
                 <div class="flex items-center gap-3">
                   <button
                     (click)="copyAllQuestions()"
@@ -702,10 +865,18 @@
               }
             </div>
             
-            @if (getQuestions().length > 0) {
+            @if (isOmissionsLoading()) {
+              <!-- Questions Loading Skeleton -->
+              <app-skeleton-loader 
+                type="list" 
+                [items]="3" 
+                listItemPadding="p-6" 
+                loadingText="Loading questions...">
+              </app-skeleton-loader>
+            } @else if (getQuestions() && getQuestions().length > 0) {
               <!-- Questions List -->
               <div class="space-y-4">
-                @for (question of getQuestions(); track $index) {
+                @for (question of getQuestions() || []; track $index) {
                   <app-card [hoverable]="true">
                     <div class="bg-white border border-gray-200 p-6 rounded-xl">
                       <div class="flex items-start justify-between gap-4">

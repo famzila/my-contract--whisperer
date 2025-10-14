@@ -23,5 +23,22 @@ export const AppConfig = {
    * 💡 Tip: Set to true for development, false for production/demo
    */
   useMockAI: false, // Toggle this to switch between mock and real AI
+
+  /**
+   * Analysis Strategy: Progressive Schema-Based (Default & Only Approach)
+   * 
+   * ✅ Features:
+   * - Schema-based extraction with responseConstraint (100% reliable JSON parsing)
+   * - Three-tier progressive loading for optimal UX:
+   *   • Tier 1: Metadata (~1s) - Dashboard shows immediately
+   *   • Tier 2: Summary + Risks (parallel ~2-3s) - High priority content
+   *   • Tier 3: Obligations + Omissions + Questions (parallel ~2-3s) - Supporting details
+   * - Lucide icons for better visual representation
+   * - Per-section skeleton loaders and error handling
+   * - Perceived performance: ~1s (instead of 10s wait)
+   * 
+   * 🎯 This is now the default and only implementation.
+   * Legacy approaches have been removed for code simplicity and maintainability.
+   */
 };
 

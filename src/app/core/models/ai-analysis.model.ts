@@ -89,6 +89,7 @@ export interface RiskFlag {
   title: string;
   severity: RiskSeverity;
   emoji: RiskEmoji;
+  icon?: string;                     // 👈 NEW: Lucide icon name (schema-based format)
   description: string;
   impact: string;                    // Explain the potential impact
   impactOn?: string;                 // 👈 NEW: Who is affected (employer/employee)
