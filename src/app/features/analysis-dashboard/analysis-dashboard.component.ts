@@ -111,6 +111,7 @@ export class AnalysisDashboard implements OnInit {
       label: this.translate.instant('analysis.tabs.risks'),
       icon: this.AlertTriangleIcon,
       isLoading: this.isRisksLoading(),
+      badge: this.getRisks()?.length || 0,
     },
     {
       id: 'obligations',
@@ -123,6 +124,7 @@ export class AnalysisDashboard implements OnInit {
       label: this.translate.instant('analysis.tabs.omissions'),
       icon: this.FileXIcon,
       isLoading: this.isOmissionsLoading(),
+      badge: this.getOmissions()?.length || 0,
     },
     {
       id: 'questions',
@@ -289,30 +291,59 @@ export class AnalysisDashboard implements OnInit {
           };
     }
 
-    // Map role to appropriate badge
-    const roleMap: Record<string, { icon: any; text: string; className: string }> = {
-      employer: {
+    // Handle party1/party2 roles - use actual party names
+    if (role === 'party1' && metadata?.parties?.party1) {
+      const party = metadata.parties.party1;
+      return {
         icon: this.ClipboardIcon,
-        text: 'Employer View',
+        text: `From ${party.name} perspective`,
         className:
           'px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200',
-      },
-      employee: {
+      };
+    }
+
+    if (role === 'party2' && metadata?.parties?.party2) {
+      const party = metadata.parties.party2;
+      return {
         icon: this.InfoIcon,
-        text: 'Employee View',
+        text: `From ${party.name} perspective`,
         className:
           'px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full border border-purple-200',
-      },
-    };
+      };
+    }
 
-    return (
-      roleMap[role] || {
-        icon: this.InfoIcon,
-        text: 'Your Perspective',
-        className:
-          'px-3 py-1 text-sm font-medium bg-gray-100 text-gray-800 rounded-full border border-gray-200',
+    // Fallback: Try to find matching party by role name
+    if (metadata?.parties) {
+      const { party1, party2 } = metadata.parties;
+      
+      // Check if role matches party1's role (case-insensitive)
+      if (party1?.role && party1.role.toLowerCase() === role.toLowerCase()) {
+        return {
+          icon: this.ClipboardIcon,
+          text: `From ${party1.name} perspective`,
+          className:
+            'px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200',
+        };
       }
-    );
+      
+      // Check if role matches party2's role (case-insensitive)
+      if (party2?.role && party2.role.toLowerCase() === role.toLowerCase()) {
+        return {
+          icon: this.InfoIcon,
+          text: `From ${party2.name} perspective`,
+          className:
+            'px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full border border-purple-200',
+        };
+      }
+    }
+
+    // Final fallback: show the role name
+    return {
+      icon: this.InfoIcon,
+      text: `From ${role} perspective`,
+      className:
+        'px-3 py-1 text-sm font-medium bg-gray-100 text-gray-800 rounded-full border border-gray-200',
+    };
   }
 
   getPerspectiveContext() {

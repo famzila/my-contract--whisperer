@@ -27,7 +27,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Employer/Party 1 -->
       <app-card>
-        <div class="p-6 bg-gradient-to-br from-blue-50 to-white h-full">
+        <div class="p-6 border border-gray-200 h-full">
           <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <lucide-icon [name]="CheckCircleIcon" class="w-8 h-8 text-green-600"></lucide-icon>
             {{ 'analysis.obligations.employer' | translate }}
@@ -92,7 +92,7 @@
       
       <!-- Employee/Party 2 -->
       <app-card>
-        <div class="p-6 bg-gradient-to-br from-purple-50 to-white h-full">
+        <div class="p-6 border border-gray-200 h-full">
           <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <lucide-icon [name]="CheckCircleIcon" class="w-8 h-8 text-green-600"></lucide-icon>
             {{ 'analysis.obligations.employee' | translate }}
@@ -126,7 +126,7 @@
                 </div>
               }
             } @else {
-              <div class="bg-white rounded-lg p-6 border border-purple-200 text-center">
+              <div class="rounded-lg p-6 border h-full border-gray-200 text-center">
                 <div class="text-gray-400 mb-2">
                   <lucide-icon [name]="AlertTriangleIcon" class="w-8 h-8 mx-auto"></lucide-icon>
                 </div>

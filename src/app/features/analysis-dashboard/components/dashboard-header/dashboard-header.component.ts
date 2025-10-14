@@ -12,23 +12,12 @@ import {
   AlertTriangle, 
   Calendar 
 } from '../../../../shared/icons/lucide-icons';
+import type { ContractMetadata } from '../../../../core/schemas/analysis-schemas';
 
 export interface PerspectiveBadge {
   icon: any;
   text: string;
   className: string;
-}
-
-export interface ContractMetadata {
-  contractType: string;
-  effectiveDate?: string;
-  endDate?: string;
-  jurisdiction?: string;
-  parties: {
-    party1?: { name: string; role?: string };
-    party2?: { name: string; role?: string };
-  };
-  analyzedForRole?: string;
 }
 
 @Component({
