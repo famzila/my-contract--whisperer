@@ -153,18 +153,17 @@ export class AnalysisDashboard implements OnInit {
 
   // Data getters - use progressive loading data if available, fallback to analysis
   getMetadata() {
-    // First try progressive loading metadata (available immediately)
+    // Get progressive loading metadata
     const progressiveMetadata = this.contractStore.sectionsMetadata()?.data;
     if (progressiveMetadata) {
       return progressiveMetadata;
     }
     
-    // Fallback to analysis metadata
-    return this.contractStore.analysis()?.metadata || null;
+    return null;
   }
 
   getSummary() {
-    // First try progressive loading summary (available after streaming)
+    // Get progressive loading summary
     const progressiveSummary = this.contractStore.sectionsSummary()?.data;
     if (progressiveSummary !== undefined) {
       // Handle nested summary structure from AI response
@@ -174,46 +173,21 @@ export class AnalysisDashboard implements OnInit {
       return progressiveSummary; // Can be null if extraction failed
     }
     
-    // Fallback to analysis summary
-    const analysis = this.contractStore.analysis();
-    if (!analysis) return null;
-
-    // If summary is a string, return null (components expect structured data)
-    if (typeof analysis.summary === 'string') {
-      return null;
-    }
-
-    // Return the structured summary object
-    return analysis.summary || null;
+    return null;
   }
 
   getRisks() {
-    // First try progressive loading risks (available after streaming)
+    // Get progressive loading risks
     const progressiveRisks = this.contractStore.sectionsRisks()?.data;
     if (progressiveRisks) {
       return progressiveRisks.risks || [];
     }
     
-    // Fallback to analysis clauses
-    const analysis = this.contractStore.analysis();
-    if (!analysis) return [];
-
-    // Convert ContractClause[] to RiskFlag[] format expected by components
-    return analysis.clauses.map((clause) => ({
-      title: clause.type,
-      description: clause.content,
-      impact: clause.plainLanguage,
-      severity: (clause.riskLevel === 'high'
-        ? 'high'
-        : clause.riskLevel === 'medium'
-        ? 'medium'
-        : 'low') as 'high' | 'medium' | 'low',
-      icon: this.getRiskIcon(clause.type),
-    }));
+    return [];
   }
 
   getObligations() {
-    // First try progressive loading obligations (available after streaming)
+    // Get progressive loading obligations
     const progressiveObligations = this.contractStore.sectionsObligations()?.data;
     if (progressiveObligations !== undefined) {
       // Handle nested obligations structure from AI response
@@ -223,64 +197,27 @@ export class AnalysisDashboard implements OnInit {
       return progressiveObligations; // Can be null if extraction failed
     }
     
-    // Fallback to analysis obligations
-    const analysis = this.contractStore.analysis();
-    if (!analysis) return null;
-
-    // Convert Obligation[] to ObligationsData format expected by components
-    const obligations = analysis.obligations || [];
-    return {
-      employer: obligations
-        .filter((ob) => ob.party === 'their')
-        .map((ob) => ({
-          duty: ob.description,
-          amount: null,
-          frequency: null,
-          startDate: ob.dueDate?.toISOString().split('T')[0] || null,
-          duration: null,
-          scope: null,
-        })),
-      employee: obligations
-        .filter((ob) => ob.party === 'your')
-        .map((ob) => ({
-          duty: ob.description,
-          amount: null,
-          frequency: null,
-          startDate: ob.dueDate?.toISOString().split('T')[0] || null,
-          duration: null,
-          scope: null,
-        })),
-    };
+    return null;
   }
 
   getOmissions() {
-    // First try progressive loading omissions (available after streaming)
+    // Get progressive loading omissions
     const progressiveOmissions = this.contractStore.sectionsOmissionsQuestions()?.data;
     if (progressiveOmissions) {
       return progressiveOmissions.omissions || [];
     }
     
-    // Fallback to analysis omissions
-    const analysis = this.contractStore.analysis();
-    if (!analysis) return [];
-
-    // Convert to lowercase priority format expected by components
-    return (analysis.omissions || []).map((omission) => ({
-      item: omission.item,
-      impact: omission.impact,
-      priority: omission.priority.toLowerCase() as 'high' | 'medium' | 'low',
-    }));
+    return [];
   }
 
   getQuestions() {
-    // First try progressive loading questions (available after streaming)
+    // Get progressive loading questions
     const progressiveQuestions = this.contractStore.sectionsOmissionsQuestions()?.data;
     if (progressiveQuestions) {
       return progressiveQuestions.questions || [];
     }
     
-    // Fallback to analysis questions
-    return this.contractStore.analysis()?.questions || [];
+    return [];
   }
 
   // Helper method to map clause types to risk icons
@@ -302,10 +239,7 @@ export class AnalysisDashboard implements OnInit {
   }
 
   getDisclaimer() {
-    return (
-      this.contractStore.analysis()?.disclaimer ||
-      'This analysis is for informational purposes only and should not be considered as legal advice.'
-    );
+    return 'This analysis is for informational purposes only and should not be considered as legal advice.';
   }
 
   // Risk filtering methods
@@ -409,11 +343,15 @@ export class AnalysisDashboard implements OnInit {
 
   // Language and translation methods
   wasTranslated(): boolean {
-    return this.contractStore.analysis()?.translationInfo?.wasTranslated ?? false;
+    // Translation info is not stored separately in progressive loading
+    // Check if detected language differs from app language
+    const detectedLang = this.languageStore.detectedContractLanguage();
+    const appLang = this.languageStore.preferredLanguage();
+    return detectedLang !== null && detectedLang !== appLang;
   }
 
   getSourceLanguageName(): string {
-    const code = this.contractStore.analysis()?.translationInfo?.sourceLanguage;
+    const code = this.languageStore.detectedContractLanguage();
     if (!code) return this.translate.instant('languages.unknown');
 
     const translationKey = getLanguageTranslationKey(code);
