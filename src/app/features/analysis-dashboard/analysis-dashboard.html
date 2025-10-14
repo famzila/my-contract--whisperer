@@ -652,7 +652,7 @@
               <app-card>
                 <div class="p-6 bg-gradient-to-br from-purple-50 to-white h-full">
                   <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <span class="text-2xl">🧑‍💻</span>
+                    <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 mx-auto"></lucide-icon>
                     {{ translate.instant('analysis.obligations.employee') }}
                   </h3>
                   <div class="space-y-3">
@@ -686,7 +686,7 @@
                     } @else {
                       <div class="bg-white rounded-lg p-6 border border-purple-200 text-center">
                         <div class="text-gray-400 mb-2">
-                          <span class="text-2xl">🧑‍💻</span>
+                          <lucide-icon [img]="AlertTriangleIcon" class="w-8 h-8 mx-auto"></lucide-icon>
                         </div>
                         <p class="text-gray-500 text-sm">No employee obligations found.</p>
                       </div>

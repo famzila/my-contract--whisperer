@@ -25,17 +25,18 @@ export const AppConfig = {
   useMockAI: false, // Toggle this to switch between mock and real AI
 
   /**
-   * Analysis Strategy: Progressive Schema-Based (Default & Only Approach)
+   * Analysis Strategy: RxJS Streaming (Default & Only Approach)
    * 
    * ✅ Features:
    * - Schema-based extraction with responseConstraint (100% reliable JSON parsing)
-   * - Three-tier progressive loading for optimal UX:
-   *   • Tier 1: Metadata (~1s) - Dashboard shows immediately
-   *   • Tier 2: Summary + Risks (parallel ~2-3s) - High priority content
-   *   • Tier 3: Obligations + Omissions + Questions (parallel ~2-3s) - Supporting details
+   * - RxJS streaming analysis for optimal UX:
+   *   • Metadata priority (must complete first) - Dashboard shows immediately
+   *   • Independent section streaming - Summary, Risks, Obligations, Omissions stream as they complete
+   *   • No waiting for grouped tiers - each section displays as soon as it's ready
    * - Lucide icons for better visual representation
    * - Per-section skeleton loaders and error handling
    * - Perceived performance: ~1s (instead of 10s wait)
+   * - Graceful error handling with user-friendly messages
    * 
    * 🎯 This is now the default and only implementation.
    * Legacy approaches have been removed for code simplicity and maintainability.

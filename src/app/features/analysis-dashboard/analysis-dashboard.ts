@@ -656,7 +656,11 @@ export class AnalysisDashboard implements OnInit {
         icon: this.ScaleIcon,
         text: 'Both Parties',
         className: 'px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full border border-green-200'
-      } : 'your';
+      } : {
+        icon: this.UserIcon,
+        text: 'Your Perspective',
+        className: 'px-3 py-1 text-sm font-medium bg-gray-100 text-gray-800 rounded-full border border-gray-200'
+      };
     }
     
     // Find which party matches the selected role
