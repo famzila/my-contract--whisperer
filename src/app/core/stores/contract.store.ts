@@ -1,6 +1,6 @@
 /**
  * Contract Store - NgRx SignalStore
- * Manages contract data, analysis results, and loading states
+ * Manages contract data and progressive analysis loading with RxJS streaming
  * Reference: https://ngrx.io/guide/signals/signal-store
  */
 import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals';
@@ -8,8 +8,15 @@ import { computed, inject, NgZone } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { Observable, Subject, takeUntil } from 'rxjs';
-import type { Contract, ContractAnalysis, ContractClause, RiskLevel } from '../models/contract.model';
+import { Subject, takeUntil } from 'rxjs';
+import type { Contract } from '../models/contract.model';
+import type { 
+  ContractMetadata, 
+  RisksAnalysis, 
+  ObligationsAnalysis, 
+  OmissionsAndQuestions, 
+  ContractSummary 
+} from '../schemas/analysis-schemas';
 import { ContractAnalysisService } from '../services/contract-analysis.service';
 import { ContractParserService, type ParsedContract } from '../services/contract-parser.service';
 import { ContractValidationService } from '../services/contract-validation.service';
@@ -18,7 +25,7 @@ import { LanguageStore } from './language.store';
 import { OnboardingStore } from './onboarding.store';
 
 /**
- * Section loading state for progressive analysis
+ * Section loading state for progressive analysis with proper typing
  */
 interface SectionState<T> {
   data: T | null;
@@ -33,9 +40,6 @@ interface ContractState {
   // Current contract
   contract: Contract | null;
   
-  // Analysis results (legacy - for backward compatibility)
-  analysis: ContractAnalysis | null;
-  
   // Loading states
   isUploading: boolean;
   isAnalyzing: boolean;
@@ -44,19 +48,15 @@ interface ContractState {
   uploadError: string | null;
   analysisError: string | null;
   
-  // UI state
-  selectedClauseId: string | null;
-  
-  // Progressive loading states (NEW)
-  useProgressiveLoading: boolean;
+  // Progressive loading with proper types
   analysisProgress: number; // 0-100%
-  sectionsMetadata: SectionState<any> | null;
-  sectionsSummary: SectionState<any> | null;
-  sectionsRisks: SectionState<any> | null;
-  sectionsObligations: SectionState<any> | null;
-  sectionsOmissionsQuestions: SectionState<any> | null;
+  sectionsMetadata: SectionState<ContractMetadata> | null;
+  sectionsSummary: SectionState<ContractSummary> | null;
+  sectionsRisks: SectionState<RisksAnalysis> | null;
+  sectionsObligations: SectionState<ObligationsAnalysis> | null;
+  sectionsOmissionsQuestions: SectionState<OmissionsAndQuestions> | null;
   
-  // RxJS streaming (NEW)
+  // RxJS streaming cleanup
   destroySubject: Subject<void> | null;
 }
 
@@ -65,21 +65,16 @@ interface ContractState {
  */
 const initialState: ContractState = {
   contract: null,
-  analysis: null,
   isUploading: false,
   isAnalyzing: false,
   uploadError: null,
   analysisError: null,
-  selectedClauseId: null,
-  // Progressive loading
-  useProgressiveLoading: false,
   analysisProgress: 0,
   sectionsMetadata: null,
   sectionsSummary: null,
   sectionsRisks: null,
   sectionsObligations: null,
   sectionsOmissionsQuestions: null,
-  // RxJS streaming
   destroySubject: null,
 };
 
@@ -93,7 +88,6 @@ export const ContractStore = signalStore(
   // Computed values derived from state
   withComputed(({ 
     contract, 
-    analysis, 
     isUploading, 
     isAnalyzing, 
     uploadError, 
@@ -107,73 +101,16 @@ export const ContractStore = signalStore(
     // Check if contract is loaded
     hasContract: computed(() => contract() !== null),
     
-    // Check if analysis is available (complete analysis)
-    hasAnalysis: computed(() => analysis() !== null),
-    
-    // Check if we have enough data to show the dashboard (metadata is enough for progressive loading)
+    // Check if we have enough data to show the dashboard (metadata is sufficient for progressive loading)
     canShowDashboard: computed(() => contract() !== null && sectionsMetadata()?.data !== null),
     
-    // Get risk score
-    riskScore: computed(() => analysis()?.riskScore ?? 0),
+    // Check if currently loading (upload or initial metadata extraction)
+    isLoading: computed(() => isUploading() || isAnalyzing()),
     
-    // Check if contract has high risk clauses
-    hasHighRiskClauses: computed(() => {
-      const score = analysis()?.riskScore ?? 0;
-      return score > 70;
-    }),
+    // Check if there are any errors
+    hasError: computed(() => uploadError() !== null || analysisError() !== null),
     
-    // Get high risk clauses
-    highRiskClauses: computed(() => {
-      const clauses = analysis()?.clauses ?? [];
-      return clauses.filter(clause => clause.riskLevel === 'high');
-    }),
-    
-    // Get medium risk clauses
-    mediumRiskClauses: computed(() => {
-      const clauses = analysis()?.clauses ?? [];
-      return clauses.filter(clause => clause.riskLevel === 'medium');
-    }),
-    
-    // Get low risk clauses
-    lowRiskClauses: computed(() => {
-      const clauses = analysis()?.clauses ?? [];
-      return clauses.filter(clause => clause.riskLevel === 'low');
-    }),
-    
-    // Count clauses by risk level
-    riskCounts: computed(() => {
-      const clauses = analysis()?.clauses ?? [];
-      return {
-        high: clauses.filter(c => c.riskLevel === 'high').length,
-        medium: clauses.filter(c => c.riskLevel === 'medium').length,
-        low: clauses.filter(c => c.riskLevel === 'low').length,
-        safe: clauses.filter(c => c.riskLevel === 'safe').length,
-      };
-    }),
-    
-    // Get pending obligations
-    pendingObligations: computed(() => {
-      const obligations = analysis()?.obligations ?? [];
-      return obligations.filter(o => !o.completed);
-    }),
-    
-    // Get completed obligations
-    completedObligations: computed(() => {
-      const obligations = analysis()?.obligations ?? [];
-      return obligations.filter(o => o.completed);
-    }),
-    
-    // Check if loading
-    isLoading: computed(() => 
-      isUploading() || isAnalyzing()
-    ),
-    
-    // Check if there are errors
-    hasError: computed(() => 
-      uploadError() !== null || analysisError() !== null
-    ),
-    
-    // Progressive loading computed signals
+    // Check if any section is still loading (for progressive display)
     isAnySectionLoading: computed(() => {
       const meta = sectionsMetadata();
       const summary = sectionsSummary();
@@ -210,17 +147,6 @@ export const ContractStore = signalStore(
     },
     
     /**
-     * Set analysis results
-     */
-    setAnalysis: (analysis: ContractAnalysis) => {
-      patchState(store, { 
-        analysis, 
-        isAnalyzing: false, 
-        analysisError: null 
-      });
-    },
-    
-    /**
      * Set uploading state
      */
     setUploading: (isUploading: boolean) => {
@@ -246,39 +172,6 @@ export const ContractStore = signalStore(
      */
     setAnalysisError: (analysisError: string) => {
       patchState(store, { analysisError, isAnalyzing: false });
-    },
-    
-    /**
-     * Select a clause
-     */
-    selectClause: (clauseId: string) => {
-      patchState(store, { selectedClauseId: clauseId });
-    },
-    
-    /**
-     * Clear selected clause
-     */
-    clearSelectedClause: () => {
-      patchState(store, { selectedClauseId: null });
-    },
-    
-    /**
-     * Toggle obligation completion
-     */
-    toggleObligation: (obligationId: string) => {
-      const analysis = store.analysis();
-      if (!analysis) return;
-      
-      const updatedObligations = analysis.obligations.map(o => 
-        o.id === obligationId ? { ...o, completed: !o.completed } : o
-      );
-      
-      patchState(store, {
-        analysis: {
-          ...analysis,
-          obligations: updatedObligations,
-        },
-      });
     },
     
     /**
@@ -435,12 +328,14 @@ export const ContractStore = signalStore(
     },
     
     /**
-     * Analyze a contract (main orchestration method)
-     */
-    /**
      * Analyze contract with RxJS streaming
-     * Shows results as they complete independently (not in tiers)
-     * Metadata is priority 1, all others stream as they finish
+     * 
+     * Progressive loading flow:
+     * 1. Metadata extracted first (priority 1) - triggers navigation to dashboard
+     * 2. Summary, Risks, Obligations, Omissions/Questions stream independently
+     * 3. Each section displays as soon as it completes (no waiting for all)
+     * 
+     * The dashboard shows skeleton loaders for pending sections.
      */
     async analyzeContract(parsedContract: ParsedContract): Promise<void> {
       patchState(store, { isUploading: true, uploadError: null });
@@ -460,7 +355,6 @@ export const ContractStore = signalStore(
         patchState(store, { 
           isAnalyzing: true, 
           analysisError: null,
-          useProgressiveLoading: true,
           analysisProgress: 0,
           sectionsMetadata: { data: null, loading: true, error: null },
           sectionsSummary: { data: null, loading: true, error: null },
