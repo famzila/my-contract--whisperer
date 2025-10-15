@@ -72,17 +72,29 @@ expectedOutputs: [
 
 ---
 
-### ⏳ Phase 2: Handle Unsupported Input Languages
-**Status**: ⏳ Pending  
+### ✅ Phase 2: Handle Unsupported Input Languages
+**Status**: ✅ Complete  
 **Files**:
 - `src/app/core/services/contract-analysis.service.ts`
 
 **Tasks**:
-- [ ] Add pre-translation logic for unsupported languages
-- [ ] Create `canAnalyzeLanguage()` method
-- [ ] Update analysis flow to handle pre-translation
-- [ ] Add error handling for unsupported languages
-- [ ] Ensure app UI switches correctly after pre-translation
+- [x] Add pre-translation logic for unsupported languages
+- [x] Create `canAnalyzeLanguage()` method
+- [x] Update analysis flow to handle pre-translation
+- [x] Add error handling for unsupported languages
+- [x] Ensure app UI switches correctly after pre-translation
+
+**Implementation Details**:
+- Split `analyzeContractStreaming$` into two paths:
+  - `analyzeDirectly$`: For supported languages (en, es, ja)
+  - `analyzeWithPreTranslation$`: For unsupported languages (ar, fr, de, zh, etc.)
+- Pre-translation flow:
+  1. Translate contract from original language → English
+  2. Analyze in English with Gemini Nano
+  3. Output results in target language (via expectedOutputs)
+- Uses Chrome Translator API for pre-translation
+- Maintains RxJS streaming architecture
+- All sections stream independently after metadata
 
 ---
 
