@@ -35,17 +35,40 @@ GOLDEN RULE: analysisLanguage === appUILanguage
 
 ---
 
-### ⏳ Phase 1: Update Prompt Service
-**Status**: ⏳ Pending  
+### ✅ Phase 1: Update Prompt Service
+**Status**: ✅ Complete  
 **Files**:
 - `src/app/core/services/ai/prompt.service.ts`
+- `src/app/core/models/ai.types.ts`
+- `src/app/core/services/contract-analysis.service.ts`
 
 **Tasks**:
-- [ ] Add `contractLanguage` and `outputLanguage` parameters to `createSession()`
-- [ ] Create `buildLanguageInstructions()` method
-- [ ] Add `getLanguageName()` helper
-- [ ] Configure `expectedInputs.language` and `expectedOutputs.language`
-- [ ] Add validation for output language
+- [x] Add `contractLanguage` and `outputLanguage` parameters to `createSession()`
+- [x] Create `buildLanguageInstructions()` method
+- [x] Add `getLanguageName()` helper (supports 17 languages)
+- [x] Configure `expectedInputs` and `expectedOutputs` using official Chrome AI API format
+- [x] Add `AIExpectedInput` and `AIExpectedOutput` interfaces to `ai.types.ts`
+- [x] Update all extraction methods to accept `outputLanguage` parameter
+- [x] Update Observable versions (`extractMetadata$`, `extractRisks$`, etc.)
+- [x] Update `contract-analysis.service.ts` to pass `outputLanguage` to all extractions
+- [x] Add language info to console logs for debugging
+
+**Implementation Details**:
+```typescript
+// Official Chrome AI API format
+expectedInputs: [
+  {
+    type: 'text',
+    languages: ['en', 'ja'] // System prompt (en) + contract language (ja)
+  }
+],
+expectedOutputs: [
+  {
+    type: 'text',
+    languages: ['ja'] // Output in Japanese
+  }
+]
+```
 
 ---
 

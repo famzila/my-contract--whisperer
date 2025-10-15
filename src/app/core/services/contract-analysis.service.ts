@@ -46,16 +46,28 @@ export class ContractAnalysisService {
     data: any;
     progress: number;
   }> {
+    // Determine output language from analysis context
+    const outputLanguage = analysisContext.analyzedInLanguage || undefined;
+    const contractLanguage = analysisContext.contractLanguage || undefined;
+    
     // Create session once and share it
     const session$ = of(null).pipe(
-      tap(() => console.log('🚀 Starting RxJS streaming analysis...')),
-      switchMap(() => this.promptService.createSession({ userRole: analysisContext.userRole || null })),
+      tap(() => console.log(`🚀 Starting RxJS streaming analysis${outputLanguage ? ` (output: ${outputLanguage})` : ''}...`)),
+      switchMap(() => this.promptService.createSession({ 
+        userRole: analysisContext.userRole || null,
+        contractLanguage: contractLanguage,
+        outputLanguage: outputLanguage
+      })),
       shareReplay(1)
     );
 
     // PRIORITY 1: Metadata (must complete first)
     const metadata$ = session$.pipe(
-      switchMap(() => this.promptService.extractMetadata$(parsedContract.text, analysisContext.userRole || undefined)),
+      switchMap(() => this.promptService.extractMetadata$(
+        parsedContract.text,
+        analysisContext.userRole || undefined,
+        outputLanguage
+      )),
       map(metadata => ({
         section: 'metadata' as const,
         data: metadata,
@@ -70,7 +82,7 @@ export class ContractAnalysisService {
 
     // STREAMING: Summary, Risks, Obligations, Omissions (all independent)
     const summary$ = session$.pipe(
-      switchMap(() => this.promptService.extractSummary$(parsedContract.text)),
+      switchMap(() => this.promptService.extractSummary$(parsedContract.text, outputLanguage)),
       map(summary => ({
         section: 'summary' as const,
         data: summary,
@@ -85,7 +97,7 @@ export class ContractAnalysisService {
     );
 
     const risks$ = session$.pipe(
-      switchMap(() => this.promptService.extractRisks$(parsedContract.text)),
+      switchMap(() => this.promptService.extractRisks$(parsedContract.text, outputLanguage)),
       map(risks => ({
         section: 'risks' as const,
         data: risks,
@@ -100,7 +112,7 @@ export class ContractAnalysisService {
     );
 
     const obligations$ = session$.pipe(
-      switchMap(() => this.promptService.extractObligations$(parsedContract.text)),
+      switchMap(() => this.promptService.extractObligations$(parsedContract.text, outputLanguage)),
       map(obligations => ({
         section: 'obligations' as const,
         data: obligations,
@@ -115,7 +127,7 @@ export class ContractAnalysisService {
     );
 
     const omissionsAndQuestions$ = session$.pipe(
-      switchMap(() => this.promptService.extractOmissionsAndQuestions$(parsedContract.text)),
+      switchMap(() => this.promptService.extractOmissionsAndQuestions$(parsedContract.text, outputLanguage)),
       map(omissionsAndQuestions => ({
         section: 'omissionsAndQuestions' as const,
         data: omissionsAndQuestions,
@@ -249,10 +261,4 @@ Note: This is mock data. Enable Chrome Built-in AI for real analysis.`,
     };
   }
 
-  /**
-   * Generate unique ID
-   */
-  private generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-  }
 }

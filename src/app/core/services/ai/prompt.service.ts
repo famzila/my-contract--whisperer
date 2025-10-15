@@ -53,12 +53,14 @@ export class PromptService {
   }
 
   /**
-   * Create a new Prompt API session with optional perspective
+   * Create a new Prompt API session with optional perspective and language settings
    * This will trigger model download if needed (requires user interaction)
    */
   async createSession(
     options?: AILanguageModelCreateOptions & { 
-      userRole?: 'employer' | 'employee' | 'client' | 'contractor' | 'landlord' | 'tenant' | 'partner' | 'both_views' | null 
+      userRole?: 'employer' | 'employee' | 'client' | 'contractor' | 'landlord' | 'tenant' | 'partner' | 'both_views' | null;
+      contractLanguage?: string;
+      outputLanguage?: string;
     }
   ): Promise<AILanguageModel> {
     if (!window.LanguageModel) {
@@ -68,9 +70,31 @@ export class PromptService {
     // Get perspective-aware prompt if userRole is provided
     const perspectivePrompt = options?.userRole ? this.buildPerspectivePrompt(options.userRole) : '';
 
+    // Build expectedInputs and expectedOutputs arrays for official API
+    // Language handling is done via expectedInputs/expectedOutputs (official Chrome AI API)
+    const inputLanguages: string[] = ['en']; // System prompt is always in English
+    if (options?.contractLanguage && options.contractLanguage !== 'en') {
+      inputLanguages.push(options.contractLanguage); // Add contract language for user prompts
+    }
+
+    const outputLanguages: string[] = [options?.outputLanguage || options?.contractLanguage || 'en'];
+
     // Prepare options with system prompt and monitor for download progress
     const createOptions: AILanguageModelCreateOptions = {
       ...options,
+      // Official Chrome AI API language specification
+      expectedInputs: [
+        {
+          type: 'text',
+          languages: inputLanguages
+        }
+      ],
+      expectedOutputs: [
+        {
+          type: 'text',
+          languages: outputLanguages
+        }
+      ],
       initialPrompts: options?.initialPrompts || [
         {
           role: 'system',
@@ -78,116 +102,13 @@ export class PromptService {
 
 ${perspectivePrompt}
 
-**CRITICAL INSTRUCTIONS:**
-1. You must respond ONLY with valid JSON
-2. NO markdown code blocks (no \`\`\`json)
-3. NO extra text or explanations
-4. Use null for missing values (not "null" or "or null")
-5. Use actual boolean values: true or false (not "true or false")
-6. Just raw, parseable JSON
-
-Analyze contracts and respond with this EXACT JSON structure:
-
-{
-  "metadata": {
-    "contractType": "Employment Agreement",
-    "effectiveDate": "October 1, 2025",
-    "endDate": "September 30, 2026",
-    "duration": "12 months",
-    "autoRenew": true,
-    "jurisdiction": "California, USA",
-    "parties": {
-      "party1": { 
-        "name": "Acme Corporation", 
-        "location": "San Francisco, CA",
-        "role": "Employer"
-      },
-      "party2": { 
-        "name": "John Smith", 
-        "location": "San Francisco, CA",
-        "role": "Employee",
-        "position": "Senior Software Engineer"
-      }
-    },
-    "detectedLanguage": "en",
-    "analyzedForRole": "${options?.userRole || 'employee'}",
-    "analyzedInLanguage": "en"
-  },
-  "summary": {
-    "parties": "Acme Corporation (employer) and John Smith (employee)",
-    "role": "Full-time employment",
-    "responsibilities": ["Develop software", "Code reviews", "Team collaboration"],
-    "compensation": {
-      "baseSalary": 150000,
-      "bonus": "Annual performance bonus up to 20%",
-      "equity": "100,000 stock options vesting over 4 years",
-      "other": null
-    },
-    "benefits": ["Health insurance", "401k matching", "Unlimited PTO"],
-    "termination": {
-      "atWill": "Either party may terminate with 2 weeks notice",
-      "forCause": "Immediate termination for material breach or misconduct",
-      "severance": "4 weeks base salary"
-    },
-    "restrictions": {
-      "confidentiality": "Must protect company confidential information indefinitely",
-      "nonCompete": "12 months within 50-mile radius",
-      "nonSolicitation": "Cannot solicit employees or clients for 18 months",
-      "other": "All work product belongs to company"
-    }
-  },
-  "risks": [
-    {
-      "title": "At-Will Employment",
-      "severity": "Medium",
-      "emoji": "⚠️",
-      "description": "Company can terminate employment at any time for any reason",
-      "impact": "No job security, could lose income suddenly"
-    }
-  ],
-  "obligations": {
-    "employer": [
-      {
-        "duty": "Pay Salary",
-        "amount": 150000,
-        "frequency": "bi-weekly",
-        "startDate": "October 1, 2025",
-        "duration": "duration or null",
-        "scope": "additional details or null"
-      }
-    ],
-    "employee": [
-      {
-        "duty": "Short description",
-        "scope": "Full-time | Part-time | etc or null"
-      }
-    ]
-  },
-  "omissions": [
-    {
-      "item": "What is missing",
-      "impact": "Why this absence could be a problem",
-      "priority": "High | Medium | Low"
-    }
-  ],
-  "questions": [
-    "Question 1 the user should ask?",
-    "Question 2 the user should ask?",
-    "Question 3 the user should ask?"
-  ],
-  "disclaimer": "I am an AI assistant, not a lawyer. This information is for educational purposes only. Consult a qualified attorney for legal advice."
-}
-
-Rules:
-1. Use plain English, no legalese
-2. Be specific with numbers, dates, amounts
-3. If something isn't in the contract, use null or empty array
-4. For risk severity: "High" = 🚨, "Medium" = ⚠️, "Low" = ℹ️
-5. Prioritize risks: High risks FIRST (could significantly harm), then Medium, then Low
-6. Structure obligations as objects with duty, amount, frequency, scope, etc.
-7. Structure omissions as objects with item, impact, and priority
-8. Focus on protecting the person signing
-9. Output ONLY valid JSON, nothing else`,
+Guidelines:
+- Use plain language, avoid legal jargon
+- Be specific with numbers, dates, and amounts
+- Focus on practical, real-world implications
+- Prioritize protecting the signing party's interests
+- Identify risks from highest to lowest severity
+- Use null for missing or non-applicable values`,
         },
       ],
       monitor: (m) => {
@@ -202,7 +123,8 @@ Rules:
       },
     };
 
-    console.log(`\n🤖 [AI] Creating session${options?.userRole ? ` for ${options.userRole} perspective` : ''}...`);
+    const langInfo = outputLanguages[0] !== 'en' ? ` (input: [${inputLanguages.join(', ')}], output: [${outputLanguages.join(', ')}])` : '';
+    console.log(`\n🤖 [AI] Creating session${options?.userRole ? ` for ${options.userRole} perspective` : ''}${langInfo}...`);
     this.session = await window.LanguageModel.create(createOptions);
     console.log('✅ [AI] Session ready\n');
     
@@ -317,7 +239,8 @@ ${contractText}`;
    */
   async extractMetadata(
     contractText: string,
-    userRole?: string
+    userRole?: string,
+    outputLanguage?: string
   ): Promise<Schemas.ContractMetadata> {
     const roleContext = userRole ? `\n\nAnalyze this contract from the perspective of: ${userRole}` : '';
     
@@ -348,7 +271,8 @@ Return the metadata in the exact JSON structure specified in the schema.`;
    * 2. Extract risks with schema
    */
   async extractRisks(
-    contractText: string
+    contractText: string,
+    outputLanguage?: string
   ): Promise<Schemas.RisksAnalysis> {
     const prompt = `Analyze all potential risks in this contract.
 
@@ -375,7 +299,8 @@ Return the risks in the exact JSON structure specified in the schema.`;
    * 3. Extract obligations with schema
    */
   async extractObligations(
-    contractText: string
+    contractText: string,
+    outputLanguage?: string
   ): Promise<Schemas.ObligationsAnalysis> {
     const prompt = `Extract all obligations from this contract and structure them by party.
 
@@ -403,7 +328,8 @@ Return the obligations in the exact JSON structure specified in the schema.`;
    * 4. Extract omissions and questions with schema
    */
   async extractOmissionsAndQuestions(
-    contractText: string
+    contractText: string,
+    outputLanguage?: string
   ): Promise<Schemas.OmissionsAndQuestions> {
     const prompt = `Analyze this contract for missing clauses and generate clarifying questions.
 
@@ -430,7 +356,8 @@ Return the omissions and questions in the exact JSON structure specified in the 
    * 5. Extract summary with schema
    */
   async extractSummary(
-    contractText: string
+    contractText: string,
+    outputLanguage?: string
   ): Promise<Schemas.ContractSummary> {
     const prompt = `Generate a comprehensive, easy-to-understand summary of this contract.
 
@@ -464,36 +391,52 @@ Return the summary in the exact JSON structure specified in the schema.`;
   /**
    * Extract metadata as Observable
    */
-  extractMetadata$(contractText: string, userRole?: string): Observable<Schemas.ContractMetadata> {
-    return defer(() => from(this.extractMetadata(contractText, userRole)));
+  extractMetadata$(
+    contractText: string, 
+    userRole?: string, 
+    outputLanguage?: string
+  ): Observable<Schemas.ContractMetadata> {
+    return defer(() => from(this.extractMetadata(contractText, userRole, outputLanguage)));
   }
 
   /**
    * Extract risks as Observable
    */
-  extractRisks$(contractText: string): Observable<Schemas.RisksAnalysis> {
-    return defer(() => from(this.extractRisks(contractText)));
+  extractRisks$(
+    contractText: string, 
+    outputLanguage?: string
+  ): Observable<Schemas.RisksAnalysis> {
+    return defer(() => from(this.extractRisks(contractText, outputLanguage)));
   }
 
   /**
    * Extract obligations as Observable
    */
-  extractObligations$(contractText: string): Observable<Schemas.ObligationsAnalysis> {
-    return defer(() => from(this.extractObligations(contractText)));
+  extractObligations$(
+    contractText: string, 
+    outputLanguage?: string
+  ): Observable<Schemas.ObligationsAnalysis> {
+    return defer(() => from(this.extractObligations(contractText, outputLanguage)));
   }
 
   /**
    * Extract omissions and questions as Observable
    */
-  extractOmissionsAndQuestions$(contractText: string): Observable<Schemas.OmissionsAndQuestions> {
-    return defer(() => from(this.extractOmissionsAndQuestions(contractText)));
+  extractOmissionsAndQuestions$(
+    contractText: string, 
+    outputLanguage?: string
+  ): Observable<Schemas.OmissionsAndQuestions> {
+    return defer(() => from(this.extractOmissionsAndQuestions(contractText, outputLanguage)));
   }
 
   /**
    * Extract summary as Observable
    */
-  extractSummary$(contractText: string): Observable<Schemas.ContractSummary> {
-    return defer(() => from(this.extractSummary(contractText)));
+  extractSummary$(
+    contractText: string, 
+    outputLanguage?: string
+  ): Observable<Schemas.ContractSummary> {
+    return defer(() => from(this.extractSummary(contractText, outputLanguage)));
   }
 
   /**
@@ -603,4 +546,5 @@ Provide balanced analysis showing:
 
     return basePerspectives[userRole || 'employee'];
   }
+
 }

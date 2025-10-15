@@ -34,6 +34,18 @@ export interface AILanguageModelCreateOptions {
   topK?: number;
   signal?: AbortSignal;
   monitor?: (monitor: AICreateMonitor) => void;
+  expectedInputs?: AIExpectedInput[];
+  expectedOutputs?: AIExpectedOutput[];
+}
+
+export interface AIExpectedInput {
+  type: 'text';
+  languages: string[]; // BCP 47 language codes (e.g., ['en', 'ja'])
+}
+
+export interface AIExpectedOutput {
+  type: 'text';
+  languages: string[]; // BCP 47 language codes (e.g., ['ja'])
 }
 
 export interface AIPrompt {
