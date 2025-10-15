@@ -32,7 +32,6 @@ type UploadMode = 'file' | 'text';
   selector: 'app-contract-upload',
   imports: [CommonModule, FormsModule, TranslatePipe, LucideAngularModule],
   templateUrl: './contract-upload.html',
-  styleUrl: './contract-upload.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ContractUpload {

@@ -6,7 +6,6 @@ export type SpinnerSize = 'sm' | 'md' | 'lg' | 'xl';
   selector: 'app-loading-spinner',
   imports: [],
   templateUrl: './loading-spinner.html',
-  styleUrl: './loading-spinner.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoadingSpinner {

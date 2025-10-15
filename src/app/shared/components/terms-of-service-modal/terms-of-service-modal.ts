@@ -10,7 +10,6 @@ import { FileText, Shield, CheckCircle, User, AlertTriangle, Edit, Mail } from '
   selector: 'app-terms-of-service-modal',
   imports: [CommonModule, LucideAngularModule, TranslatePipe, BaseModal],
   templateUrl: './terms-of-service-modal.html',
-  styleUrl: './terms-of-service-modal.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TermsOfServiceModal {

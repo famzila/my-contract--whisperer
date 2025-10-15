@@ -8,7 +8,6 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
   selector: 'app-button',
   imports: [CommonModule],
   templateUrl: './button.html',
-  styleUrl: './button.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': 'hostClasses()',

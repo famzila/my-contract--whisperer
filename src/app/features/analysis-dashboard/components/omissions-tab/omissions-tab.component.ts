@@ -34,3 +34,4 @@ export class OmissionsTabComponent {
   AlertTriangleIcon = AlertTriangle;
   InfoIcon = Info;
 }
+

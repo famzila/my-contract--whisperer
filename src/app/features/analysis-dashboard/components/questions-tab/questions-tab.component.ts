@@ -37,3 +37,4 @@ export class QuestionsTabComponent {
   CheckIcon = Check;
   MailIcon = Mail;
 }
+

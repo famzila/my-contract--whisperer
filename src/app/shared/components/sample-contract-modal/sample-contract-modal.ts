@@ -10,7 +10,6 @@ import { FileText, Lightbulb, Download } from '../../icons/lucide-icons';
   selector: 'app-sample-contract-modal',
   imports: [CommonModule, LucideAngularModule, TranslatePipe, BaseModal],
   templateUrl: './sample-contract-modal.html',
-  styleUrl: './sample-contract-modal.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SampleContractModal {

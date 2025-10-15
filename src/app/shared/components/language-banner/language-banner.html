@@ -1,34 +1,34 @@
 @if (showBanner() && detectedLanguage()) {
-  <div class="language-banner">
-    <div class="banner-content">
+  <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-300 rounded-xl p-4 md:p-6 mb-6 animate-in slide-in-from-top-4 duration-300">
+    <div class="flex items-center gap-4 flex-wrap relative">
       <!-- Icon -->
-      <div class="banner-icon">
+      <div class="flex-shrink-0">
         <lucide-icon [img]="GlobeIcon" class="w-6 h-6 text-blue-600"></lucide-icon>
       </div>
       
       <!-- Message -->
-      <div class="banner-message">
-        <p class="banner-title">
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-blue-900 mb-1">
           <lucide-icon [img]="FileTextIcon" class="w-4 h-4 mr-1 inline"></lucide-icon>
           {{ 'language.detected' | translate }} 
-          <strong>{{ detectedLanguage()!.flag }} {{ detectedLanguage()!.name }}</strong>
+          <strong class="font-semibold">{{ detectedLanguage()!.flag }} {{ detectedLanguage()!.name }}</strong>
         </p>
-        <p class="banner-subtitle">
+        <p class="text-xs text-blue-700 m-0">
           {{ 'language.wantAnalysis' | translate }}
         </p>
       </div>
       
       <!-- Actions -->
-      <div class="banner-actions">
+      <div class="flex gap-2 flex-wrap md:flex-nowrap">
         @for (lang of availableLanguages().slice(0, 4); track lang.code) {
           <button
             type="button"
             (click)="selectLanguage(lang.code)"
-            class="lang-quick-btn"
+            class="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-blue-200 rounded-lg text-xs font-medium text-blue-900 cursor-pointer transition-all duration-150 shadow-sm hover:bg-blue-600 hover:border-blue-600 hover:text-white hover:-translate-y-0.5 hover:shadow-md"
             [title]="('language.analyzeIn' | translate) + ' ' + lang.name"
           >
-            <span class="lang-flag-lg">{{ lang.flag }}</span>
-            <span class="lang-label">{{ lang.nativeName }}</span>
+            <span class="text-lg leading-none">{{ lang.flag }}</span>
+            <span class="font-medium">{{ lang.nativeName }}</span>
           </button>
         }
       </div>
@@ -37,7 +37,7 @@
       <button
         type="button"
         (click)="dismiss()"
-        class="banner-close"
+        class="flex-shrink-0 flex items-center justify-center w-8 h-8 bg-transparent border-0 rounded-md text-slate-500 cursor-pointer transition-all duration-150 hover:bg-slate-200 hover:text-blue-900"
         aria-label="Dismiss"
       >
         <lucide-icon [img]="XIcon" class="w-5 h-5"></lucide-icon>

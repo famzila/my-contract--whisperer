@@ -10,7 +10,6 @@ import { CircleQuestionMark, Upload, FileText, Bot, Shield, CircleCheckBig } fro
   selector: 'app-how-it-works-modal',
   imports: [CommonModule, LucideAngularModule, TranslatePipe, BaseModal],
   templateUrl: './how-it-works-modal.html',
-  styleUrl: './how-it-works-modal.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HowItWorksModal {

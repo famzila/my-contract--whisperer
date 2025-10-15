@@ -354,6 +354,7 @@ export class AnalysisDashboard implements OnInit {
       return null;
     }
 
+    // todo translate
     const contextMap: Record<string, { icon: any; title: string; message: string }> = {
       employer: {
         icon: this.ClipboardIcon,

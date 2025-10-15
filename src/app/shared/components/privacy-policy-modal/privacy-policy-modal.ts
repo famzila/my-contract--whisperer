@@ -10,7 +10,6 @@ import { Shield, Lock, Eye, EyeOff } from '../../icons/lucide-icons';
   selector: 'app-privacy-policy-modal',
   imports: [CommonModule, LucideAngularModule, TranslatePipe, BaseModal],
   templateUrl: './privacy-policy-modal.html',
-  styleUrl: './privacy-policy-modal.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PrivacyPolicyModal {

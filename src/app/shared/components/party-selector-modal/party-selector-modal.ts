@@ -41,7 +41,6 @@ interface PartySelectorData {
   selector: 'app-party-selector-modal',
   imports: [CommonModule, TranslatePipe, LucideAngularModule, BaseModal],
   templateUrl: './party-selector-modal.html',
-  styleUrl: './party-selector-modal.css',
 })
 export class PartySelectorModal {
   private dialogRef = inject(DialogRef);

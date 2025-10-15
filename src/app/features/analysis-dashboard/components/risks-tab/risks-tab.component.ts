@@ -43,3 +43,4 @@ export class RisksTabComponent {
     return AlertTriangle;
   }
 }
+

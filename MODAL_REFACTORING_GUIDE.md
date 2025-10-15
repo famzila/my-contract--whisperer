@@ -233,3 +233,4 @@ Each modal can specify its own `maxWidth` and `maxHeight` in the config.
 
 **Note**: This refactoring maintains 100% backward compatibility while significantly improving code maintainability and consistency.
 
+

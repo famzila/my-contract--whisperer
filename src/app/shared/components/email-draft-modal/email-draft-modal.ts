@@ -25,7 +25,6 @@ export interface EmailDraftData {
   standalone: true,
   imports: [CommonModule, LucideAngularModule, TranslatePipe, BaseModal, Button, LoadingSpinner],
   templateUrl: './email-draft-modal.html',
-  styleUrl: './email-draft-modal.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmailDraftModal {

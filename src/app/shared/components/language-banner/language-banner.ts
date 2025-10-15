@@ -12,7 +12,6 @@ import { LanguageStore } from '../../../core/stores/language.store';
   selector: 'app-language-banner',
   imports: [TranslatePipe, LucideAngularModule],
   templateUrl: './language-banner.html',
-  styleUrl: './language-banner.css',
 })
 export class LanguageBanner {
   languageStore = inject(LanguageStore);
