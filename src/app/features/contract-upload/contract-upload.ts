@@ -24,7 +24,8 @@ import { UiStore } from '../../core/stores/ui.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { LanguageStore } from '../../core/stores/language.store';
 import { ContractParserService } from '../../core/services/contract-parser.service';
-import { isAppLanguageSupported, isGeminiNanoSupported, getLanguageTranslationKey } from '../../core/constants/languages';
+import { TranslatorService } from '../../core/services/ai/translator.service';
+import { isAppLanguageSupported, isGeminiNanoSupported, getLanguageTranslationKey, LANGUAGES } from '../../core/constants/languages';
 
 type UploadMode = 'file' | 'text';
 
@@ -57,6 +58,7 @@ export class ContractUpload {
   readonly LightbulbIcon = Lightbulb;
   readonly SearchIcon = Search;
   private parserService = inject(ContractParserService);
+  private translatorService = inject(TranslatorService);
   private router = inject(Router);
 
   // Local UI state
@@ -294,12 +296,34 @@ export class ContractUpload {
   /**
    * Handle language selection - use contract language (no translation)
    */
-  selectContractLanguage(): void {
+  async selectContractLanguage(): Promise<void> {
     const detectedLang = this.onboardingStore.detectedLanguage();
 
     console.log(`🌍 User chose contract language: ${detectedLang}`);
 
     if (!detectedLang) return;
+
+    // Pre-initialize translator if needed (requires user gesture!)
+    if (!isGeminiNanoSupported(detectedLang)) {
+      console.log(`🌍 Pre-initializing translator for ${detectedLang} → en (user gesture available)`);
+      try {
+        await this.translatorService.createTranslator({
+          sourceLanguage: detectedLang,
+          targetLanguage: LANGUAGES.ENGLISH
+        });
+        
+        // Also pre-initialize reverse translator for post-translation
+        await this.translatorService.createTranslator({
+          sourceLanguage: LANGUAGES.ENGLISH,
+          targetLanguage: detectedLang
+        });
+        
+        console.log(`✅ Translators pre-initialized successfully`);
+      } catch (error) {
+        console.error(`❌ Failed to pre-initialize translators:`, error);
+        // Continue anyway - we'll try again during analysis
+      }
+    }
 
     // Set selected output language in onboarding store
     this.onboardingStore.setSelectedLanguage(detectedLang);

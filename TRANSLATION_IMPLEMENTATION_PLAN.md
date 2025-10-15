@@ -98,15 +98,26 @@ expectedOutputs: [
 
 ---
 
-### ⏳ Phase 3: Update Translation Orchestrator
-**Status**: ⏳ Pending  
+### ✅ Phase 3: Post-Translation (Integrated into Phase 2)
+**Status**: ✅ Complete  
 **Files**:
-- `src/app/core/services/translation-orchestrator.service.ts`
+- `src/app/core/services/contract-analysis.service.ts`
 
 **Tasks**:
-- [ ] Add `canTranslate()` method
-- [ ] Enhance error handling
-- [ ] Add translation status tracking
+- [x] Add post-translation logic for all sections
+- [x] Create `postTranslateMetadata()` method
+- [x] Create `postTranslateSummary()` method
+- [x] Create `postTranslateRisks()` method
+- [x] Create `postTranslateObligations()` method
+- [x] Create `postTranslateOmissionsAndQuestions()` method
+- [x] Integrate post-translation into RxJS streaming flow
+
+**Implementation Details**:
+- Post-translation happens after each section is extracted in English
+- Uses Chrome Translator API (`translateFromEnglish`)
+- Translates all text fields while preserving structure
+- Maintains RxJS streaming architecture
+- Only translates when `targetLanguage !== 'en'`
 
 ---
 

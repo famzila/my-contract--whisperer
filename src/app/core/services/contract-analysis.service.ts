@@ -238,7 +238,7 @@ export class ContractAnalysisService {
       shareReplay(1)
     );
 
-    // Step 3: Extract all sections in English (we'll translate results later if needed)
+    // Step 3: Extract all sections in English, then post-translate if needed
     const metadata$ = translatedContract$.pipe(
       switchMap(translatedText => session$.pipe(
         switchMap(() => this.promptService.extractMetadata$(
@@ -247,6 +247,11 @@ export class ContractAnalysisService {
           LANGUAGES.ENGLISH  // Get results in English
         ))
       )),
+      // Step 4: Post-translate metadata if target language is not English
+      switchMap(metadata => needsPostTranslation
+        ? defer(() => from(this.postTranslateMetadata(metadata, finalTargetLanguage)))
+        : of(metadata)
+      ),
       map(metadata => ({
         section: 'metadata' as const,
         data: metadata,
@@ -263,12 +268,16 @@ export class ContractAnalysisService {
       switchMap(translatedText => session$.pipe(
         switchMap(() => this.promptService.extractSummary$(translatedText, LANGUAGES.ENGLISH))
       )),
+      switchMap(summary => needsPostTranslation
+        ? defer(() => from(this.postTranslateSummary(summary, finalTargetLanguage)))
+        : of(summary)
+      ),
       map(summary => ({
         section: 'summary' as const,
         data: summary,
         progress: 40
       })),
-      tap(result => console.log('✅ Summary complete (pre-translated)', result)),
+      tap(result => console.log('✅ Summary complete (pre-translated + post-translated)', result)),
       catchError(error => {
         console.error('❌ Summary extraction failed:', error);
         return of({ section: 'summary' as const, data: null, progress: 40 });
@@ -279,12 +288,16 @@ export class ContractAnalysisService {
       switchMap(translatedText => session$.pipe(
         switchMap(() => this.promptService.extractRisks$(translatedText, LANGUAGES.ENGLISH))
       )),
+      switchMap(risks => needsPostTranslation
+        ? defer(() => from(this.postTranslateRisks(risks, finalTargetLanguage)))
+        : of(risks)
+      ),
       map(risks => ({
         section: 'risks' as const,
         data: risks,
         progress: 60
       })),
-      tap(result => console.log('✅ Risks complete (pre-translated)', result)),
+      tap(result => console.log('✅ Risks complete (pre-translated + post-translated)', result)),
       catchError(error => {
         console.error('❌ Risks extraction failed:', error);
         return of({ section: 'risks' as const, data: null, progress: 60 });
@@ -295,12 +308,16 @@ export class ContractAnalysisService {
       switchMap(translatedText => session$.pipe(
         switchMap(() => this.promptService.extractObligations$(translatedText, LANGUAGES.ENGLISH))
       )),
+      switchMap(obligations => needsPostTranslation
+        ? defer(() => from(this.postTranslateObligations(obligations, finalTargetLanguage)))
+        : of(obligations)
+      ),
       map(obligations => ({
         section: 'obligations' as const,
         data: obligations,
         progress: 80
       })),
-      tap(result => console.log('✅ Obligations complete (pre-translated)', result)),
+      tap(result => console.log('✅ Obligations complete (pre-translated + post-translated)', result)),
       catchError(error => {
         console.error('❌ Obligations extraction failed:', error);
         return of({ section: 'obligations' as const, data: null, progress: 80 });
@@ -311,12 +328,16 @@ export class ContractAnalysisService {
       switchMap(translatedText => session$.pipe(
         switchMap(() => this.promptService.extractOmissionsAndQuestions$(translatedText, LANGUAGES.ENGLISH))
       )),
+      switchMap(omissionsAndQuestions => needsPostTranslation
+        ? defer(() => from(this.postTranslateOmissionsAndQuestions(omissionsAndQuestions, finalTargetLanguage)))
+        : of(omissionsAndQuestions)
+      ),
       map(omissionsAndQuestions => ({
         section: 'omissionsAndQuestions' as const,
         data: omissionsAndQuestions,
         progress: 90
       })),
-      tap(result => console.log('✅ Omissions/Questions complete (pre-translated)', result)),
+      tap(result => console.log('✅ Omissions/Questions complete (pre-translated + post-translated)', result)),
       catchError(error => {
         console.error('❌ Omissions/Questions extraction failed:', error);
         return of({ section: 'omissionsAndQuestions' as const, data: null, progress: 90 });
@@ -340,6 +361,139 @@ export class ContractAnalysisService {
    */
   private canAnalyzeLanguage(languageCode: string): boolean {
     return isGeminiNanoSupported(languageCode);
+  }
+
+  /**
+   * ========================================
+   * Post-Translation Helper Methods
+   * ========================================
+   * Translate English analysis results to target language
+   */
+
+  private async postTranslateMetadata(
+    metadata: Schemas.ContractMetadata,
+    targetLanguage: string
+  ): Promise<Schemas.ContractMetadata> {
+    console.log(`🌍 [Post-translation] Translating metadata to ${targetLanguage}...`);
+    
+    return {
+      ...metadata,
+      contractType: await this.translator.translateFromEnglish(metadata.contractType, targetLanguage),
+      jurisdiction: metadata.jurisdiction ? await this.translator.translateFromEnglish(metadata.jurisdiction, targetLanguage) : null,
+      parties: {
+        party1: {
+          ...metadata.parties.party1,
+          role: await this.translator.translateFromEnglish(metadata.parties.party1.role, targetLanguage),
+        },
+        party2: {
+          ...metadata.parties.party2,
+          role: await this.translator.translateFromEnglish(metadata.parties.party2.role, targetLanguage),
+        },
+      },
+    };
+  }
+
+  private async postTranslateSummary(
+    summary: Schemas.ContractSummary,
+    targetLanguage: string
+  ): Promise<Schemas.ContractSummary> {
+    console.log(`🌍 [Post-translation] Translating summary to ${targetLanguage}...`);
+    
+    return {
+      summary: {
+        parties: await this.translator.translateFromEnglish(summary.summary.parties, targetLanguage),
+        role: await this.translator.translateFromEnglish(summary.summary.role, targetLanguage),
+        responsibilities: await Promise.all(
+          summary.summary.responsibilities.map((r: string) => this.translator.translateFromEnglish(r, targetLanguage))
+        ),
+        compensation: {
+          baseSalary: summary.summary.compensation.baseSalary,
+          bonus: summary.summary.compensation.bonus ? await this.translator.translateFromEnglish(summary.summary.compensation.bonus, targetLanguage) : null,
+          equity: summary.summary.compensation.equity ? await this.translator.translateFromEnglish(summary.summary.compensation.equity, targetLanguage) : null,
+          other: summary.summary.compensation.other ? await this.translator.translateFromEnglish(summary.summary.compensation.other, targetLanguage) : null,
+        },
+        benefits: await Promise.all(
+          summary.summary.benefits.map((b: string) => this.translator.translateFromEnglish(b, targetLanguage))
+        ),
+        termination: {
+          atWill: summary.summary.termination.atWill ? await this.translator.translateFromEnglish(summary.summary.termination.atWill, targetLanguage) : null,
+          forCause: summary.summary.termination.forCause ? await this.translator.translateFromEnglish(summary.summary.termination.forCause, targetLanguage) : null,
+          severance: summary.summary.termination.severance ? await this.translator.translateFromEnglish(summary.summary.termination.severance, targetLanguage) : null,
+        },
+        restrictions: {
+          confidentiality: summary.summary.restrictions.confidentiality ? await this.translator.translateFromEnglish(summary.summary.restrictions.confidentiality, targetLanguage) : null,
+          nonCompete: summary.summary.restrictions.nonCompete ? await this.translator.translateFromEnglish(summary.summary.restrictions.nonCompete, targetLanguage) : null,
+          nonSolicitation: summary.summary.restrictions.nonSolicitation ? await this.translator.translateFromEnglish(summary.summary.restrictions.nonSolicitation, targetLanguage) : null,
+          other: summary.summary.restrictions.other ? await this.translator.translateFromEnglish(summary.summary.restrictions.other, targetLanguage) : null,
+        },
+      },
+    };
+  }
+
+  private async postTranslateRisks(
+    risks: Schemas.RisksAnalysis,
+    targetLanguage: string
+  ): Promise<Schemas.RisksAnalysis> {
+    console.log(`🌍 [Post-translation] Translating risks to ${targetLanguage}...`);
+    
+    return {
+      risks: await Promise.all(
+        risks.risks.map(async risk => ({
+          ...risk,
+          title: await this.translator.translateFromEnglish(risk.title, targetLanguage),
+          description: await this.translator.translateFromEnglish(risk.description, targetLanguage),
+          impact: await this.translator.translateFromEnglish(risk.impact, targetLanguage),
+        }))
+      ),
+    };
+  }
+
+  private async postTranslateObligations(
+    obligations: Schemas.ObligationsAnalysis,
+    targetLanguage: string
+  ): Promise<Schemas.ObligationsAnalysis> {
+    console.log(`🌍 [Post-translation] Translating obligations to ${targetLanguage}...`);
+    
+    return {
+      obligations: {
+        employer: await Promise.all(
+          obligations.obligations.employer.map(async (obl: any) => ({
+            ...obl,
+            duty: await this.translator.translateFromEnglish(obl.duty, targetLanguage),
+            frequency: obl.frequency ? await this.translator.translateFromEnglish(obl.frequency, targetLanguage) : null,
+            scope: obl.scope ? await this.translator.translateFromEnglish(obl.scope, targetLanguage) : null,
+          }))
+        ),
+        employee: await Promise.all(
+          obligations.obligations.employee.map(async (obl: any) => ({
+            ...obl,
+            duty: await this.translator.translateFromEnglish(obl.duty, targetLanguage),
+            frequency: obl.frequency ? await this.translator.translateFromEnglish(obl.frequency, targetLanguage) : null,
+            scope: obl.scope ? await this.translator.translateFromEnglish(obl.scope, targetLanguage) : null,
+          }))
+        ),
+      },
+    };
+  }
+
+  private async postTranslateOmissionsAndQuestions(
+    omissionsAndQuestions: Schemas.OmissionsAndQuestions,
+    targetLanguage: string
+  ): Promise<Schemas.OmissionsAndQuestions> {
+    console.log(`🌍 [Post-translation] Translating omissions/questions to ${targetLanguage}...`);
+    
+    return {
+      omissions: await Promise.all(
+        omissionsAndQuestions.omissions.map(async omission => ({
+          ...omission,
+          item: await this.translator.translateFromEnglish(omission.item, targetLanguage),
+          impact: await this.translator.translateFromEnglish(omission.impact, targetLanguage),
+        }))
+      ),
+      questions: await Promise.all(
+        omissionsAndQuestions.questions.map(q => this.translator.translateFromEnglish(q, targetLanguage))
+      ),
+    };
   }
 
   /**

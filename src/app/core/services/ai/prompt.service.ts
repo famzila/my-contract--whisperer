@@ -302,21 +302,21 @@ Return the risks in the exact JSON structure specified in the schema.`;
     contractText: string,
     outputLanguage?: string
   ): Promise<Schemas.ObligationsAnalysis> {
-    const prompt = `Extract all obligations from this contract and structure them by party.
+    const prompt = `Extract all obligations from this contract for both parties.
 
 Contract:
 ${contractText}
 
 Instructions:
-- Identify ALL obligations for each party (employer/company and employee/contractor)
-- For monetary obligations, include the amount as a number
-- Include frequency (e.g., "monthly", "bi-weekly", "annually") when applicable
-- Include start dates and duration when specified
-- Use the "scope" field for additional context or conditions
-- If a field is not applicable, use null
-- Keep descriptions clear and concise
-
-Return the obligations in the exact JSON structure specified in the schema.`;
+- Group obligations into two categories: employer and employee
+- For EMPLOYER obligations: include duty (required), and optionally: amount (number), frequency (string), startDate (string), duration (string), scope (string)
+- For EMPLOYEE obligations: include duty (required), and optionally: scope (string), frequency (string)
+- For monetary amounts: use numbers only (e.g., 50000, not "$50,000" or "50000")
+- For dates: use ISO format (YYYY-MM-DD) or descriptive text
+- For frequency: use simple terms like "monthly", "bi-weekly", "annually", "one-time"
+- Use null for any optional field that doesn't apply
+- Ensure all string values are properly escaped (no unescaped quotes or newlines)
+- Keep duty descriptions clear and concise (one sentence)`;
 
     return this.promptWithSchema<Schemas.ObligationsAnalysis>(
       prompt,
