@@ -22,6 +22,8 @@ export class QuestionsTabComponent {
   // Modern input signals
   questions = input<string[]>([]);
   isLoading = input<boolean>(false);
+  retryCount = input<number>(0);
+  isRetrying = input<boolean>(false);
   isContractProvider = input<boolean>(false);
   isDrafting = input<boolean>(false);
   copyAllButtonState = input<'copy' | 'copied'>('copy');

@@ -37,6 +37,8 @@ export class ObligationsTabComponent {
   // Modern input signals
   obligations = input<ObligationsData | null>(null);
   isLoading = input<boolean>(false);
+  retryCount = input<number>(0);
+  isRetrying = input<boolean>(false);
 
   // Icons
   ClockIcon = Clock;

@@ -55,6 +55,8 @@ export class SummaryTabComponent {
   // Modern input signals
   summary = input<SummaryData | null>(null);
   isLoading = input<boolean>(false);
+  retryCount = input<number>(0);
+  isRetrying = input<boolean>(false);
   perspectiveContext = input<PerspectiveContext | null>(null);
 
   // Icons

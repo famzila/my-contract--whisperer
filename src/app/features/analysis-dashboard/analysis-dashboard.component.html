@@ -54,12 +54,16 @@
         <app-summary-tab
           [summary]="getSummary()"
           [isLoading]="isSummaryLoading()"
+          [retryCount]="summaryRetryCount()"
+          [isRetrying]="summaryIsRetrying()"
           [perspectiveContext]="getPerspectiveContext()">
         </app-summary-tab>
       } @else if (selectedTab() === 'risks') {
         <app-risks-tab
           [risks]="getRisks()"
           [isLoading]="isRisksLoading()"
+          [retryCount]="risksRetryCount()"
+          [isRetrying]="risksIsRetrying()"
           [highRisks]="getHighRisks()"
           [mediumRisks]="getMediumRisks()"
           [lowRisks]="getLowRisks()">
@@ -67,12 +71,16 @@
       } @else if (selectedTab() === 'obligations') {
         <app-obligations-tab 
           [obligations]="getObligations()" 
-          [isLoading]="isObligationsLoading()">
+          [isLoading]="isObligationsLoading()"
+          [retryCount]="obligationsRetryCount()"
+          [isRetrying]="obligationsIsRetrying()">
         </app-obligations-tab>
       } @else if (selectedTab() === 'omissions') {
         <app-omissions-tab
           [omissions]="getOmissions()"
           [isLoading]="isOmissionsLoading()"
+          [retryCount]="omissionsRetryCount()"
+          [isRetrying]="omissionsIsRetrying()"
           [highPriorityOmissions]="getHighPriorityOmissions()"
           [mediumPriorityOmissions]="getMediumPriorityOmissions()"
           [lowPriorityOmissions]="getLowPriorityOmissions()">
@@ -81,6 +89,8 @@
         <app-questions-tab
           [questions]="getQuestions()"
           [isLoading]="isOmissionsLoading()"
+          [retryCount]="omissionsRetryCount()"
+          [isRetrying]="omissionsIsRetrying()"
           [isContractProvider]="isContractProvider()"
           [isDrafting]="isDrafting()"
           [copyAllButtonState]="copyAllButtonState()"

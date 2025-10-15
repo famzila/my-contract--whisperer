@@ -31,6 +31,8 @@ interface SectionState<T> {
   data: T | null;
   loading: boolean;
   error: string | null;
+  retryCount?: number;
+  isRetrying?: boolean;
 }
 
 /**
@@ -411,9 +413,9 @@ export const ContractStore = signalStore(
           takeUntil(destroySubject)
         ).subscribe({
           next: (result) => {
-            console.log(`📦 [Stream] ${result.section} completed:`, result);
+            console.log(`📦 [Stream] ${result.section} ${result.isRetrying ? 'retrying' : 'completed'}:`, result);
             
-            // Update specific section as it completes
+            // Update specific section as it completes or retries
             switch (result.section) {
               case 'metadata':
                 patchState(store, {
@@ -439,28 +441,52 @@ export const ContractStore = signalStore(
               
               case 'summary':
                 patchState(store, {
-                  sectionsSummary: { data: result.data, loading: false, error: null },
+                  sectionsSummary: { 
+                    data: result.data, 
+                    loading: result.isRetrying || false, 
+                    error: null,
+                    retryCount: result.retryCount,
+                    isRetrying: result.isRetrying
+                  },
                   analysisProgress: result.progress,
                 });
                 break;
               
               case 'risks':
                 patchState(store, {
-                  sectionsRisks: { data: result.data, loading: false, error: null },
+                  sectionsRisks: { 
+                    data: result.data, 
+                    loading: result.isRetrying || false, 
+                    error: null,
+                    retryCount: result.retryCount,
+                    isRetrying: result.isRetrying
+                  },
                   analysisProgress: result.progress,
                 });
                 break;
               
               case 'obligations':
                 patchState(store, {
-                  sectionsObligations: { data: result.data, loading: false, error: null },
+                  sectionsObligations: { 
+                    data: result.data, 
+                    loading: result.isRetrying || false, 
+                    error: null,
+                    retryCount: result.retryCount,
+                    isRetrying: result.isRetrying
+                  },
                   analysisProgress: result.progress,
                 });
                 break;
               
               case 'omissionsAndQuestions':
                 patchState(store, {
-                  sectionsOmissionsQuestions: { data: result.data, loading: false, error: null },
+                  sectionsOmissionsQuestions: { 
+                    data: result.data, 
+                    loading: result.isRetrying || false, 
+                    error: null,
+                    retryCount: result.retryCount,
+                    isRetrying: result.isRetrying
+                  },
                   analysisProgress: result.progress,
                 });
                 break;

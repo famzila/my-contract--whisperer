@@ -95,6 +95,17 @@ export class AnalysisDashboard implements OnInit {
   isObligationsLoading = computed(() => this.contractStore.sectionsObligations()?.loading || false);
   isOmissionsLoading = computed(() => this.contractStore.sectionsOmissionsQuestions()?.loading || false);
   
+  // Retry state
+  summaryRetryCount = computed(() => this.contractStore.sectionsSummary()?.retryCount || 0);
+  risksRetryCount = computed(() => this.contractStore.sectionsRisks()?.retryCount || 0);
+  obligationsRetryCount = computed(() => this.contractStore.sectionsObligations()?.retryCount || 0);
+  omissionsRetryCount = computed(() => this.contractStore.sectionsOmissionsQuestions()?.retryCount || 0);
+  
+  summaryIsRetrying = computed(() => this.contractStore.sectionsSummary()?.isRetrying || false);
+  risksIsRetrying = computed(() => this.contractStore.sectionsRisks()?.isRetrying || false);
+  obligationsIsRetrying = computed(() => this.contractStore.sectionsObligations()?.isRetrying || false);
+  omissionsIsRetrying = computed(() => this.contractStore.sectionsOmissionsQuestions()?.isRetrying || false);
+  
   // Email drafting state
   isDrafting = computed(() => this.emailStore.isDrafting());
 

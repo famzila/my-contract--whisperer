@@ -25,6 +25,8 @@ export class OmissionsTabComponent {
   // Modern input signals
   omissions = input<Omission[]>([]);
   isLoading = input<boolean>(false);
+  retryCount = input<number>(0);
+  isRetrying = input<boolean>(false);
   highPriorityOmissions = input<Omission[]>([]);
   mediumPriorityOmissions = input<Omission[]>([]);
   lowPriorityOmissions = input<Omission[]>([]);

@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, merge, concat, defer, from, EMPTY, map, tap, catchError, switchMap, shareReplay, takeUntil, retry, timer } from 'rxjs';
+import { Observable, of, merge, concat, defer, from, EMPTY, map, tap, catchError, switchMap, shareReplay, takeUntil, retry, timer, Subject } from 'rxjs';
 import { ContractParserService, ParsedContract } from './contract-parser.service';
 import { AiOrchestratorService } from './ai/ai-orchestrator.service';
 import { PromptService } from './ai/prompt.service';
@@ -43,24 +43,61 @@ export class ContractAnalysisService {
 
   /**
    * ========================================
-   * Retry Logic with Exponential Backoff
+   * Retry Logic with Exponential Backoff + Event Emission
    * ========================================
-   * Wraps an observable with retry logic to handle intermittent failures
+   * Wraps an observable with retry logic and emits retry events
+   * Returns an observable that emits both retry notifications and final result
    */
-  private withRetry$<T>(
-    sectionName: string,
-    source$: Observable<T>
-  ): Observable<T> {
-    return source$.pipe(
+  private withRetryAndNotify$<T>(
+    sectionName: 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions',
+    source$: Observable<T>,
+    progress: number
+  ): Observable<{
+    section: typeof sectionName;
+    data: T | null;
+    progress: number;
+    retryCount?: number;
+    isRetrying?: boolean;
+  }> {
+    const retrySubject = new Subject<{
+      section: typeof sectionName;
+      data: null;
+      progress: number;
+      retryCount: number;
+      isRetrying: true;
+    }>();
+
+    const result$ = source$.pipe(
       retry({
         count: this.RETRY_CONFIG.maxAttempts,
         delay: (error, retryCount) => {
           const delay = this.RETRY_CONFIG.initialDelayMs * Math.pow(this.RETRY_CONFIG.backoffMultiplier, retryCount - 1);
           console.log(`⚠️ [Retry] ${sectionName} failed, retrying in ${delay}ms (attempt ${retryCount}/${this.RETRY_CONFIG.maxAttempts})`, error);
+          
+          // Emit retry notification
+          retrySubject.next({
+            section: sectionName,
+            data: null,
+            progress,
+            retryCount,
+            isRetrying: true,
+          });
+          
           return timer(delay);
         },
-      })
+      }),
+      map(data => ({
+        section: sectionName,
+        data,
+        progress,
+        retryCount: 0,
+        isRetrying: false,
+      })),
+      tap(() => retrySubject.complete())
     );
+
+    // Merge retry notifications with final result
+    return merge(retrySubject.asObservable(), result$);
   }
 
   /**
@@ -79,6 +116,8 @@ export class ContractAnalysisService {
     section: 'metadata' | 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions' | 'complete';
     data: any;
     progress: number;
+    retryCount?: number;
+    isRetrying?: boolean;
   }> {
     // Determine languages
     const outputLanguage = analysisContext.analyzedInLanguage || undefined;
@@ -144,16 +183,16 @@ export class ContractAnalysisService {
 
     // STREAMING: Summary, Risks, Obligations, Omissions (all independent)
     const summary$ = session$.pipe(
-      switchMap(() => this.withRetry$(
-        'Summary',
-        this.promptService.extractSummary$(parsedContract.text, outputLanguage)
+      switchMap(() => this.withRetryAndNotify$(
+        'summary',
+        this.promptService.extractSummary$(parsedContract.text, outputLanguage),
+        40
       )),
-      map(summary => ({
-        section: 'summary' as const,
-        data: summary,
-        progress: 40
-      })),
-      tap(result => console.log('✅ Summary complete', result)),
+      tap(result => {
+        if (!result.isRetrying) {
+          console.log('✅ Summary complete', result);
+        }
+      }),
       catchError(error => {
         console.error('❌ Summary extraction failed after retries:', error);
         // Return null data - UI will show error message
@@ -162,16 +201,16 @@ export class ContractAnalysisService {
     );
 
     const risks$ = session$.pipe(
-      switchMap(() => this.withRetry$(
-        'Risks',
-        this.promptService.extractRisks$(parsedContract.text, outputLanguage)
+      switchMap(() => this.withRetryAndNotify$(
+        'risks',
+        this.promptService.extractRisks$(parsedContract.text, outputLanguage),
+        60
       )),
-      map(risks => ({
-        section: 'risks' as const,
-        data: risks,
-        progress: 60
-      })),
-      tap(result => console.log('✅ Risks complete', result)),
+      tap(result => {
+        if (!result.isRetrying) {
+          console.log('✅ Risks complete', result);
+        }
+      }),
       catchError(error => {
         console.error('❌ Risks extraction failed after retries:', error);
         // Return null data - UI will show error message
@@ -180,16 +219,16 @@ export class ContractAnalysisService {
     );
 
     const obligations$ = session$.pipe(
-      switchMap(() => this.withRetry$(
-        'Obligations',
-        this.promptService.extractObligations$(parsedContract.text, outputLanguage)
+      switchMap(() => this.withRetryAndNotify$(
+        'obligations',
+        this.promptService.extractObligations$(parsedContract.text, outputLanguage),
+        80
       )),
-      map(obligations => ({
-        section: 'obligations' as const,
-        data: obligations,
-        progress: 80
-      })),
-      tap(result => console.log('✅ Obligations complete', result)),
+      tap(result => {
+        if (!result.isRetrying) {
+          console.log('✅ Obligations complete', result);
+        }
+      }),
       catchError(error => {
         console.error('❌ Obligations extraction failed after retries:', error);
         // Return null data - UI will show error message
@@ -198,16 +237,16 @@ export class ContractAnalysisService {
     );
 
     const omissionsAndQuestions$ = session$.pipe(
-      switchMap(() => this.withRetry$(
-        'Omissions/Questions',
-        this.promptService.extractOmissionsAndQuestions$(parsedContract.text, outputLanguage)
+      switchMap(() => this.withRetryAndNotify$(
+        'omissionsAndQuestions',
+        this.promptService.extractOmissionsAndQuestions$(parsedContract.text, outputLanguage),
+        90
       )),
-      map(omissionsAndQuestions => ({
-        section: 'omissionsAndQuestions' as const,
-        data: omissionsAndQuestions,
-        progress: 90
-      })),
-      tap(result => console.log('✅ Omissions/Questions complete', result)),
+      tap(result => {
+        if (!result.isRetrying) {
+          console.log('✅ Omissions/Questions complete', result);
+        }
+      }),
       catchError(error => {
         console.error('❌ Omissions/Questions extraction failed after retries:', error);
         // Return null data - UI will show error message
@@ -309,21 +348,22 @@ export class ContractAnalysisService {
 
     const summary$ = translatedContract$.pipe(
       switchMap(translatedText => session$.pipe(
-        switchMap(() => this.withRetry$(
-          'Summary',
-          this.promptService.extractSummary$(translatedText, LANGUAGES.ENGLISH)
+        switchMap(() => this.withRetryAndNotify$(
+          'summary',
+          this.promptService.extractSummary$(translatedText, LANGUAGES.ENGLISH).pipe(
+            switchMap(summary => needsPostTranslation
+              ? defer(() => from(this.postTranslateSummary(summary, finalTargetLanguage)))
+              : of(summary)
+            )
+          ),
+          40
         ))
       )),
-      switchMap(summary => needsPostTranslation
-        ? defer(() => from(this.postTranslateSummary(summary, finalTargetLanguage)))
-        : of(summary)
-      ),
-      map(summary => ({
-        section: 'summary' as const,
-        data: summary,
-        progress: 40
-      })),
-      tap(result => console.log('✅ Summary complete (pre-translated + post-translated)', result)),
+      tap(result => {
+        if (!result.isRetrying) {
+          console.log('✅ Summary complete (pre-translated + post-translated)', result);
+        }
+      }),
       catchError(error => {
         console.error('❌ Summary extraction failed after retries:', error);
         return of({ section: 'summary' as const, data: null, progress: 40 });
@@ -332,21 +372,22 @@ export class ContractAnalysisService {
 
     const risks$ = translatedContract$.pipe(
       switchMap(translatedText => session$.pipe(
-        switchMap(() => this.withRetry$(
-          'Risks',
-          this.promptService.extractRisks$(translatedText, LANGUAGES.ENGLISH)
+        switchMap(() => this.withRetryAndNotify$(
+          'risks',
+          this.promptService.extractRisks$(translatedText, LANGUAGES.ENGLISH).pipe(
+            switchMap(risks => needsPostTranslation
+              ? defer(() => from(this.postTranslateRisks(risks, finalTargetLanguage)))
+              : of(risks)
+            )
+          ),
+          60
         ))
       )),
-      switchMap(risks => needsPostTranslation
-        ? defer(() => from(this.postTranslateRisks(risks, finalTargetLanguage)))
-        : of(risks)
-      ),
-      map(risks => ({
-        section: 'risks' as const,
-        data: risks,
-        progress: 60
-      })),
-      tap(result => console.log('✅ Risks complete (pre-translated + post-translated)', result)),
+      tap(result => {
+        if (!result.isRetrying) {
+          console.log('✅ Risks complete (pre-translated + post-translated)', result);
+        }
+      }),
       catchError(error => {
         console.error('❌ Risks extraction failed after retries:', error);
         return of({ section: 'risks' as const, data: null, progress: 60 });
@@ -355,21 +396,22 @@ export class ContractAnalysisService {
 
     const obligations$ = translatedContract$.pipe(
       switchMap(translatedText => session$.pipe(
-        switchMap(() => this.withRetry$(
-          'Obligations',
-          this.promptService.extractObligations$(translatedText, LANGUAGES.ENGLISH)
+        switchMap(() => this.withRetryAndNotify$(
+          'obligations',
+          this.promptService.extractObligations$(translatedText, LANGUAGES.ENGLISH).pipe(
+            switchMap(obligations => needsPostTranslation
+              ? defer(() => from(this.postTranslateObligations(obligations, finalTargetLanguage)))
+              : of(obligations)
+            )
+          ),
+          80
         ))
       )),
-      switchMap(obligations => needsPostTranslation
-        ? defer(() => from(this.postTranslateObligations(obligations, finalTargetLanguage)))
-        : of(obligations)
-      ),
-      map(obligations => ({
-        section: 'obligations' as const,
-        data: obligations,
-        progress: 80
-      })),
-      tap(result => console.log('✅ Obligations complete (pre-translated + post-translated)', result)),
+      tap(result => {
+        if (!result.isRetrying) {
+          console.log('✅ Obligations complete (pre-translated + post-translated)', result);
+        }
+      }),
       catchError(error => {
         console.error('❌ Obligations extraction failed after retries:', error);
         return of({ section: 'obligations' as const, data: null, progress: 80 });
@@ -378,21 +420,22 @@ export class ContractAnalysisService {
 
     const omissionsAndQuestions$ = translatedContract$.pipe(
       switchMap(translatedText => session$.pipe(
-        switchMap(() => this.withRetry$(
-          'Omissions/Questions',
-          this.promptService.extractOmissionsAndQuestions$(translatedText, LANGUAGES.ENGLISH)
+        switchMap(() => this.withRetryAndNotify$(
+          'omissionsAndQuestions',
+          this.promptService.extractOmissionsAndQuestions$(translatedText, LANGUAGES.ENGLISH).pipe(
+            switchMap(omissionsAndQuestions => needsPostTranslation
+              ? defer(() => from(this.postTranslateOmissionsAndQuestions(omissionsAndQuestions, finalTargetLanguage)))
+              : of(omissionsAndQuestions)
+            )
+          ),
+          90
         ))
       )),
-      switchMap(omissionsAndQuestions => needsPostTranslation
-        ? defer(() => from(this.postTranslateOmissionsAndQuestions(omissionsAndQuestions, finalTargetLanguage)))
-        : of(omissionsAndQuestions)
-      ),
-      map(omissionsAndQuestions => ({
-        section: 'omissionsAndQuestions' as const,
-        data: omissionsAndQuestions,
-        progress: 90
-      })),
-      tap(result => console.log('✅ Omissions/Questions complete (pre-translated + post-translated)', result)),
+      tap(result => {
+        if (!result.isRetrying) {
+          console.log('✅ Omissions/Questions complete (pre-translated + post-translated)', result);
+        }
+      }),
       catchError(error => {
         console.error('❌ Omissions/Questions extraction failed after retries:', error);
         return of({ section: 'omissionsAndQuestions' as const, data: null, progress: 90 });

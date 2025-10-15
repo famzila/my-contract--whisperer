@@ -27,6 +27,8 @@ export class RisksTabComponent {
   // Modern input signals
   risks = input<RiskFlag[]>([]);
   isLoading = input<boolean>(false);
+  retryCount = input<number>(0);
+  isRetrying = input<boolean>(false);
   highRisks = input<RiskFlag[]>([]);
   mediumRisks = input<RiskFlag[]>([]);
   lowRisks = input<RiskFlag[]>([]);
