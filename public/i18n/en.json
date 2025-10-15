@@ -32,7 +32,11 @@
     "tipMessage": "The contract will be analyzed in its original language to preserve legal accuracy. We'll translate the results to your chosen language.",
     "appWillSwitch": "App will switch to this language",
     "appWillStayInCurrent": "App will stay in current language (UI not available)",
-    "noAppSwitch": "No app language switch"
+    "noAppSwitch": "No app language switch",
+    "limitedSupport": "Limited Language Support",
+    "willTranslateForAnalysis": "This contract will be translated to English for analysis, then results will be translated back",
+    "appWillSwitchWithTranslation": "App will switch to this language (with translation)",
+    "uiNotAvailable": "{{language}} interface not available, will use {{fallback}}"
   },
   "navbar": {
     "title": "Contract Whisperer",

@@ -24,7 +24,7 @@ import { UiStore } from '../../core/stores/ui.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { LanguageStore } from '../../core/stores/language.store';
 import { ContractParserService } from '../../core/services/contract-parser.service';
-import { isAppLanguageSupported, getLanguageTranslationKey } from '../../core/constants/languages';
+import { isAppLanguageSupported, isGeminiNanoSupported, getLanguageTranslationKey } from '../../core/constants/languages';
 
 type UploadMode = 'file' | 'text';
 
@@ -364,6 +364,13 @@ export class ContractUpload {
       detectedLanguage: detectedLang,
       preferredLanguage: preferredLang,
       isContractLanguageSupported: isAppLanguageSupported(detectedLang!),
+      
+      // NEW: Language support information for Phase 0
+      isContractLanguageAvailableInUI: isAppLanguageSupported(detectedLang!),
+      canAnalyzeDirectly: isGeminiNanoSupported(detectedLang!),
+      needsPreTranslation: !isGeminiNanoSupported(detectedLang!),
+      fallbackLanguage: isAppLanguageSupported(detectedLang!) ? detectedLang! : 'en',
+      
       onSelectContractLanguage: () => this.selectContractLanguage(),
       onSelectUserLanguage: () => this.selectUserLanguage(),
       getLanguageName: (code: string) => this.getLanguageName(code),

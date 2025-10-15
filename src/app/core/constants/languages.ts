@@ -38,6 +38,23 @@ export function isRTL(languageCode: string): boolean {
 export const DEFAULT_LANGUAGE = LANGUAGES.ENGLISH;
 
 /**
+ * Languages that Gemini Nano can analyze directly (official support)
+ * Other languages require pre-translation to English
+ */
+export const GEMINI_NANO_SUPPORTED_LANGUAGES = [
+  LANGUAGES.ENGLISH,
+  LANGUAGES.SPANISH,
+  LANGUAGES.JAPANESE,
+] as const;
+
+/**
+ * Check if language is supported by Gemini Nano for direct analysis
+ */
+export function isGeminiNanoSupported(langCode: string): boolean {
+  return (GEMINI_NANO_SUPPORTED_LANGUAGES as readonly string[]).includes(langCode);
+}
+
+/**
  * Languages supported for APP UI (i18n translations available)
  */
 export const SUPPORTED_APP_LANGUAGES = [

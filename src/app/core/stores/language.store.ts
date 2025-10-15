@@ -9,7 +9,7 @@ import { patchState } from '@ngrx/signals';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslatorService } from '../services/ai/translator.service';
 import { LanguageDetectorService } from '../services/ai/language-detector.service';
-import { LANGUAGES, DEFAULT_LANGUAGE, isRTL } from '../constants/languages';
+import { LANGUAGES, DEFAULT_LANGUAGE, isRTL, isAppLanguageSupported, isGeminiNanoSupported } from '../constants/languages';
 
 /**
  * Supported languages for the app
@@ -331,6 +331,60 @@ export const LanguageStore = signalStore(
       return store.availableLanguages().find(lang => lang.code === code);
     },
     
+    /**
+     * Set analysis language and synchronize app UI language
+     * CRITICAL: Ensures app UI language always matches analysis results language
+     * 
+     * @param languageCode - The language code for analysis
+     * @returns The actual language that will be used (may fallback to English)
+     */
+    setAnalysisLanguage: (languageCode: string): string => {
+      console.log(`\n🌍 [Language Sync] Setting analysis language to: ${languageCode}`);
+      
+      // Check if language is supported for app UI
+      if (isAppLanguageSupported(languageCode)) {
+        console.log(`✅ [Language Sync] ${languageCode} is supported for app UI`);
+        
+        // Switch app UI to this language
+        translateService.use(languageCode);
+        
+        // Apply RTL if needed
+        if (isRTL(languageCode)) {
+          document.documentElement.setAttribute('dir', 'rtl');
+          console.log(`↔️ [Language Sync] Applied RTL direction for ${languageCode}`);
+        } else {
+          document.documentElement.setAttribute('dir', 'ltr');
+        }
+        
+        // Update language store
+        patchState(store, { 
+          preferredLanguage: languageCode,
+          showLanguageBanner: false,
+        });
+        
+        // Save to localStorage
+        saveLanguage(languageCode);
+        
+        console.log(`✅ [Language Sync] App UI switched to ${languageCode}\n`);
+        return languageCode;
+      } else {
+        // Fallback to English
+        console.warn(`⚠️ [Language Sync] ${languageCode} not supported for app UI, falling back to English`);
+        
+        translateService.use(LANGUAGES.ENGLISH);
+        document.documentElement.setAttribute('dir', 'ltr');
+        
+        patchState(store, { 
+          preferredLanguage: LANGUAGES.ENGLISH,
+          showLanguageBanner: false,
+        });
+        
+        saveLanguage(LANGUAGES.ENGLISH);
+        
+        console.log(`✅ [Language Sync] App UI set to English (fallback)\n`);
+        return LANGUAGES.ENGLISH;
+      }
+    },
     
     /**
      * Reset store to initial state

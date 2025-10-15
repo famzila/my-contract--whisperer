@@ -8,14 +8,23 @@ import {
   Globe,
   Lightbulb,
   AlertCircle,
+  AlertTriangle,
   CircleCheckBig,
-  Info
+  Info,
+  Languages
 } from '../../icons/lucide-icons';
 
 export interface LanguageMismatchData {
   detectedLanguage: string;
   preferredLanguage: string;
   isContractLanguageSupported: boolean;
+  
+  // NEW: Language support information
+  isContractLanguageAvailableInUI: boolean;  // Is contract language available in app UI?
+  canAnalyzeDirectly: boolean;  // Can Gemini Nano analyze this language directly?
+  needsPreTranslation: boolean;  // Needs translation before analysis?
+  fallbackLanguage: string;  // Fallback language if contract language not available in UI
+  
   onSelectContractLanguage: () => void;
   onSelectUserLanguage: () => void;
   getLanguageName: (code: string) => string;
@@ -39,6 +48,23 @@ export interface LanguageMismatchData {
         </p>
       </div>
 
+      <!-- Warning for unsupported contract languages (needs pre-translation) -->
+      @if (data.needsPreTranslation) {
+        <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg mb-4">
+          <div class="flex items-start gap-3">
+            <lucide-icon [img]="AlertTriangleIcon" class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"></lucide-icon>
+            <div>
+              <p class="text-sm font-medium text-amber-900 mb-1">
+                {{ 'language.limitedSupport' | translate }}
+              </p>
+              <p class="text-xs text-amber-700">
+                {{ 'language.willTranslateForAnalysis' | translate }}
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+
       <div class="space-y-3">
         <p class="font-medium mb-3">
           {{ 'language.whichLanguage' | translate }}
@@ -61,16 +87,24 @@ export interface LanguageMismatchData {
               {{ 'language.originalLanguage' | translate }}
             </div>
 
-            <!-- Warning Badge -->
-            @if (data.isContractLanguageSupported) {
-              <div class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-lg border border-blue-200 rtl:flex-row-reverse">
-                <lucide-icon [img]="InfoIcon" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <!-- Show different badges based on language support -->
+            @if (data.isContractLanguageAvailableInUI && data.canAnalyzeDirectly) {
+              <!-- Best case: Direct analysis + UI available -->
+              <div class="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 text-sm rounded-lg border border-green-200 rtl:flex-row-reverse">
+                <lucide-icon [img]="CheckIcon" class="w-4 h-4 flex-shrink-0"></lucide-icon>
                 <span>{{ 'language.appWillSwitch' | translate }}</span>
               </div>
+            } @else if (data.isContractLanguageAvailableInUI && !data.canAnalyzeDirectly) {
+              <!-- UI available but needs pre-translation -->
+              <div class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-lg border border-blue-200 rtl:flex-row-reverse">
+                <lucide-icon [img]="LanguagesIcon" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+                <span>{{ 'language.appWillSwitchWithTranslation' | translate }}</span>
+              </div>
             } @else {
+              <!-- UI not available - fallback to English -->
               <div class="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 text-yellow-700 text-sm rounded-lg border border-yellow-200 rtl:flex-row-reverse">
                 <lucide-icon [img]="AlertCircleIcon" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-                <span>{{ 'language.appWillStayInCurrent' | translate }}</span>
+                <span>{{ 'language.uiNotAvailable' | translate: { language: getLanguageName(data.detectedLanguage), fallback: getLanguageName(data.fallbackLanguage) } }}</span>
               </div>
             }
           </div>
@@ -121,7 +155,9 @@ export class LanguageMismatchModal {
   readonly LightbulbIcon = Lightbulb;
   readonly InfoIcon = Info;
   readonly AlertCircleIcon = AlertCircle;
+  readonly AlertTriangleIcon = AlertTriangle;
   readonly CheckIcon = CircleCheckBig;
+  readonly LanguagesIcon = Languages;
 
   // Modal configuration
   modalConfig: BaseModalConfig = {

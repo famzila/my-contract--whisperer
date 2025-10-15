@@ -32,7 +32,11 @@
     "tipMessage": "سيقوم الذكاء الاصطناعي بتحليل العقد وتقديم النتائج باللغة التي تختارها. لن يتم تعديل نص العقد الأصلي.",
     "appWillSwitch": "سيتم تبديل التطبيق إلى هذه اللغة",
     "appWillStayInCurrent": "سيبقى التطبيق باللغة الحالية (الواجهة غير متوفرة)",
-    "noAppSwitch": "لا يوجد تبديل للغة التطبيق"
+    "noAppSwitch": "لا يوجد تبديل للغة التطبيق",
+    "limitedSupport": "دعم محدود للغة",
+    "willTranslateForAnalysis": "سيتم ترجمة العقد إلى الإنجليزية للتحليل، ثم ترجمة النتائج مرة أخرى",
+    "appWillSwitchWithTranslation": "سيتم تبديل التطبيق إلى هذه اللغة (مع الترجمة)",
+    "uiNotAvailable": "واجهة {{language}} غير متوفرة، سيتم استخدام {{fallback}}"
   },
   "navbar": {
     "title": "Contract Whisperer",
