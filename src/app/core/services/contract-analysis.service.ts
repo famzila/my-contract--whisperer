@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, merge, concat, defer, from, EMPTY, map, tap, catchError, switchMap, shareReplay, takeUntil } from 'rxjs';
+import { Observable, of, merge, concat, defer, from, EMPTY, map, tap, catchError, switchMap, shareReplay, takeUntil, retry, timer } from 'rxjs';
 import { ContractParserService, ParsedContract } from './contract-parser.service';
 import { AiOrchestratorService } from './ai/ai-orchestrator.service';
 import { PromptService } from './ai/prompt.service';
@@ -31,6 +31,37 @@ export class ContractAnalysisService {
   private parser = inject(ContractParserService);
   private translationOrchestrator = inject(TranslationOrchestratorService);
   private translator = inject(TranslatorService);
+
+  /**
+   * Retry configuration for section extraction
+   */
+  private readonly RETRY_CONFIG = {
+    maxAttempts: 3,
+    initialDelayMs: 1000,
+    backoffMultiplier: 2,
+  };
+
+  /**
+   * ========================================
+   * Retry Logic with Exponential Backoff
+   * ========================================
+   * Wraps an observable with retry logic to handle intermittent failures
+   */
+  private withRetry$<T>(
+    sectionName: string,
+    source$: Observable<T>
+  ): Observable<T> {
+    return source$.pipe(
+      retry({
+        count: this.RETRY_CONFIG.maxAttempts,
+        delay: (error, retryCount) => {
+          const delay = this.RETRY_CONFIG.initialDelayMs * Math.pow(this.RETRY_CONFIG.backoffMultiplier, retryCount - 1);
+          console.log(`⚠️ [Retry] ${sectionName} failed, retrying in ${delay}ms (attempt ${retryCount}/${this.RETRY_CONFIG.maxAttempts})`, error);
+          return timer(delay);
+        },
+      })
+    );
+  }
 
   /**
    * ========================================
@@ -113,7 +144,10 @@ export class ContractAnalysisService {
 
     // STREAMING: Summary, Risks, Obligations, Omissions (all independent)
     const summary$ = session$.pipe(
-      switchMap(() => this.promptService.extractSummary$(parsedContract.text, outputLanguage)),
+      switchMap(() => this.withRetry$(
+        'Summary',
+        this.promptService.extractSummary$(parsedContract.text, outputLanguage)
+      )),
       map(summary => ({
         section: 'summary' as const,
         data: summary,
@@ -121,14 +155,17 @@ export class ContractAnalysisService {
       })),
       tap(result => console.log('✅ Summary complete', result)),
       catchError(error => {
-        console.error('❌ Summary extraction failed:', error);
+        console.error('❌ Summary extraction failed after retries:', error);
         // Return null data - UI will show error message
         return of({ section: 'summary' as const, data: null, progress: 40 });
       })
     );
 
     const risks$ = session$.pipe(
-      switchMap(() => this.promptService.extractRisks$(parsedContract.text, outputLanguage)),
+      switchMap(() => this.withRetry$(
+        'Risks',
+        this.promptService.extractRisks$(parsedContract.text, outputLanguage)
+      )),
       map(risks => ({
         section: 'risks' as const,
         data: risks,
@@ -136,14 +173,17 @@ export class ContractAnalysisService {
       })),
       tap(result => console.log('✅ Risks complete', result)),
       catchError(error => {
-        console.error('❌ Risks extraction failed:', error);
+        console.error('❌ Risks extraction failed after retries:', error);
         // Return null data - UI will show error message
         return of({ section: 'risks' as const, data: null, progress: 60 });
       })
     );
 
     const obligations$ = session$.pipe(
-      switchMap(() => this.promptService.extractObligations$(parsedContract.text, outputLanguage)),
+      switchMap(() => this.withRetry$(
+        'Obligations',
+        this.promptService.extractObligations$(parsedContract.text, outputLanguage)
+      )),
       map(obligations => ({
         section: 'obligations' as const,
         data: obligations,
@@ -151,14 +191,17 @@ export class ContractAnalysisService {
       })),
       tap(result => console.log('✅ Obligations complete', result)),
       catchError(error => {
-        console.error('❌ Obligations extraction failed:', error);
+        console.error('❌ Obligations extraction failed after retries:', error);
         // Return null data - UI will show error message
         return of({ section: 'obligations' as const, data: null, progress: 80 });
       })
     );
 
     const omissionsAndQuestions$ = session$.pipe(
-      switchMap(() => this.promptService.extractOmissionsAndQuestions$(parsedContract.text, outputLanguage)),
+      switchMap(() => this.withRetry$(
+        'Omissions/Questions',
+        this.promptService.extractOmissionsAndQuestions$(parsedContract.text, outputLanguage)
+      )),
       map(omissionsAndQuestions => ({
         section: 'omissionsAndQuestions' as const,
         data: omissionsAndQuestions,
@@ -166,7 +209,7 @@ export class ContractAnalysisService {
       })),
       tap(result => console.log('✅ Omissions/Questions complete', result)),
       catchError(error => {
-        console.error('❌ Omissions/Questions extraction failed:', error);
+        console.error('❌ Omissions/Questions extraction failed after retries:', error);
         // Return null data - UI will show error message
         return of({ section: 'omissionsAndQuestions' as const, data: null, progress: 90 });
       })
@@ -266,7 +309,10 @@ export class ContractAnalysisService {
 
     const summary$ = translatedContract$.pipe(
       switchMap(translatedText => session$.pipe(
-        switchMap(() => this.promptService.extractSummary$(translatedText, LANGUAGES.ENGLISH))
+        switchMap(() => this.withRetry$(
+          'Summary',
+          this.promptService.extractSummary$(translatedText, LANGUAGES.ENGLISH)
+        ))
       )),
       switchMap(summary => needsPostTranslation
         ? defer(() => from(this.postTranslateSummary(summary, finalTargetLanguage)))
@@ -279,14 +325,17 @@ export class ContractAnalysisService {
       })),
       tap(result => console.log('✅ Summary complete (pre-translated + post-translated)', result)),
       catchError(error => {
-        console.error('❌ Summary extraction failed:', error);
+        console.error('❌ Summary extraction failed after retries:', error);
         return of({ section: 'summary' as const, data: null, progress: 40 });
       })
     );
 
     const risks$ = translatedContract$.pipe(
       switchMap(translatedText => session$.pipe(
-        switchMap(() => this.promptService.extractRisks$(translatedText, LANGUAGES.ENGLISH))
+        switchMap(() => this.withRetry$(
+          'Risks',
+          this.promptService.extractRisks$(translatedText, LANGUAGES.ENGLISH)
+        ))
       )),
       switchMap(risks => needsPostTranslation
         ? defer(() => from(this.postTranslateRisks(risks, finalTargetLanguage)))
@@ -299,14 +348,17 @@ export class ContractAnalysisService {
       })),
       tap(result => console.log('✅ Risks complete (pre-translated + post-translated)', result)),
       catchError(error => {
-        console.error('❌ Risks extraction failed:', error);
+        console.error('❌ Risks extraction failed after retries:', error);
         return of({ section: 'risks' as const, data: null, progress: 60 });
       })
     );
 
     const obligations$ = translatedContract$.pipe(
       switchMap(translatedText => session$.pipe(
-        switchMap(() => this.promptService.extractObligations$(translatedText, LANGUAGES.ENGLISH))
+        switchMap(() => this.withRetry$(
+          'Obligations',
+          this.promptService.extractObligations$(translatedText, LANGUAGES.ENGLISH)
+        ))
       )),
       switchMap(obligations => needsPostTranslation
         ? defer(() => from(this.postTranslateObligations(obligations, finalTargetLanguage)))
@@ -319,14 +371,17 @@ export class ContractAnalysisService {
       })),
       tap(result => console.log('✅ Obligations complete (pre-translated + post-translated)', result)),
       catchError(error => {
-        console.error('❌ Obligations extraction failed:', error);
+        console.error('❌ Obligations extraction failed after retries:', error);
         return of({ section: 'obligations' as const, data: null, progress: 80 });
       })
     );
 
     const omissionsAndQuestions$ = translatedContract$.pipe(
       switchMap(translatedText => session$.pipe(
-        switchMap(() => this.promptService.extractOmissionsAndQuestions$(translatedText, LANGUAGES.ENGLISH))
+        switchMap(() => this.withRetry$(
+          'Omissions/Questions',
+          this.promptService.extractOmissionsAndQuestions$(translatedText, LANGUAGES.ENGLISH)
+        ))
       )),
       switchMap(omissionsAndQuestions => needsPostTranslation
         ? defer(() => from(this.postTranslateOmissionsAndQuestions(omissionsAndQuestions, finalTargetLanguage)))
@@ -339,7 +394,7 @@ export class ContractAnalysisService {
       })),
       tap(result => console.log('✅ Omissions/Questions complete (pre-translated + post-translated)', result)),
       catchError(error => {
-        console.error('❌ Omissions/Questions extraction failed:', error);
+        console.error('❌ Omissions/Questions extraction failed after retries:', error);
         return of({ section: 'omissionsAndQuestions' as const, data: null, progress: 90 });
       })
     );
@@ -454,10 +509,13 @@ export class ContractAnalysisService {
   ): Promise<Schemas.ObligationsAnalysis> {
     console.log(`🌍 [Post-translation] Translating obligations to ${targetLanguage}...`);
     
+    type EmployerObligation = Schemas.ObligationsAnalysis['obligations']['employer'][0];
+    type EmployeeObligation = Schemas.ObligationsAnalysis['obligations']['employee'][0];
+    
     return {
       obligations: {
         employer: await Promise.all(
-          obligations.obligations.employer.map(async (obl: any) => ({
+          obligations.obligations.employer.map(async (obl: EmployerObligation) => ({
             ...obl,
             duty: await this.translator.translateFromEnglish(obl.duty, targetLanguage),
             frequency: obl.frequency ? await this.translator.translateFromEnglish(obl.frequency, targetLanguage) : null,
@@ -465,7 +523,7 @@ export class ContractAnalysisService {
           }))
         ),
         employee: await Promise.all(
-          obligations.obligations.employee.map(async (obl: any) => ({
+          obligations.obligations.employee.map(async (obl: EmployeeObligation) => ({
             ...obl,
             duty: await this.translator.translateFromEnglish(obl.duty, targetLanguage),
             frequency: obl.frequency ? await this.translator.translateFromEnglish(obl.frequency, targetLanguage) : null,
