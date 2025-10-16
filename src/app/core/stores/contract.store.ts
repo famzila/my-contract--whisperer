@@ -526,39 +526,52 @@ export const ContractStore = signalStore(
               const obligations = store.sectionsObligations()?.data;
               const omissions = store.sectionsOmissionsQuestions()?.data;
               
-              if (metadata && summary && risks && obligations && omissions) {
+              // Cache even if some sections failed (partial results are better than no cache)
+              // At minimum, we need metadata to cache anything useful
+              if (metadata) {
                 const contractLang = languageStore.detectedContractLanguage() || 'en';
                 const outputLang = onboardingStore.selectedOutputLanguage() || languageStore.preferredLanguage();
                 const isPreTranslationFlow = !isGeminiNanoSupported(contractLang);
                 
+                const successfulSections = [
+                  metadata ? 'metadata' : null,
+                  summary ? 'summary' : null,
+                  risks ? 'risks' : null,
+                  obligations ? 'obligations' : null,
+                  omissions ? 'omissions' : null
+                ].filter(Boolean);
+                
                 console.log(`💾 [Store] Caching strategy - Contract: ${contractLang}, Output: ${outputLang}, Pre-translation: ${isPreTranslationFlow}`);
+                console.log(`💾 [Store] Caching ${successfulSections.length}/5 sections: ${successfulSections.join(', ')}`);
                 
                 // Cache strategy:
-                // - For direct analysis (e.g., EN contract → EN output): Store as "original" in English
-                // - For pre-translation (e.g., AR contract → AR output): Store as "translation" in Arabic
+                // - For direct analysis (e.g., ES contract → ES output): Store as "original" in source language (es, ja, or en)
+                // - For pre-translation (e.g., AR contract → AR output): Store as "translation" in target language
                 //   (we don't have the English intermediate, so we can't store it as "original")
                 
                 if (isPreTranslationFlow) {
                   // Pre-translation flow: Store the post-translated results as a translation
-                  console.log(`💾 [Store] Pre-translation flow: Storing ${outputLang} results as translation (no English original available)`);
+                  console.log(`💾 [Store] Pre-translation flow: Storing ${outputLang} results as translation (no original available)`);
                   translationCache.storeTranslation(contract.id, outputLang, {
                     metadata,
-                    summary,
-                    risks,
-                    obligations,
-                    omissions
+                    summary: summary || null,
+                    risks: risks || null,
+                    obligations: obligations || null,
+                    omissions: omissions || null
                   });
                 } else {
-                  // Direct analysis: Store as original
+                  // Direct analysis: Store as original in SOURCE language (could be en, es, ja, etc.)
                   console.log(`💾 [Store] Direct analysis: Storing ${contractLang} results as original`);
                   translationCache.storeOriginal(contract.id, {
                     metadata,
-                    summary,
-                    risks,
-                    obligations,
-                    omissions
+                    summary: summary || null,
+                    risks: risks || null,
+                    obligations: obligations || null,
+                    omissions: omissions || null
                   }, contractLang);
                 }
+              } else {
+                console.warn('⚠️ [Store] No metadata available - skipping cache');
               }
             }
             

@@ -53,7 +53,11 @@ export class TranslationCacheService {
   }
 
   /**
-   * Store original analysis (should be English from Gemini)
+   * Store original analysis (from Gemini Nano - could be en, es, ja, etc.)
+   * This is the "source of truth" for direct analysis flows where Gemini Nano
+   * can analyze the contract directly in its native language.
+   * 
+   * @param language - The language of the analysis results (en, es, ja, etc.)
    */
   storeOriginal(contractId: string, analysis: AnalysisData, language: string = 'en'): void {
     const cache = this.getCache();
