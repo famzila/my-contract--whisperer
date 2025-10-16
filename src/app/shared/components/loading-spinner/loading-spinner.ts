@@ -4,14 +4,14 @@ export type SpinnerSize = 'sm' | 'md' | 'lg' | 'xl';
 
 @Component({
   selector: 'app-loading-spinner',
-  imports: [],
+  standalone: true,
   templateUrl: './loading-spinner.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoadingSpinner {
   size = input<SpinnerSize>('md');
   message = input<string>('');
-  color = input<string>('primary');
+  colorClass = input<string>('border-primary');
 
   /**
    * Get spinner size classes
@@ -32,18 +32,9 @@ export class LoadingSpinner {
   }
 
   /**
-   * Get color class
+   * Get spinner color class
    */
   getColorClass(): string {
-    switch (this.color()) {
-      case 'primary':
-        return 'border-primary';
-      case 'white':
-        return 'border-white';
-      case 'gray':
-        return 'border-gray-600';
-      default:
-        return 'border-primary';
-    }
+    return this.colorClass();
   }
 }

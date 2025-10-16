@@ -112,6 +112,8 @@
     "uploadNew": "Upload New Contract",
     "analyzedOn": "Analyzed on",
     "contractType": "Contract Type",
+    "contractDetails": "Contract Details",
+    "duration": "Duration",
     "effectiveDate": "Effective Date",
     "endDate": "End Date",
     "noEndDate": "No end date",
@@ -146,6 +148,7 @@
     },
     "summary": {
       "title": "Contract Summary",
+      "subtitle": "A quick overview of the contract's key terms and conditions",
       "parties": "Parties",
       "roleRelationship": "Role/Relationship",
       "keyResponsibilities": "Key Responsibilities",
@@ -218,7 +221,8 @@
     },
     "disclaimer": {
       "title": "Legal Disclaimer",
-      "text":"I am an AI assistant, not a lawyer. This information is for educational purposes only. Consult a qualified attorney for legal advice."
+      "subtitle": "Please read carefully before proceeding",
+      "text":"This AI-powered analysis is provided for informational purposes only and does not constitute legal advice. While we strive for accuracy, AI analysis may miss nuances or contain errors. Always consult with a qualified legal professional before making any decisions based on this analysis, especially for important contracts or legal matters."
     },
     "email": {
       "modalTitle": "Professional Email Draft",

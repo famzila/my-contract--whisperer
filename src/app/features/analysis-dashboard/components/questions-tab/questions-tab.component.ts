@@ -9,12 +9,16 @@ import {
   Info, 
   Copy, 
   Check, 
-  Mail 
+  Mail,
+  HelpCircle,
+  Sparkles
 } from '../../../../shared/icons/lucide-icons';
+import { Alert } from "../../../../shared/components/alert/alert";
+import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
 
 @Component({
   selector: 'app-questions-tab',
-  imports: [TranslateModule, LucideAngularModule, Card, SkeletonLoader, Button, LoadingSpinner],
+  imports: [TranslateModule, LucideAngularModule, Card, SkeletonLoader, Button, LoadingSpinner, Alert, TabHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './questions-tab.component.html'
 })
@@ -38,5 +42,7 @@ export class QuestionsTabComponent {
   CopyIcon = Copy;
   CheckIcon = Check;
   MailIcon = Mail;
+  HelpCircleIcon = HelpCircle;
+  SparklesIcon = Sparkles;
 }
 

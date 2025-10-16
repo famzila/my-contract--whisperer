@@ -40,6 +40,7 @@ import {
   Globe,
   Languages,
 } from '../../shared/icons/lucide-icons';
+import { Alert } from "../../shared/components/alert/alert";
 
 @Component({
   selector: 'app-analysis-dashboard',
@@ -56,7 +57,8 @@ import {
     OmissionsTabComponent,
     QuestionsTabComponent,
     DisclaimerTabComponent,
-  ],
+    Alert
+],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './analysis-dashboard.component.html',
 })

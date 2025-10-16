@@ -1,122 +1,113 @@
-<div class="space-y-6">
-  <!-- Header with title and action buttons -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-    <div>
-      <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ 'analysis.questions.questionsToAsk' | translate }}</h2>
-      <p class="text-gray-600">{{ 'analysis.questions.importantClarifications' | translate }}</p>
-    </div>
-    @if (questions() && questions().length > 0) {
-      <div class="flex items-center gap-3">
-        <button
-          (click)="copyAllQuestions.emit()"
-          class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
-          @if (copyAllButtonState() === 'copy') {
-            <lucide-icon [name]="CopyIcon" class="w-4 h-4"></lucide-icon>
-            {{ 'analysis.questions.copyAll' | translate }}
-          } @else {
-            <lucide-icon [name]="CheckIcon" class="w-4 h-4 text-green-600"></lucide-icon>
-            {{ 'analysis.questions.copied' | translate }}
-          }
-        </button>
-        @if (!isContractProvider()) {
-          <app-button
-            (click)="draftEmail.emit()"
-            [disabled]="isDrafting()"
-            variant="primary"
-            size="md">
-            @if (isDrafting()) {
-              <span class="flex items-center gap-2">
-                <app-loading-spinner size="sm" />
-                {{ 'analysis.questions.drafting' | translate }}
-              </span>
-            } @else {
-              <span class="flex items-center gap-2">
-                <lucide-icon [name]="MailIcon" class="w-4 h-4"></lucide-icon>
-                {{ 'analysis.questions.writeEmail' | translate }}
-              </span>
-            }
-          </app-button>
-        }
-      </div>
+@let hasQuestions= questions() && questions().length > 0;
+<!-- Header with title and action buttons -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  <app-tab-header
+    [title]="'analysis.questions.questionsToAsk' | translate"
+    [subtitle]="'analysis.questions.importantClarifications' | translate"
+    [icon]="HelpCircleIcon"
+    iconBgClass="bg-purple-100"
+    iconColorClass="text-purple-600"
+  >
+  </app-tab-header>
+  @if (hasQuestions) {
+  <div class="flex items-center gap-3">
+    <button
+      (click)="copyAllQuestions.emit()"
+      class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+    >
+      @if (copyAllButtonState() === 'copy') {
+      <lucide-icon [name]="CopyIcon" class="w-4 h-4"></lucide-icon>
+      {{ 'analysis.questions.copyAll' | translate }}
+      } @else {
+      <lucide-icon [name]="CheckIcon" class="w-4 h-4 text-green-600"></lucide-icon>
+      {{ 'analysis.questions.copied' | translate }}
+      }
+    </button>
+    @if (!isContractProvider()) {
+    <app-button (click)="draftEmail.emit()" [disabled]="isDrafting()" variant="primary" size="md">
+      @if (isDrafting()) {
+      <span class="flex items-center gap-2">
+        <app-loading-spinner size="sm" />
+        {{ 'analysis.questions.drafting' | translate }}
+      </span>
+      } @else {
+      <span class="flex items-center gap-2">
+        <lucide-icon [name]="MailIcon" class="w-4 h-4"></lucide-icon>
+        {{ 'analysis.questions.writeEmail' | translate }}
+      </span>
+      }
+    </app-button>
     }
   </div>
-  
-  @if (isLoading()) {
-    @if (isRetrying()) {
-      <div class="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg flex items-center gap-3">
-        <svg class="animate-spin h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <div>
-          <p class="text-sm font-medium text-yellow-800">
-            {{ 'analysis.retrying' | translate }} ({{ 'analysis.attempt' | translate }} {{ retryCount() }}/3)
-          </p>
-          <p class="text-xs text-yellow-700 mt-1">
-            {{ 'analysis.retryMessage' | translate }}
-          </p>
-        </div>
-      </div>
-    }
-    <!-- Questions Loading Skeleton -->
-    <app-skeleton-loader 
-      type="list" 
-      [items]="3" 
-      listItemPadding="p-6" 
-      loadingText="Loading questions...">
-    </app-skeleton-loader>
-  } @else if (questions() && questions().length > 0) {
-    <!-- Questions List -->
-    <div class="space-y-4">
-      @for (question of questions() || []; track $index) {
-        <app-card [hoverable]="true">
-          <div class="bg-white border border-gray-200 p-6 rounded-xl">
-            <div class="flex items-start justify-between gap-4">
-              <div class="flex items-start gap-3 flex-1">
-                <div class="flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full flex-shrink-0 mt-0.5">
-                  <lucide-icon [name]="InfoIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-                </div>
-                <div class="flex-1">
-                  <p class="text-gray-800 font-medium leading-relaxed">
-                    <span class="text-gray-500 font-normal">{{ $index + 1 }}.</span> {{ question }}
-                  </p>
-                </div>
-              </div>
-              <button
-                (click)="copyQuestion.emit(question)"
-                class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0">
-                <lucide-icon [name]="CopyIcon" class="w-4 h-4"></lucide-icon>
-              </button>
-            </div>
-          </div>
-        </app-card>
-      }
-    </div>
-    
-    <!-- Call to Action Section -->
-    @if (!isContractProvider()) {
-      <div class="mt-8">
-        <app-card>
-          <div class="p-6 bg-blue-50 border border-blue-200 rounded-lg">
-            <div class="flex items-center gap-3">
-              <lucide-icon [name]="MailIcon" class="w-6 h-6 text-blue-600 flex-shrink-0"></lucide-icon>
-              <div>
-                <p class="text-sm text-blue-800 leading-relaxed">
-                  {{ 'analysis.emailHelpText' | translate }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </app-card>
-      </div>
-    }
-  } @else {
-    <app-card>
-      <div class="p-8 text-center text-gray-500">
-        <span class="text-4xl mb-4 block">✨</span>
-        <p>{{ 'analysis.questions.noQuestions' | translate }}</p>
-      </div>
-    </app-card>
   }
 </div>
 
+@if (isLoading()) { @if (isRetrying()) {
+  <app-alert 
+  type="loading"
+  [title]="('analysis.retrying' | translate) + ' (' + ('analysis.attempt' | translate) + ' ' + retryCount() + '/3' + ')'"
+  [message]="('analysis.retryMessage' | translate)"
+></app-alert>
+}
+<!-- Questions Loading Skeleton -->
+<app-skeleton-loader
+  type="list"
+  [items]="3"
+  listItemPadding="p-6"
+  loadingText="Loading questions..."
+>
+</app-skeleton-loader>
+} @else if (hasQuestions) {
+<!-- Questions List -->
+<div class="space-y-4">
+  @for (question of questions() || []; track $index) {
+  <app-card [hoverable]="true">
+    <div class="bg-white border border-gray-200 p-6 rounded-xl">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex items-start gap-3 flex-1">
+          <div
+            class="flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full flex-shrink-0 mt-0.5"
+          >
+            <lucide-icon [name]="InfoIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+          </div>
+          <div class="flex-1">
+            <p class="text-gray-700 font-medium leading-relaxed">
+              <span class="text-gray-500 font-normal">{{ $index + 1 }}.</span> {{ question }}
+            </p>
+          </div>
+        </div>
+        <button
+          (click)="copyQuestion.emit(question)"
+          class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+        >
+          <lucide-icon [name]="CopyIcon" class="w-4 h-4"></lucide-icon>
+        </button>
+      </div>
+    </div>
+  </app-card>
+  }
+</div>
+
+<!-- Call to Action Section -->
+@if (!isContractProvider()) {
+<div class="mt-8">
+  <app-card>
+    <div class="p-6 bg-blue-50 border border-blue-200 rounded-lg">
+      <div class="flex items-center gap-3">
+        <lucide-icon [name]="MailIcon" class="w-6 h-6 text-blue-600 flex-shrink-0"></lucide-icon>
+        <div>
+          <p class="text-sm text-blue-800 leading-relaxed">
+            {{ 'analysis.emailHelpText' | translate }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </app-card>
+</div>
+} 
+} @else {
+<div class="p-8 text-center text-gray-500">
+  <lucide-icon [name]="SparklesIcon" class="w-16 h-16 mx-auto mb-4 text-gray-400"></lucide-icon>
+  <p>{{ 'analysis.questions.noQuestions' | translate }}</p>
+</div>
+}

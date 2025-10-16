@@ -2,7 +2,6 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { Card } from '../../../../shared/components/card/card';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader';
 import { 
   Clipboard, 
@@ -11,8 +10,11 @@ import {
   Briefcase, 
   DollarSign, 
   DoorOpen, 
-  Shield 
+  Shield,
+  FileX
 } from '../../../../shared/icons/lucide-icons';
+import { Alert } from "../../../../shared/components/alert/alert";
+import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
 
 // Use the actual ContractSummary type from the store
 export interface SummaryData {
@@ -47,7 +49,7 @@ export interface PerspectiveContext {
 
 @Component({
   selector: 'app-summary-tab',
-  imports: [CommonModule, TranslateModule, LucideAngularModule, Card, SkeletonLoader, DecimalPipe],
+  imports: [TranslateModule, LucideAngularModule, SkeletonLoader, DecimalPipe, Alert, TabHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './summary-tab.component.html'
 })
@@ -67,4 +69,5 @@ export class SummaryTabComponent {
   DollarSignIcon = DollarSign;
   DoorOpenIcon = DoorOpen;
   ShieldIcon = Shield;
+  FileXIcon = FileX;
 }

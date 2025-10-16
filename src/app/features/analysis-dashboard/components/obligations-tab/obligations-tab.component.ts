@@ -12,6 +12,8 @@ import {
   RefreshCw, 
   Clipboard 
 } from '../../../../shared/icons/lucide-icons';
+import { Alert } from "../../../../shared/components/alert/alert";
+import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
 
 export interface Obligation {
   duty: string;
@@ -29,7 +31,7 @@ export interface ObligationsData {
 
 @Component({
   selector: 'app-obligations-tab',
-  imports: [TranslateModule, LucideAngularModule, Card, SkeletonLoader],
+  imports: [TranslateModule, LucideAngularModule, Card, SkeletonLoader, Alert, TabHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './obligations-tab.component.html'
 })

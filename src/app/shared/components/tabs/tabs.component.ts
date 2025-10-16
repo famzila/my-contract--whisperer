@@ -43,4 +43,17 @@ export class TabsComponent {
     const stateClasses = tab.id === this.activeTab() ? this.activeClasses : this.inactiveClasses;
     return `${this.baseClasses} ${stateClasses}`;
   }
+
+  getBadgeClasses(tab: TabConfig): string {
+    if (tab.disabled) {
+      return 'ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-400 rounded-full';
+    }
+    
+    const isActive = tab.id === this.activeTab();
+    if (isActive) {
+      return 'ml-2 px-2 py-0.5 text-xs bg-purple-100 text-purple-600 rounded-full';
+    }
+    
+    return 'ml-2 px-2 py-0.5 text-xs bg-gray-200 text-gray-700 rounded-full';
+  }
 }

@@ -3,14 +3,14 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { Button } from '../../../../shared/components/button/button';
-import { Card } from '../../../../shared/components/card/card';
 import { 
   Theater, 
   Globe, 
   RefreshCw, 
   FileText, 
   AlertTriangle, 
-  Calendar 
+  Calendar,
+  Users
 } from '../../../../shared/icons/lucide-icons';
 import type { ContractMetadata } from '../../../../core/schemas/analysis-schemas';
 
@@ -22,7 +22,7 @@ export interface PerspectiveBadge {
 
 @Component({
   selector: 'app-dashboard-header',
-  imports: [CommonModule, TranslateModule, LucideAngularModule, Button, Card, DatePipe],
+  imports: [CommonModule, TranslateModule, LucideAngularModule, Button, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard-header.component.html'
 })
@@ -47,6 +47,7 @@ export class DashboardHeaderComponent {
   FileTextIcon = FileText;
   AlertTriangleIcon = AlertTriangle;
   CalendarIcon = Calendar;
+  UsersIcon = Users;
 
   // Computed signals
   hasContractText = computed(() => !!this.metadata());

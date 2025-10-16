@@ -1,13 +1,15 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { Card } from '../../../../shared/components/card/card';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader';
 import { 
   AlertTriangle, 
   Info, 
-  Lightbulb 
+  Lightbulb,
+  FileX
 } from '../../../../shared/icons/lucide-icons';
+import { Alert } from "../../../../shared/components/alert/alert";
+import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
 
 export interface RiskFlag {
   title: string;
@@ -19,7 +21,7 @@ export interface RiskFlag {
 
 @Component({
   selector: 'app-risks-tab',
-  imports: [TranslateModule, LucideAngularModule, Card, SkeletonLoader],
+  imports: [TranslatePipe, LucideAngularModule, SkeletonLoader, Alert, TabHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './risks-tab.component.html'
 })
@@ -37,12 +39,6 @@ export class RisksTabComponent {
   AlertTriangleIcon = AlertTriangle;
   InfoIcon = Info;
   LightbulbIcon = Lightbulb;
-
-  // Helper method to get Lucide icon from string name
-  getRiskLucideIcon(iconName: string): any {
-    // This would map icon names to actual Lucide icons
-    // For now, return a default icon
-    return AlertTriangle;
-  }
+  FileXIcon = FileX;
 }
 
