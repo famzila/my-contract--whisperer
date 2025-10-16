@@ -118,6 +118,13 @@ export class TranslatorService {
     const resultPreview = result.length > 100 ? result.substring(0, 100) + '...' : result;
     console.log(`  ✅ [Translator] Result: "${resultPreview}"`);
     
+    // Validate translation: check if result is actually different from source (basic sanity check)
+    if (result === text && sourceLanguage !== targetLanguage) {
+      console.warn(`⚠️ [Translator] Translation returned identical text! This might indicate a translation failure.`);
+      console.warn(`  Source (${sourceLanguage}): "${preview}"`);
+      console.warn(`  Result (${targetLanguage}): "${resultPreview}"`);
+    }
+    
     return result;
   }
 

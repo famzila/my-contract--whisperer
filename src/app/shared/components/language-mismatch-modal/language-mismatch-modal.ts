@@ -25,8 +25,12 @@ export interface LanguageMismatchData {
   needsPreTranslation: boolean;  // Needs translation before analysis?
   fallbackLanguage: string;  // Fallback language if contract language not available in UI
   
+  // NEW: Cached translations
+  availableLanguages: string[];  // Languages available in cache (including original)
+  
   onSelectContractLanguage: () => void;
   onSelectUserLanguage: () => void;
+  onSelectCachedLanguage: (languageCode: string) => void;
   getLanguageName: (code: string) => string;
   getLanguageFlag: (code: string) => string;
 }
@@ -136,6 +140,34 @@ export interface LanguageMismatchData {
         </button>
       </div>
 
+      <!-- Cached Languages Section -->
+      @if (data.availableLanguages && data.availableLanguages.length > 0) {
+        <div class="mt-6">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <lucide-icon [img]="LanguagesIcon" class="w-4 h-4"></lucide-icon>
+            {{ 'language.availableTranslations' | translate }}
+          </h3>
+          <div class="space-y-2">
+            @for (lang of data.availableLanguages; track lang) {
+              <button
+                type="button"
+                (click)="onSelectCachedLanguage(lang)"
+                class="w-full flex items-center justify-between p-3 text-left rtl:text-right bg-gray-50 border border-gray-200 rounded-lg hover:border-primary hover:bg-blue-50 transition-all"
+              >
+                <div class="flex items-center gap-3">
+                  <span class="text-xl">{{ getLanguageFlag(lang) }}</span>
+                  <span class="font-medium">{{ getLanguageName(lang) }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-xs rounded border border-green-200">
+                  <lucide-icon [img]="CheckIcon" class="w-3 h-3"></lucide-icon>
+                  <span>{{ 'language.cached' | translate }}</span>
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
       <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p class="flex items-start gap-2 rtl:flex-row-reverse">
           <lucide-icon [img]="LightbulbIcon" class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5"></lucide-icon>
@@ -193,6 +225,14 @@ export class LanguageMismatchModal {
    */
   onSelectUserLanguage(): void {
     this.data.onSelectUserLanguage();
+    this.dialogRef.close();
+  }
+
+  /**
+   * Handle cached language selection
+   */
+  onSelectCachedLanguage(languageCode: string): void {
+    this.data.onSelectCachedLanguage(languageCode);
     this.dialogRef.close();
   }
 }

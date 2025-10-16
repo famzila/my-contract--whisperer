@@ -38,6 +38,7 @@ import {
   Info,
   Scale,
   Globe,
+  Languages,
 } from '../../shared/icons/lucide-icons';
 
 @Component({
@@ -82,6 +83,7 @@ export class AnalysisDashboard implements OnInit {
   InfoIcon = Info;
   ScaleIcon = Scale;
   GlobeIcon = Globe;
+  LanguagesIcon = Languages;
 
   // Computed signals for reactive data
   canShowDashboard = computed(() => !!this.contractStore.canShowDashboard());
@@ -105,6 +107,29 @@ export class AnalysisDashboard implements OnInit {
   risksIsRetrying = computed(() => this.contractStore.sectionsRisks()?.isRetrying || false);
   obligationsIsRetrying = computed(() => this.contractStore.sectionsObligations()?.isRetrying || false);
   omissionsIsRetrying = computed(() => this.contractStore.sectionsOmissionsQuestions()?.isRetrying || false);
+  
+  // Translation state
+  isTranslating = computed(() => this.contractStore.isTranslating());
+  translatingToLanguage = computed(() => this.contractStore.translatingToLanguage());
+  
+  targetLanguageName = computed(() => {
+    const lang = this.translatingToLanguage();
+    if (!lang) return '';
+    
+    // Map language codes to names
+    const languageNames: Record<string, string> = {
+      'en': 'English',
+      'ar': 'العربية',
+      'fr': 'Français',
+      'es': 'Español',
+      'de': 'Deutsch',
+      'ja': '日本語',
+      'zh': '中文',
+      'ko': '한국어'
+    };
+    
+    return languageNames[lang] || lang;
+  });
   
   // Email drafting state
   isDrafting = computed(() => this.emailStore.isDrafting());
@@ -252,7 +277,7 @@ export class AnalysisDashboard implements OnInit {
   }
 
   getDisclaimer() {
-    return 'This analysis is for informational purposes only and should not be considered as legal advice.';
+    return this.translate.instant('analysis.disclaimer.text');
   }
 
   // Risk filtering methods

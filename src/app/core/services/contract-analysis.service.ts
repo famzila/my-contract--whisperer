@@ -151,13 +151,24 @@ export class ContractAnalysisService {
     data: any;
     progress: number;
   }> {
+    // Check if output language is supported by Gemini Nano
+    // If user wants results in unsupported language (e.g., Arabic), we need to:
+    // 1. Analyze in English (or contract language if supported)
+    // 2. Post-translate results to target language
+    const targetLanguage = outputLanguage;
+    const isOutputLanguageSupported = !outputLanguage || isGeminiNanoSupported(outputLanguage);
+    const geminiOutputLanguage = isOutputLanguageSupported ? outputLanguage : LANGUAGES.ENGLISH;
+    const needsPostTranslation = !isOutputLanguageSupported && targetLanguage;
+    
+    console.log(`🚀 [Direct Analysis] Contract: ${contractLanguage}, Target: ${targetLanguage}, Gemini Output: ${geminiOutputLanguage}, Post-translate: ${needsPostTranslation}`);
+    
     // Create session once and share it
     const session$ = of(null).pipe(
-      tap(() => console.log(`🚀 Starting direct analysis${outputLanguage ? ` (output: ${outputLanguage})` : ''}...`)),
+      tap(() => console.log(`🚀 Starting direct analysis (Gemini output: ${geminiOutputLanguage})...`)),
       switchMap(() => this.promptService.createSession({ 
         userRole: analysisContext.userRole || null,
         contractLanguage: contractLanguage,
-        outputLanguage: outputLanguage
+        outputLanguage: geminiOutputLanguage  // Only use Gemini-supported languages
       })),
       shareReplay(1)
     );
@@ -167,8 +178,13 @@ export class ContractAnalysisService {
       switchMap(() => this.promptService.extractMetadata$(
         parsedContract.text,
         analysisContext.userRole || undefined,
-        outputLanguage
+        geminiOutputLanguage
       )),
+      // Post-translate if needed
+      switchMap(metadata => needsPostTranslation
+        ? defer(() => from(this.postTranslateMetadata(metadata, targetLanguage!)))
+        : of(metadata)
+      ),
       map(metadata => ({
         section: 'metadata' as const,
         data: metadata,
@@ -185,7 +201,12 @@ export class ContractAnalysisService {
     const summary$ = session$.pipe(
       switchMap(() => this.withRetryAndNotify$(
         'summary',
-        this.promptService.extractSummary$(parsedContract.text, outputLanguage),
+        this.promptService.extractSummary$(parsedContract.text, geminiOutputLanguage).pipe(
+          switchMap(summary => needsPostTranslation
+            ? defer(() => from(this.postTranslateSummary(summary, targetLanguage!)))
+            : of(summary)
+          )
+        ),
         40
       )),
       tap(result => {
@@ -203,7 +224,12 @@ export class ContractAnalysisService {
     const risks$ = session$.pipe(
       switchMap(() => this.withRetryAndNotify$(
         'risks',
-        this.promptService.extractRisks$(parsedContract.text, outputLanguage),
+        this.promptService.extractRisks$(parsedContract.text, geminiOutputLanguage).pipe(
+          switchMap(risks => needsPostTranslation
+            ? defer(() => from(this.postTranslateRisks(risks, targetLanguage!)))
+            : of(risks)
+          )
+        ),
         60
       )),
       tap(result => {
@@ -221,7 +247,12 @@ export class ContractAnalysisService {
     const obligations$ = session$.pipe(
       switchMap(() => this.withRetryAndNotify$(
         'obligations',
-        this.promptService.extractObligations$(parsedContract.text, outputLanguage),
+        this.promptService.extractObligations$(parsedContract.text, geminiOutputLanguage).pipe(
+          switchMap(obligations => needsPostTranslation
+            ? defer(() => from(this.postTranslateObligations(obligations, targetLanguage!)))
+            : of(obligations)
+          )
+        ),
         80
       )),
       tap(result => {
@@ -239,7 +270,12 @@ export class ContractAnalysisService {
     const omissionsAndQuestions$ = session$.pipe(
       switchMap(() => this.withRetryAndNotify$(
         'omissionsAndQuestions',
-        this.promptService.extractOmissionsAndQuestions$(parsedContract.text, outputLanguage),
+        this.promptService.extractOmissionsAndQuestions$(parsedContract.text, geminiOutputLanguage).pipe(
+          switchMap(omissionsAndQuestions => needsPostTranslation
+            ? defer(() => from(this.postTranslateOmissionsAndQuestions(omissionsAndQuestions, targetLanguage!)))
+            : of(omissionsAndQuestions)
+          )
+        ),
         90
       )),
       tap(result => {
@@ -294,15 +330,25 @@ export class ContractAnalysisService {
     progress: number;
   }> {
     const finalTargetLanguage = targetLanguage || originalLanguage;
-    const needsPostTranslation = finalTargetLanguage !== LANGUAGES.ENGLISH;
     
-    console.log(`📋 [Pre-translation Flow] Original: ${originalLanguage}, Target: ${finalTargetLanguage}, Post-translate: ${needsPostTranslation}`);
+    // Check if target language is supported by Gemini Nano for output
+    const isTargetLanguageSupported = isGeminiNanoSupported(finalTargetLanguage);
+    const geminiOutputLanguage = isTargetLanguageSupported ? finalTargetLanguage : LANGUAGES.ENGLISH;
+    const needsPostTranslation = !isTargetLanguageSupported && finalTargetLanguage !== LANGUAGES.ENGLISH;
+    
+    console.log(`📋 [Pre-translation Flow] Original: ${originalLanguage}, Target: ${finalTargetLanguage}, Gemini Output: ${geminiOutputLanguage}, Post-translate: ${needsPostTranslation}`);
     
     // Step 1: Pre-translate contract to English
+    console.log(`📝 [Pre-translation] Starting translation: ${originalLanguage} → ${LANGUAGES.ENGLISH}`);
+    console.log(`📄 [Pre-translation] Original text preview: "${parsedContract.text.substring(0, 200)}..."`);
+    
     const translatedContract$ = defer(() => 
       from(this.translator.translate(parsedContract.text, originalLanguage, LANGUAGES.ENGLISH))
     ).pipe(
-      tap(translatedText => console.log(`✅ [Pre-translation] Contract translated to English (${translatedText.length} chars)`)),
+      tap(translatedText => {
+        console.log(`✅ [Pre-translation] Contract translated to English (${translatedText.length} chars)`);
+        console.log(`📄 [Pre-translation] Translated text preview: "${translatedText.substring(0, 200)}..."`);
+      }),
       catchError(error => {
         console.error('❌ [Pre-translation] Failed:', error);
         throw new Error(`Pre-translation failed: ${error.message}`);
@@ -310,26 +356,30 @@ export class ContractAnalysisService {
       shareReplay(1)
     );
 
-    // Step 2: Analyze in English (Gemini Nano only supports en, es, ja output)
+    // Step 2: Analyze in English, output in target language (if supported) or English
     const session$ = translatedContract$.pipe(
       switchMap(() => this.promptService.createSession({ 
         userRole: analysisContext.userRole || null,
         contractLanguage: LANGUAGES.ENGLISH,
-        outputLanguage: LANGUAGES.ENGLISH  // Must use English output for pre-translated contracts
+        outputLanguage: geminiOutputLanguage  // Use target language if supported, otherwise English
       })),
       shareReplay(1)
     );
 
-    // Step 3: Extract all sections in English, then post-translate if needed
+    // Step 3: Extract all sections in target language (if supported) or English
     const metadata$ = translatedContract$.pipe(
-      switchMap(translatedText => session$.pipe(
-        switchMap(() => this.promptService.extractMetadata$(
-          translatedText,
-          analysisContext.userRole || undefined,
-          LANGUAGES.ENGLISH  // Get results in English
-        ))
-      )),
-      // Step 4: Post-translate metadata if target language is not English
+      switchMap(translatedText => {
+        console.log(`🎯 [Pre-translation] Sending to Gemini Nano with outputLanguage: ${geminiOutputLanguage}`);
+        console.log(`📄 [Pre-translation] Text being analyzed (preview): "${translatedText.substring(0, 200)}..."`);
+        return session$.pipe(
+          switchMap(() => this.promptService.extractMetadata$(
+            translatedText,
+            analysisContext.userRole || undefined,
+            geminiOutputLanguage  // Get results in target language if supported, otherwise English
+          ))
+        );
+      }),
+      // Step 4: Post-translate metadata if target language is not supported by Gemini
       switchMap(metadata => needsPostTranslation
         ? defer(() => from(this.postTranslateMetadata(metadata, finalTargetLanguage)))
         : of(metadata)
@@ -337,7 +387,8 @@ export class ContractAnalysisService {
       map(metadata => ({
         section: 'metadata' as const,
         data: metadata,
-        progress: 20
+        progress: 20,
+        resultLanguage: needsPostTranslation ? finalTargetLanguage : geminiOutputLanguage  // Track actual language of results
       })),
       tap(result => console.log('✅ Metadata complete (pre-translated)', result)),
       catchError(error => {
@@ -350,7 +401,7 @@ export class ContractAnalysisService {
       switchMap(translatedText => session$.pipe(
         switchMap(() => this.withRetryAndNotify$(
           'summary',
-          this.promptService.extractSummary$(translatedText, LANGUAGES.ENGLISH).pipe(
+          this.promptService.extractSummary$(translatedText, geminiOutputLanguage).pipe(
             switchMap(summary => needsPostTranslation
               ? defer(() => from(this.postTranslateSummary(summary, finalTargetLanguage)))
               : of(summary)
@@ -374,7 +425,7 @@ export class ContractAnalysisService {
       switchMap(translatedText => session$.pipe(
         switchMap(() => this.withRetryAndNotify$(
           'risks',
-          this.promptService.extractRisks$(translatedText, LANGUAGES.ENGLISH).pipe(
+          this.promptService.extractRisks$(translatedText, geminiOutputLanguage).pipe(
             switchMap(risks => needsPostTranslation
               ? defer(() => from(this.postTranslateRisks(risks, finalTargetLanguage)))
               : of(risks)
@@ -398,7 +449,7 @@ export class ContractAnalysisService {
       switchMap(translatedText => session$.pipe(
         switchMap(() => this.withRetryAndNotify$(
           'obligations',
-          this.promptService.extractObligations$(translatedText, LANGUAGES.ENGLISH).pipe(
+          this.promptService.extractObligations$(translatedText, geminiOutputLanguage).pipe(
             switchMap(obligations => needsPostTranslation
               ? defer(() => from(this.postTranslateObligations(obligations, finalTargetLanguage)))
               : of(obligations)
@@ -422,7 +473,7 @@ export class ContractAnalysisService {
       switchMap(translatedText => session$.pipe(
         switchMap(() => this.withRetryAndNotify$(
           'omissionsAndQuestions',
-          this.promptService.extractOmissionsAndQuestions$(translatedText, LANGUAGES.ENGLISH).pipe(
+          this.promptService.extractOmissionsAndQuestions$(translatedText, geminiOutputLanguage).pipe(
             switchMap(omissionsAndQuestions => needsPostTranslation
               ? defer(() => from(this.postTranslateOmissionsAndQuestions(omissionsAndQuestions, finalTargetLanguage)))
               : of(omissionsAndQuestions)
@@ -468,7 +519,7 @@ export class ContractAnalysisService {
    * Translate English analysis results to target language
    */
 
-  private async postTranslateMetadata(
+  async postTranslateMetadata(
     metadata: Schemas.ContractMetadata,
     targetLanguage: string
   ): Promise<Schemas.ContractMetadata> {
@@ -491,7 +542,7 @@ export class ContractAnalysisService {
     };
   }
 
-  private async postTranslateSummary(
+  async postTranslateSummary(
     summary: Schemas.ContractSummary,
     targetLanguage: string
   ): Promise<Schemas.ContractSummary> {
@@ -528,7 +579,7 @@ export class ContractAnalysisService {
     };
   }
 
-  private async postTranslateRisks(
+  async postTranslateRisks(
     risks: Schemas.RisksAnalysis,
     targetLanguage: string
   ): Promise<Schemas.RisksAnalysis> {
@@ -546,7 +597,7 @@ export class ContractAnalysisService {
     };
   }
 
-  private async postTranslateObligations(
+  async postTranslateObligations(
     obligations: Schemas.ObligationsAnalysis,
     targetLanguage: string
   ): Promise<Schemas.ObligationsAnalysis> {
@@ -577,7 +628,7 @@ export class ContractAnalysisService {
     };
   }
 
-  private async postTranslateOmissionsAndQuestions(
+  async postTranslateOmissionsAndQuestions(
     omissionsAndQuestions: Schemas.OmissionsAndQuestions,
     targetLanguage: string
   ): Promise<Schemas.OmissionsAndQuestions> {

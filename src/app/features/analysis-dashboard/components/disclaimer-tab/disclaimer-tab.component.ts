@@ -15,15 +15,12 @@ import { Scale } from '../../../../shared/icons/lucide-icons';
           <lucide-icon [name]="ScaleIcon" class="w-8 h-8 text-gray-600"></lucide-icon>
           {{ 'analysis.disclaimer.title' | translate }}
         </h2>
-        <p class="text-gray-600 leading-relaxed text-lg">{{ disclaimer() }}</p>
+        <p class="text-gray-600 leading-relaxed text-lg">{{ 'analysis.disclaimer.text' | translate }}</p>
       </div>
     </app-card>
   `
 })
 export class DisclaimerTabComponent {
-  // Modern input signals
-  disclaimer = input<string>('');
-
   // Icons
   ScaleIcon = Scale;
 }

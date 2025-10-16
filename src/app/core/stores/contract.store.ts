@@ -21,8 +21,10 @@ import { ContractAnalysisService } from '../services/contract-analysis.service';
 import { ContractParserService, type ParsedContract } from '../services/contract-parser.service';
 import { ContractValidationService } from '../services/contract-validation.service';
 import { PartyExtractionService } from '../services/party-extraction.service';
+import { TranslationCacheService } from '../services/translation-cache.service';
 import { LanguageStore } from './language.store';
 import { OnboardingStore } from './onboarding.store';
+import { isGeminiNanoSupported } from '../constants/languages';
 
 /**
  * Section loading state for progressive analysis with proper typing
@@ -58,6 +60,10 @@ interface ContractState {
   sectionsObligations: SectionState<ObligationsAnalysis> | null;
   sectionsOmissionsQuestions: SectionState<OmissionsAndQuestions> | null;
   
+  // Translation state
+  isTranslating: boolean;
+  translatingToLanguage: string | null;
+  
   // RxJS streaming cleanup
   destroySubject: Subject<void> | null;
 }
@@ -77,6 +83,8 @@ const initialState: ContractState = {
   sectionsRisks: null,
   sectionsObligations: null,
   sectionsOmissionsQuestions: null,
+  isTranslating: false,
+  translatingToLanguage: null,
   destroySubject: null,
 };
 
@@ -99,6 +107,8 @@ export const ContractStore = signalStore(
     sectionsRisks,
     sectionsObligations,
     sectionsOmissionsQuestions,
+    isTranslating,
+    translatingToLanguage,
   }) => ({
     // Check if contract is loaded
     hasContract: computed(() => contract() !== null),
@@ -133,6 +143,7 @@ export const ContractStore = signalStore(
     onboardingStore = inject(OnboardingStore),
     validationService = inject(ContractValidationService),
     partyExtractionService = inject(PartyExtractionService),
+    translationCache = inject(TranslationCacheService),
     translate = inject(TranslateService),
     router = inject(Router),
     ngZone = inject(NgZone)
@@ -505,6 +516,52 @@ export const ContractStore = signalStore(
           },
           complete: () => {
             console.log('✅ RxJS streaming analysis completed');
+            
+            // Store results in cache for future translations
+            const contract = store.contract();
+            if (contract) {
+              const metadata = store.sectionsMetadata()?.data;
+              const summary = store.sectionsSummary()?.data;
+              const risks = store.sectionsRisks()?.data;
+              const obligations = store.sectionsObligations()?.data;
+              const omissions = store.sectionsOmissionsQuestions()?.data;
+              
+              if (metadata && summary && risks && obligations && omissions) {
+                const contractLang = languageStore.detectedContractLanguage() || 'en';
+                const outputLang = onboardingStore.selectedOutputLanguage() || languageStore.preferredLanguage();
+                const isPreTranslationFlow = !isGeminiNanoSupported(contractLang);
+                
+                console.log(`💾 [Store] Caching strategy - Contract: ${contractLang}, Output: ${outputLang}, Pre-translation: ${isPreTranslationFlow}`);
+                
+                // Cache strategy:
+                // - For direct analysis (e.g., EN contract → EN output): Store as "original" in English
+                // - For pre-translation (e.g., AR contract → AR output): Store as "translation" in Arabic
+                //   (we don't have the English intermediate, so we can't store it as "original")
+                
+                if (isPreTranslationFlow) {
+                  // Pre-translation flow: Store the post-translated results as a translation
+                  console.log(`💾 [Store] Pre-translation flow: Storing ${outputLang} results as translation (no English original available)`);
+                  translationCache.storeTranslation(contract.id, outputLang, {
+                    metadata,
+                    summary,
+                    risks,
+                    obligations,
+                    omissions
+                  });
+                } else {
+                  // Direct analysis: Store as original
+                  console.log(`💾 [Store] Direct analysis: Storing ${contractLang} results as original`);
+                  translationCache.storeOriginal(contract.id, {
+                    metadata,
+                    summary,
+                    risks,
+                    obligations,
+                    omissions
+                  }, contractLang);
+                }
+              }
+            }
+            
             // Clean up destroy subject
             destroySubject.next();
             destroySubject.complete();
@@ -521,6 +578,151 @@ export const ContractStore = signalStore(
           analysisProgress: 0,
         });
         throw error;
+      }
+    },
+    
+    /**
+     * Switch analysis language (re-translate results)
+     */
+    async switchAnalysisLanguage(targetLanguage: string): Promise<void> {
+      const contract = store.contract();
+      if (!contract) {
+        console.warn('⚠️ [Store] No contract found for language switch');
+        return;
+      }
+      
+      console.log(`🌍 [Store] Switching analysis language to ${targetLanguage}`);
+      
+      // Set loading state IMMEDIATELY
+      patchState(store, {
+        isTranslating: true,
+        translatingToLanguage: targetLanguage,
+        analysisError: null // Clear any previous errors
+      });
+      
+      try {
+        // Check cache first
+        const cached = translationCache.getCachedTranslation(contract.id, targetLanguage);
+        
+        if (cached) {
+          console.log(`⚡ [Store] Using cached ${targetLanguage} translation`);
+          
+          // Small delay for smooth UX (optional, but nice)
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
+          patchState(store, {
+            sectionsMetadata: { data: cached.metadata, loading: false, error: null },
+            sectionsSummary: { data: cached.summary, loading: false, error: null },
+            sectionsRisks: { data: cached.risks, loading: false, error: null },
+            sectionsObligations: { data: cached.obligations, loading: false, error: null },
+            sectionsOmissionsQuestions: { data: cached.omissions, loading: false, error: null },
+            isTranslating: false,  // Clear loading state
+            translatingToLanguage: null
+          });
+          return;
+        }
+        
+        // Not cached - need to translate
+        console.log(`🌍 [Store] Translating to ${targetLanguage}...`);
+        
+        // Try to get original (English) from cache
+        const original = translationCache.getOriginal(contract.id);
+        
+        // If no original, try to get available translations
+        if (!original) {
+          const availableLanguages = translationCache.getAvailableLanguages(contract.id);
+          console.log(`📋 [Store] No original found. Available languages: ${availableLanguages.join(', ')}`);
+          
+          if (availableLanguages.length === 0) {
+            throw new Error('No analysis data found in cache. Please re-analyze the contract.');
+          }
+          
+          // Use the first available translation as source
+          const sourceLanguage = availableLanguages[0];
+          const sourceTranslation = translationCache.getCachedTranslation(contract.id, sourceLanguage);
+          
+          if (!sourceTranslation) {
+            throw new Error('Failed to retrieve source translation from cache.');
+          }
+          
+          console.log(`🔄 [Store] Translating from ${sourceLanguage} to ${targetLanguage}...`);
+          
+          // Translate from source language to target language
+          const [metadata, summary, risks, obligations, omissions] = await Promise.all([
+            analysisService.postTranslateMetadata(sourceTranslation.metadata, targetLanguage),
+            analysisService.postTranslateSummary(sourceTranslation.summary, targetLanguage),
+            analysisService.postTranslateRisks(sourceTranslation.risks, targetLanguage),
+            analysisService.postTranslateObligations(sourceTranslation.obligations, targetLanguage),
+            analysisService.postTranslateOmissionsAndQuestions(sourceTranslation.omissions, targetLanguage),
+          ]);
+          
+          // Store in cache
+          translationCache.storeTranslation(contract.id, targetLanguage, {
+            metadata,
+            summary,
+            risks,
+            obligations,
+            omissions
+          });
+          
+          // Update store with translated data
+          patchState(store, {
+            sectionsMetadata: { data: metadata, loading: false, error: null },
+            sectionsSummary: { data: summary, loading: false, error: null },
+            sectionsRisks: { data: risks, loading: false, error: null },
+            sectionsObligations: { data: obligations, loading: false, error: null },
+            sectionsOmissionsQuestions: { data: omissions, loading: false, error: null },
+            isTranslating: false,  // Clear loading state
+            translatingToLanguage: null
+          });
+          
+          console.log(`✅ [Store] Translated from ${sourceLanguage} and cached ${targetLanguage} results`);
+          return;
+        }
+        
+        // We have the original (English) - translate from it
+        console.log(`🔄 [Store] Translating from original (${original.language || 'en'}) to ${targetLanguage}...`);
+        
+        // Translate all sections
+        const [metadata, summary, risks, obligations, omissions] = await Promise.all([
+          analysisService.postTranslateMetadata(original.metadata, targetLanguage),
+          analysisService.postTranslateSummary(original.summary, targetLanguage),
+          analysisService.postTranslateRisks(original.risks, targetLanguage),
+          analysisService.postTranslateObligations(original.obligations, targetLanguage),
+          analysisService.postTranslateOmissionsAndQuestions(original.omissions, targetLanguage),
+        ]);
+        
+        // Store in cache
+        translationCache.storeTranslation(contract.id, targetLanguage, {
+          metadata,
+          summary,
+          risks,
+          obligations,
+          omissions
+        });
+        
+        // Update store with translated data
+        patchState(store, {
+          sectionsMetadata: { data: metadata, loading: false, error: null },
+          sectionsSummary: { data: summary, loading: false, error: null },
+          sectionsRisks: { data: risks, loading: false, error: null },
+          sectionsObligations: { data: obligations, loading: false, error: null },
+          sectionsOmissionsQuestions: { data: omissions, loading: false, error: null },
+          isTranslating: false,  // Clear loading state
+          translatingToLanguage: null
+        });
+        
+        console.log(`✅ [Store] Translated and cached ${targetLanguage} results`);
+        
+      } catch (error) {
+        console.error(`❌ [Store] Translation to ${targetLanguage} failed:`, error);
+        
+        // Clear loading state and show error
+        patchState(store, {
+          isTranslating: false,
+          translatingToLanguage: null,
+          analysisError: `Translation to ${targetLanguage} failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        });
       }
     },
     

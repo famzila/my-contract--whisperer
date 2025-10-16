@@ -36,7 +36,9 @@
     "limitedSupport": "Limited Language Support",
     "willTranslateForAnalysis": "This contract will be translated to English for analysis, then results will be translated back",
     "appWillSwitchWithTranslation": "App will switch to this language (with translation)",
-    "uiNotAvailable": "{{language}} interface not available, will use {{fallback}}"
+    "uiNotAvailable": "{{language}} interface not available, will use {{fallback}}",
+    "availableTranslations": "Available Translations",
+    "cached": "Cached"
   },
   "navbar": {
     "title": "Contract Whisperer",
@@ -126,6 +128,10 @@
     "retrying": "Retrying",
     "attempt": "Attempt",
     "retryMessage": "We encountered an issue. Retrying automatically...",
+    "translating": "Translating Analysis",
+    "translatingTo": "Translating to {{language}}...",
+    "translationComplete": "Translation complete!",
+    "translationFailed": "Translation failed. Please try again.",
     "viewingInDifferentLanguage": "Viewing analysis in different language",
     "analysisLanguage": "Analysis Language",
     "uiLanguage": "UI Language",

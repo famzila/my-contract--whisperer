@@ -36,7 +36,9 @@
     "limitedSupport": "دعم محدود للغة",
     "willTranslateForAnalysis": "سيتم ترجمة العقد إلى الإنجليزية للتحليل، ثم ترجمة النتائج مرة أخرى",
     "appWillSwitchWithTranslation": "سيتم تبديل التطبيق إلى هذه اللغة (مع الترجمة)",
-    "uiNotAvailable": "واجهة {{language}} غير متوفرة، سيتم استخدام {{fallback}}"
+    "uiNotAvailable": "واجهة {{language}} غير متوفرة، سيتم استخدام {{fallback}}",
+    "availableTranslations": "الترجمات المتاحة",
+    "cached": "مخزنة مؤقتاً"
   },
   "navbar": {
     "title": "Contract Whisperer",
@@ -121,6 +123,13 @@
     "uploadFirst": "يرجى رفع عقد لبدء التحليل",
     "showTranslated": "عرض العقد المترجم",
     "showOriginal": "عرض العقد الأصلي",
+    "retrying": "إعادة المحاولة",
+    "attempt": "محاولة",
+    "retryMessage": "واجهنا مشكلة. نعيد المحاولة تلقائياً...",
+    "translating": "ترجمة التحليل",
+    "translatingTo": "الترجمة إلى {{language}}...",
+    "translationComplete": "اكتملت الترجمة!",
+    "translationFailed": "فشلت الترجمة. يرجى المحاولة مرة أخرى.",
     "tabs": {
       "summary": "الملخص",
       "risks": "الخطر",

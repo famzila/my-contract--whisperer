@@ -47,8 +47,31 @@
     </div>
     }
 
+    <!-- Translation Banner -->
+    @if (isTranslating()) {
+      <div class="sticky top-0 z-40 mb-6">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center justify-between animate-pulse">
+          <div class="flex items-center gap-3">
+            <svg class="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <div>
+              <p class="font-semibold">{{ 'analysis.translating' | translate }}</p>
+              <p class="text-sm text-blue-100">{{ 'analysis.translatingTo' | translate: {language: targetLanguageName()} }}</p>
+            </div>
+          </div>
+          <div class="text-sm text-blue-100">
+            <lucide-icon [name]="LanguagesIcon" class="w-5 h-5"></lucide-icon>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Tab Navigation and Content -->
     @if (!isAnalyzing() && canShowDashboard()) {
+    <!-- Content with opacity during translation -->
+    <div [class.opacity-50]="isTranslating()" [class.pointer-events-none]="isTranslating()">
     <app-tabs [tabs]="tabConfigs()" [activeTab]="selectedTab()" (tabSelected)="selectTab($event)">
       @if (selectedTab() === 'summary') {
         <app-summary-tab
@@ -99,10 +122,10 @@
           (draftEmail)="draftProfessionalEmail()">
         </app-questions-tab>
       } @else if (selectedTab() === 'disclaimer') {
-        <app-disclaimer-tab [disclaimer]="getDisclaimer()">
-        </app-disclaimer-tab>
+        <app-disclaimer-tab/>
       }
     </app-tabs>
+    </div>
     }
   </div>
 </div>
