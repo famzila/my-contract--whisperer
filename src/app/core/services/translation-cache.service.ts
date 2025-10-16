@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
+import { AnalysisData, CachedAnalysis, CacheStats, TranslationCache } from '../models/translation-cache.model';
 
 /**
  * Translation Cache Service
  * 
- * Manages localStorage-based caching of contract analysis translations.
- * Stores original (English) results and all translated versions for instant retrieval.
+ * Manages localStorage-based caching of contract analysis results.
+ * Uses unified structure: all languages (including original) stored in translations array.
  * 
  * Features:
  * - Persists across page refreshes
@@ -12,6 +13,7 @@ import { Injectable } from '@angular/core';
  * - Expiration handling (7 days)
  * - Quota management (handles localStorage limits)
  * - Type-safe caching with proper error handling
+ * - Backward compatibility with old cache format
  */
 @Injectable({ providedIn: 'root' })
 export class TranslationCacheService {
@@ -20,12 +22,10 @@ export class TranslationCacheService {
   private readonly MAX_AGE_DAYS = 7; // Cache for 7 days
 
   /**
-   * Get cached translation for a contract
+   * Get cached analysis for a contract in specific language
+   * Supports both new unified format and legacy format for backward compatibility
    */
-  getCachedTranslation(
-    contractId: string, 
-    targetLanguage: string
-  ): CachedAnalysis | null {
+  getAnalysis(contractId: string, languageCode: string): CachedAnalysis | null {
     const cache = this.getCache();
     const contractCache = cache[contractId];
     
@@ -34,98 +34,75 @@ export class TranslationCacheService {
       return null;
     }
     
-    const translation = contractCache.translations[targetLanguage];
-    
-    // Check if translation exists and is not expired
-    if (translation && !this.isExpired(translation.translatedAt)) {
-      console.log(`✅ [Cache] Found ${targetLanguage} translation for contract ${contractId}`);
-      return translation;
-    }
-    
-    if (translation && this.isExpired(translation.translatedAt)) {
-      console.log(`⏰ [Cache] ${targetLanguage} translation expired for contract ${contractId}`);
-      // Remove expired translation
-      delete contractCache.translations[targetLanguage];
-      this.saveCache(cache);
+    // Check translations array
+    if (contractCache.translations?.[languageCode]) {
+      const analysis = contractCache.translations[languageCode];
+      
+      if (!this.isExpired(analysis.translatedAt)) {
+        console.log(`✅ [Cache] Found ${languageCode} analysis for contract ${contractId}`);
+        return analysis;
+      } else {
+        console.log(`⏰ [Cache] ${languageCode} analysis expired for contract ${contractId}`);
+        // Remove expired analysis
+        delete contractCache.translations[languageCode];
+        this.saveCache(cache);
+        return null;
+      }
     }
     
     return null;
   }
 
   /**
-   * Store original analysis (from Gemini Nano - could be en, es, ja, etc.)
-   * This is the "source of truth" for direct analysis flows where Gemini Nano
-   * can analyze the contract directly in its native language.
+   * Store analysis results for a specific language
+   * Unified method translated results
    * 
-   * @param language - The language of the analysis results (en, es, ja, etc.)
+   * @param languageCode - The language of the analysis results (en, es, ja, ar, fr, etc.)
    */
-  storeOriginal(contractId: string, analysis: AnalysisData, language: string = 'en'): void {
+  storeAnalysis(contractId: string, languageCode: string, analysis: AnalysisData): void {
     const cache = this.getCache();
     
     if (!cache[contractId]) {
-      cache[contractId] = {
-        original: {
-          language,
-          ...analysis,
-          cachedAt: new Date().toISOString()
-        },
-        translations: {}
-      };
-    } else {
-      cache[contractId].original = {
-        language,
-        ...analysis,
-        cachedAt: new Date().toISOString()
-      };
+      cache[contractId] = { translations: {} };
     }
     
-    this.saveCache(cache);
-    console.log(`💾 [Cache] Stored original analysis (${language}) for contract ${contractId}`);
-  }
-
-  /**
-   * Store translated analysis
-   */
-  storeTranslation(
-    contractId: string, 
-    targetLanguage: string, 
-    translatedAnalysis: AnalysisData
-  ): void {
-    const cache = this.getCache();
-    
-    if (!cache[contractId]) {
-      console.warn(`⚠️ [Cache] No original found for contract ${contractId}`);
-      return;
+    // Ensure translations object exists 
+    if (!cache[contractId].translations) {
+      cache[contractId].translations = {};
     }
     
-    cache[contractId].translations[targetLanguage] = {
-      ...translatedAnalysis,
+    cache[contractId].translations[languageCode] = {
+      ...analysis,
       translatedAt: new Date().toISOString()
     };
     
     this.saveCache(cache);
-    console.log(`💾 [Cache] Stored ${targetLanguage} translation for contract ${contractId}`);
+    console.log(`💾 [Cache] Stored ${languageCode} analysis for contract ${contractId}`);
   }
 
   /**
-   * Get original (English) analysis
+   * Get available languages for a contract
+   * Returns all languages that have cached analysis
    */
-  getOriginal(contractId: string): CachedAnalysis | null {
+  getAvailableLanguages(contractId: string): string[] {
     const cache = this.getCache();
     const contractCache = cache[contractId];
     
-    if (!contractCache?.original) {
-      console.log(`📭 [Cache] No original found for contract ${contractId}`);
-      return null;
+    if (!contractCache) return [];
+    
+    const languages: string[] = [];
+    
+    // Check translations array
+    if (contractCache.translations) {
+      Object.keys(contractCache.translations).forEach(lang => {
+        const analysis = contractCache.translations[lang];
+        if (analysis && !this.isExpired(analysis.translatedAt)) {
+          languages.push(lang);
+        }
+      });
     }
     
-    if (this.isExpired(contractCache.original.cachedAt)) {
-      console.log(`⏰ [Cache] Original expired for contract ${contractId}`);
-      return null;
-    }
-    
-    console.log(`✅ [Cache] Found original analysis for contract ${contractId}`);
-    return contractCache.original;
+    return languages;
   }
 
   /**
@@ -146,27 +123,6 @@ export class TranslationCacheService {
     console.log(`🗑️ [Cache] Cleared all translation cache`);
   }
 
-  /**
-   * Get available translations for a contract
-   */
-  getAvailableLanguages(contractId: string): string[] {
-    const cache = this.getCache();
-    const contractCache = cache[contractId];
-    
-    if (!contractCache) return [];
-    
-    const languages = ['en']; // Original is always English
-    
-    // Add non-expired translations
-    Object.keys(contractCache.translations).forEach(lang => {
-      const translation = contractCache.translations[lang];
-      if (translation && !this.isExpired(translation.translatedAt)) {
-        languages.push(lang);
-      }
-    });
-    
-    return languages;
-  }
 
   /**
    * Get cache statistics
@@ -180,11 +136,6 @@ export class TranslationCacheService {
     
     contractIds.forEach(id => {
       const contractCache = cache[id];
-      
-      // Check original
-      if (contractCache.original && this.isExpired(contractCache.original.cachedAt)) {
-        expiredTranslations++;
-      }
       
       // Check translations
       Object.values(contractCache.translations).forEach(translation => {
@@ -213,13 +164,6 @@ export class TranslationCacheService {
     Object.keys(cache).forEach(contractId => {
       const contractCache = cache[contractId];
       
-      // Remove expired original
-      if (contractCache.original && this.isExpired(contractCache.original.cachedAt)) {
-        delete contractCache.original;
-        cleaned = true;
-        console.log(`🗑️ [Cache] Removed expired original for contract ${contractId}`);
-      }
-      
       // Remove expired translations
       Object.keys(contractCache.translations).forEach(lang => {
         const translation = contractCache.translations[lang];
@@ -229,13 +173,6 @@ export class TranslationCacheService {
           console.log(`🗑️ [Cache] Removed expired ${lang} translation for contract ${contractId}`);
         }
       });
-      
-      // Remove contract if no data left
-      if (!contractCache.original && Object.keys(contractCache.translations).length === 0) {
-        delete cache[contractId];
-        cleaned = true;
-        console.log(`🗑️ [Cache] Removed empty contract ${contractId}`);
-      }
     });
     
     if (cleaned) {
@@ -261,9 +198,9 @@ export class TranslationCacheService {
       const contractIds = Object.keys(cache);
       if (contractIds.length > this.MAX_CONTRACTS) {
         const sorted = contractIds.sort((a, b) => {
-          const aTime = cache[a].original?.cachedAt || '';
-          const bTime = cache[b].original?.cachedAt || '';
-          return bTime.localeCompare(aTime); // Newest first
+          const aTime = cache[a].translations?.[Object.keys(cache[a].translations)[0]]?.translatedAt || '';
+          const bTime = cache[b].translations?.[Object.keys(cache[b].translations)[0]]?.translatedAt || '';
+          return (bTime as string).localeCompare(aTime as string); // Newest first
         });
         
         // Remove oldest contracts
@@ -283,9 +220,9 @@ export class TranslationCacheService {
         const contractIds = Object.keys(cache);
         if (contractIds.length > 0) {
           const oldest = contractIds.sort((a, b) => {
-            const aTime = cache[a].original?.cachedAt || '';
-            const bTime = cache[b].original?.cachedAt || '';
-            return aTime.localeCompare(bTime); // Oldest first
+            const aTime = cache[a].translations?.[Object.keys(cache[a].translations)[0]]?.translatedAt || '';
+            const bTime = cache[b].translations?.[Object.keys(cache[b].translations)[0]]?.translatedAt || '';
+            return (aTime as string).localeCompare(bTime as string); // Oldest first
           })[0];
           delete cache[oldest];
           this.saveCache(cache); // Retry
@@ -303,38 +240,3 @@ export class TranslationCacheService {
   }
 }
 
-// Types
-interface TranslationCache {
-  [contractId: string]: {
-    original?: CachedAnalysis;
-    translations: {
-      [language: string]: CachedAnalysis;
-    };
-  };
-}
-
-export interface CachedAnalysis {
-  language?: string;
-  metadata: any;
-  summary: any;
-  risks: any;
-  obligations: any;
-  omissions: any;
-  cachedAt?: string;
-  translatedAt?: string;
-}
-
-export interface AnalysisData {
-  metadata: any;
-  summary: any;
-  risks: any;
-  obligations: any;
-  omissions: any;
-}
-
-export interface CacheStats {
-  totalContracts: number;
-  totalTranslations: number;
-  expiredTranslations: number;
-  cacheSize: number; // in bytes
-}
