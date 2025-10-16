@@ -25,6 +25,8 @@ import { TranslationCacheService } from '../services/translation-cache.service';
 import { LanguageStore } from './language.store';
 import { OnboardingStore } from './onboarding.store';
 import { isGeminiNanoSupported } from '../constants/languages';
+import { AppConfig } from '../config/app.config';
+import { MOCK_CONTRACT, MOCK_LEASE_DATA } from '../mocks/mock-analysis.data';
 
 /**
  * Section loading state for progressive analysis with proper typing
@@ -69,24 +71,49 @@ interface ContractState {
 }
 
 /**
- * Initial state
+ * Create initial state based on mock mode
  */
-const initialState: ContractState = {
+function createInitialState(): ContractState {
+  if (AppConfig.useMockAI) {
+    // Mock contract for development
+    const mockContract: Contract = MOCK_CONTRACT;
+
+    return {
+      contract: mockContract,
+      isUploading: false,
+      isAnalyzing: false,
+      uploadError: null,
+      analysisError: null,
+      analysisProgress: 100, // Complete
+      sectionsMetadata: { data: MOCK_LEASE_DATA.metadata, loading: false, error: null },
+      sectionsSummary: { data: MOCK_LEASE_DATA.summary, loading: false, error: null },
+      sectionsRisks: { data: MOCK_LEASE_DATA.risks, loading: false, error: null },
+      sectionsObligations: { data: MOCK_LEASE_DATA.obligations, loading: false, error: null },
+      sectionsOmissionsQuestions: { data: MOCK_LEASE_DATA.omissions, loading: false, error: null },
+      isTranslating: false,
+      translatingToLanguage: null,
+      destroySubject: null,
+    };
+  }
+
+  // Normal initial state for production
+  return {
   contract: null,
   isUploading: false,
   isAnalyzing: false,
   uploadError: null,
   analysisError: null,
-  analysisProgress: 0,
-  sectionsMetadata: null,
-  sectionsSummary: null,
-  sectionsRisks: null,
-  sectionsObligations: null,
-  sectionsOmissionsQuestions: null,
-  isTranslating: false,
-  translatingToLanguage: null,
-  destroySubject: null,
-};
+    analysisProgress: 0,
+    sectionsMetadata: null,
+    sectionsSummary: null,
+    sectionsRisks: null,
+    sectionsObligations: null,
+    sectionsOmissionsQuestions: null,
+    isTranslating: false,
+    translatingToLanguage: null,
+    destroySubject: null,
+  };
+}
 
 /**
  * Contract Store
@@ -115,7 +142,7 @@ function selectBestSourceLanguage(availableLanguages: string[], targetLanguage: 
 
 export const ContractStore = signalStore(
   { providedIn: 'root' },
-  withState(initialState),
+  withState(createInitialState()),
   
   // Computed values derived from state
   withComputed(({ 
@@ -416,7 +443,7 @@ export const ContractStore = signalStore(
           analyzedInLanguage: onboardingStore.selectedOutputLanguage() || languageStore.preferredLanguage(),
           userRole: onboardingStore.selectedRole(),
           detectedParties: detectedParties?.parties && detectedParties.parties.party1 && detectedParties.parties.party2
-            ? {
+            ? { 
                 party1: detectedParties.parties.party1,
                 party2: detectedParties.parties.party2
               }
@@ -528,10 +555,10 @@ export const ContractStore = signalStore(
           error: (error) => {
             console.error('❌ RxJS streaming analysis failed:', error);
             const errorMessage = error instanceof Error ? error.message : 'Analysis failed';
-            patchState(store, { 
+        patchState(store, { 
               analysisError: errorMessage,
-              isUploading: false,
-              isAnalyzing: false,
+          isUploading: false,
+          isAnalyzing: false,
               analysisProgress: 0,
             });
             // Don't throw - let the UI handle the error gracefully
@@ -726,7 +753,7 @@ export const ContractStore = signalStore(
      * Reset store to initial state
      */
     reset: () => {
-      patchState(store, initialState);
+      patchState(store, createInitialState());
     },
   }))
 );

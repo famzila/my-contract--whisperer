@@ -8,6 +8,8 @@ import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { TranslatorService } from '../services/ai/translator.service';
 import { TranslateService } from '@ngx-translate/core';
+import { AppConfig } from '../config/app.config';
+import { MOCK_ONBOARDING_STATE } from '../mocks/mock-analysis.data';
 
 /**
  * Onboarding steps
@@ -86,23 +88,31 @@ interface OnboardingState {
 }
 
 /**
- * Initial state
+ * Create initial state based on mock mode
  */
-const initialState: OnboardingState = {
-  currentStep: 'upload',
-  isValidContract: null,
-  validationError: null,
-  documentType: null,
-  detectedLanguage: null,
-  selectedOutputLanguage: null,
-  userPreferredLanguage: 'en',  // Default to English
-  detectedParties: null,
-  selectedRole: null,
-  pendingContractText: null,
-  canProceed: false,
-  isProcessing: false,
-  error: null,
-};
+function createInitialState(): OnboardingState {
+  if (AppConfig.useMockAI) {
+    // Mock onboarding state for development
+    return MOCK_ONBOARDING_STATE as OnboardingState;
+  }
+
+  // Normal initial state for production
+  return {
+    currentStep: 'upload',
+    isValidContract: null,
+    validationError: null,
+    documentType: null,
+    detectedLanguage: null,
+    selectedOutputLanguage: null,
+    userPreferredLanguage: 'en',  // Default to English
+    detectedParties: null,
+    selectedRole: null,
+    pendingContractText: null,
+    canProceed: false,
+    isProcessing: false,
+    error: null,
+  };
+}
 
 /**
  * Onboarding Store
@@ -110,7 +120,7 @@ const initialState: OnboardingState = {
  */
 export const OnboardingStore = signalStore(
   { providedIn: 'root' },
-  withState(initialState),
+  withState(createInitialState()),
   
   // Computed values
   withComputed(({ currentStep, isValidContract, detectedLanguage, selectedOutputLanguage, userPreferredLanguage, selectedRole, detectedParties }) => ({
@@ -340,7 +350,7 @@ export const OnboardingStore = signalStore(
      * Reset to initial state
      */
     reset: () => {
-      patchState(store, initialState);
+      patchState(store, createInitialState());
     },
   }))
 );

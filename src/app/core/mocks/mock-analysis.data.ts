@@ -1,246 +1,212 @@
-import type { AIAnalysisResponse } from '../models/ai-analysis.model';
 
 /**
  * Mock contract analysis response for development
  */
-export const MOCK_ANALYSIS: AIAnalysisResponse = {
-  metadata: {
-    contractType: 'Employment Agreement',
-    effectiveDate: 'October 1, 2025',
-    endDate: 'September 30, 2026',
-    duration: '12 months',
-    autoRenew: false,
-    jurisdiction: 'California, USA',
-    parties: {
-      party1: {
-        name: 'Acme Technologies, Inc.',
-        location: 'San Francisco, CA 94105',
-        role: 'Employer',
+export const MOCK_LEASE_DATA = {
+  "metadata": {
+    "contractType": "Lease Agreement",
+    "effectiveDate": "2025-03-01",
+    "endDate": "2026-02-28",
+    "duration": "12 months",
+    "autoRenew": null,
+    "jurisdiction": "Oregon, USA",
+    "parties": {
+      "party1": {
+        "name": "Olivia Green",
+        "location": "241 Oakwood Drive, Portland, Oregon 97205",
+        "role": "Landlord"
       },
-      party2: {
-        name: 'Jane Doe',
-        location: 'San Jose, CA 95112',
-        role: 'Employee',
-        position: 'Senior Software Engineer',
-      },
+      "party2": {
+        "name": "James Parker",
+        "location": "117 North Street, Portland, Oregon 97205",
+        "role": "Tenant"
+      }
     },
-    detectedLanguage: 'en',
-    analyzedForRole: 'employee',
-    analyzedInLanguage: 'en',
+    "detectedLanguage": "en",
+    "analyzedForRole": "tenant"
   },
-  summary: {
-    parties: 'Acme Technologies, Inc. hires Jane Doe as a Senior Software Engineer.',
-    role: 'Employment',
-    responsibilities: [
-      'Writing and reviewing code',
-      'Designing scalable architectures',
-      'Mentoring junior developers',
-      'Adhering to security policies',
-      'Devote full professional time to Company business',
-    ],
-    compensation: {
-      baseSalary: 120000,
-      bonus: 'Discretionary performance bonus up to 15% of annual base salary',
-      equity: '5,000 stock options, vesting quarterly over 4 years',
-      other: null,
-    },
-    benefits: [
-      'Health, dental, vision insurance',
-      '20 paid vacation days',
-      '10 paid holidays',
-      '5 sick days',
-      '401(k) plan with 5% employer match',
-    ],
-    termination: {
-      atWill: 'Either party may terminate with 30 days written notice.',
-      forCause: 'Company may terminate immediately for misconduct, breach, or gross negligence.',
-      severance: '8 weeks salary continuation if terminated without cause',
-    },
-    restrictions: {
-      confidentiality: 'Agrees not to disclose proprietary information.',
-      nonCompete: 'No competitive business for 12 months after termination within California.',
-      nonSolicitation: 'No soliciting Company clients, customers, or employees for 12 months post-termination.',
-      other: null,
-    },
+  "summary": {
+    "summary": {
+      "parties": "This lease agreement is between Olivia Green (Landlord) and James Parker (Tenant). Olivia Green is renting out a property, and James Parker is renting the property.",
+      "role": "Landlord-Tenant",
+      "responsibilities": [
+        "Landlord: Maintain the property (structure, plumbing, electrical, heating, major appliances). Tenant: Keep the property clean and in good condition; notify landlord of repairs; comply with local ordinances and HOA rules.",
+        "Tenant: Pay rent on the 1st of each month.  Tenant is liable for damages caused by negligence or misuse of the property. Tenant is responsible for electricity, gas, internet, and cable.",
+        "Landlord: Provide water, sewer, and garbage collection.",
+        "Tenant: Pay for electricity, gas, internet, and cable.",
+        "Tenant:  Maintain the property as a private residence.",
+        "Landlord:  Enter the property with 24-hour notice for inspections/maintenance, or in emergencies.",
+        "Tenant:  Notify landlord of intent to renew lease 60 days before expiration."
+      ],
+      "compensation": {},
+      "benefits": [],
+      "termination": {
+        "atWill": null,
+        "forCause": "The landlord can terminate the lease for material breach (e.g., nonpayment of rent, damage, violation of terms). Tenant can terminate at the end of the lease term with 30 days' written notice.",
+        "severance": null
+      },
+      "restrictions": {
+        "confidentiality": null,
+        "nonCompete": null,
+        "nonSolicitation": null,
+        "other": "Tenant is not allowed to sublet the property without the landlord's written consent; guests are limited to 14 consecutive days with written approval; tenant may only keep one pet with landlord's consent and a $300 non-refundable fee."
+      }
+    }
   },
-  risks: [
-    {
-      title: 'Non-Compete Clause in California',
-      severity: 'High',
-      emoji: '🚨',
-      description: 'A 12-month non-compete restriction in California may be unenforceable under California Business and Professions Code Section 16600, which generally voids non-compete agreements.',
-      impact: 'If enforced, this severely limits your ability to work in your field for a year. However, California law typically protects employees from such restrictions, making this clause likely unenforceable.',
-    },
-    {
-      title: 'At-Will Employment',
-      severity: 'Medium',
-      emoji: '⚠️',
-      description: 'Either party can end the employment with only 30 days notice, providing limited job security.',
-      impact: 'You could be terminated with just 30 days notice for any lawful reason or no reason at all, creating financial uncertainty.',
-    },
-    {
-      title: 'Broad IP Assignment',
-      severity: 'Medium',
-      emoji: '⚠️',
-      description: 'All work created during employment becomes company property, potentially including personal projects.',
-      impact: 'Side projects or personal coding work done on your own time could be claimed by the company if related to their business.',
-    },
-    {
-      title: 'Vague "Gross Negligence" Definition',
-      severity: 'Medium',
-      emoji: '⚠️',
-      description: 'The contract allows immediate termination for "gross negligence" but does not define what constitutes it.',
-      impact: 'Ambiguity could lead to sudden termination without severance for actions you did not realize were considered gross negligence.',
-    },
-    {
-      title: 'Discretionary Bonus',
-      severity: 'Low',
-      emoji: 'ℹ️',
-      description: 'The bonus is described as "discretionary," meaning there is no guarantee you will receive it even if performance targets are met.',
-      impact: 'Your actual compensation may be lower than expected if bonuses are not paid consistently.',
-    },
-  ],
-  obligations: {
-    employer: [
+  "risks": {
+    "risks": [
       {
-        duty: 'Pay base salary',
-        amount: 120000,
-        frequency: 'bi-weekly',
-        startDate: null,
-        duration: null,
-        scope: null,
+        "title": "Non-Renewal/Early Termination Liability",
+        "severity": "high" as const,
+        "icon": "alert-triangle" as const,
+        "description": "If James Parker wants to move out before the lease expires, he's still responsible for rent until the property is re-rented. This could mean significant financial loss if it takes time to find a new tenant.",
+        "impact": "Financial loss due to continued rent obligation, potential difficulty finding a new tenant.",
+        "impactOn": "employer" as const
       },
       {
-        duty: 'Provide health, dental, and vision insurance',
-        amount: null,
-        frequency: null,
-        startDate: 'Day 1',
-        duration: null,
-        scope: 'Full coverage as per company policy',
+        "title": "Landlord's Entry",
+        "severity": "medium" as const,
+        "icon": "alert-circle" as const,
+        "description": "The landlord can enter the property with 24-hour notice (or without notice in emergencies).  While reasonable, frequent or untimely entries could be disruptive to James Parker's privacy and daily life.",
+        "impact": "Disruption to privacy, inconvenience, potential for unexpected interruptions.",
+        "impactOn": "employee" as const
       },
       {
-        duty: 'Grant stock options',
-        amount: 5000,
-        frequency: null,
-        startDate: null,
-        duration: 'Vesting quarterly over 4 years',
-        scope: 'Subject to vesting schedule and continued employment',
+        "title": "Late Fee",
+        "severity": "medium" as const,
+        "icon": "alert-circle" as const,
+        "description": "A late fee of $50 is charged if rent is not paid within 5 days.  This can create unexpected expenses if James Parker experiences temporary financial difficulties.",
+        "impact": "Unexpected expense, potential financial strain if rent is late.",
+        "impactOn": "employee" as const
       },
       {
-        duty: 'Contribute to 401(k)',
-        amount: null,
-        frequency: 'per pay period',
-        startDate: null,
-        duration: null,
-        scope: '5% employer match',
+        "title": "Security Deposit Deductions",
+        "severity": "medium" as const,
+        "icon": "alert-circle" as const,
+        "description": "The landlord can withhold a portion of the $1,800 security deposit for damages or unpaid rent. James Parker needs to carefully document the condition of the property upon move-in and move-out to avoid unwarranted deductions.",
+        "impact": "Loss of security deposit, potential disputes over deductions.",
+        "impactOn": "employee" as const
       },
       {
-        duty: 'Provide paid time off',
-        amount: null,
-        frequency: null,
-        startDate: null,
-        duration: null,
-        scope: '20 vacation days, 10 holidays, 5 sick days annually',
-      },
-    ],
-    employee: [
-      {
-        duty: 'Perform Senior Software Engineer duties',
-        amount: null,
-        frequency: null,
-        startDate: null,
-        duration: null,
-        scope: 'Full-time professional dedication',
-      },
-      {
-        duty: 'Write and review code',
-        amount: null,
-        frequency: null,
-        startDate: null,
-        duration: null,
-        scope: 'As assigned by supervisor',
-      },
-      {
-        duty: 'Design scalable architectures',
-        amount: null,
-        frequency: null,
-        startDate: null,
-        duration: null,
-        scope: 'For company projects',
-      },
-      {
-        duty: 'Mentor junior developers',
-        amount: null,
-        frequency: null,
-        startDate: null,
-        duration: null,
-        scope: 'As needed',
-      },
-      {
-        duty: 'Maintain confidentiality',
-        amount: null,
-        frequency: null,
-        startDate: null,
-        duration: 'Indefinitely, including post-employment',
-        scope: 'All proprietary information',
-      },
-      {
-        duty: 'Comply with non-solicitation',
-        amount: null,
-        frequency: null,
-        startDate: null,
-        duration: '12 months post-termination',
-        scope: 'No soliciting clients, customers, or employees',
-      },
-    ],
+        "title": "Pet-Related Damage/Nuisance",
+        "severity": "low" as const,
+        "icon": "info" as const,
+        "description": "James Parker is fully liable for any damage or nuisance caused by his pet.  Even with a pet fee, unexpected pet-related issues could lead to additional expenses.",
+        "impact": "Unexpected expenses related to pet damage, potential for lease termination if issues persist.",
+        "impactOn": "employee" as const
+      }
+    ]
   },
-  omissions: [
-    {
-      item: 'Overtime compensation policy',
-      impact: 'Unclear whether overtime hours will be compensated or if the position is exempt. This could lead to unpaid extra work.',
-      priority: 'High',
-    },
-    {
-      item: 'Remote work or work-from-home policy',
-      impact: 'No mention of remote work flexibility, which could affect work-life balance and relocation requirements.',
-      priority: 'High',
-    },
-    {
-      item: 'Performance review process and timeline',
-      impact: 'Without clear performance evaluation criteria, salary increases and promotions may be unclear or arbitrary.',
-      priority: 'Medium',
-    },
-    {
-      item: 'Arbitration cost allocation',
-      impact: 'The contract may require arbitration but does not specify who pays the fees, which could be expensive for the employee.',
-      priority: 'High',
-    },
-    {
-      item: 'Change of control or acquisition clause',
-      impact: 'If the company is acquired, your employment terms, stock options, or severance could change without clear protections.',
-      priority: 'Medium',
-    },
-    {
-      item: 'Intellectual property for work outside business hours',
-      impact: 'No carve-out for personal projects done on your own time and equipment, potentially giving the company rights to all your work.',
-      priority: 'High',
-    },
-    {
-      item: 'Expense reimbursement policy',
-      impact: 'No details on reimbursement for work-related expenses like equipment, travel, or professional development.',
-      priority: 'Low',
-    },
-  ],
-  questions: [
-    'Can the non-compete clause be removed or limited, given that it may be unenforceable in California?',
-    'What exactly constitutes "gross negligence" for immediate termination purposes?',
-    'Is the performance bonus based on objective metrics, and what is the historical payout rate?',
-    'How are stock options affected if the company is acquired or goes public?',
-    'Is there a clear process for performance reviews and salary adjustments?',
-    'Who pays for arbitration costs if a dispute arises?',
-    'Can I work on personal software projects outside of work hours without company ownership claims?',
-    'Is there flexibility for remote work or hybrid arrangements?',
-  ],
-  disclaimer: 'I am an AI assistant, not a lawyer. This information is for educational purposes only. Consult a qualified attorney for legal advice.',
+  "obligations": {
+    "obligations": {
+      "employer": [
+        {
+          "duty": "Maintain the structure, plumbing, electrical, heating, and major appliances in safe working order.",
+          "scope": "Property maintenance"
+        },
+        {
+          "duty": "Provide and pay for water, sewer, and garbage collection.",
+          "scope": "Utilities"
+        },
+        {
+          "duty": "Enter the Premises with twenty-four (24) hours' notice for inspection, maintenance, or to show the property to prospective tenants or buyers.",
+          "scope": "Property inspection/showings"
+        },
+        {
+          "duty": "Enter the Premises without notice to prevent damage or injury (emergency only)",
+          "scope": "Emergency situations"
+        }
+      ],
+      "employee": [
+        {
+          "duty": "Pay rent of One Thousand Eight Hundred Dollars ($1,800) due on the first (1st) day of each calendar month.",
+          "scope": "Monthly payment"
+        },
+        {
+          "duty": "Pay late fee of fifty dollars ($50) if rent is not received within five (5) days of the due date.",
+          "scope": "Late payment penalty"
+        },
+        {
+          "duty": "Keep the Premises clean, sanitary, and in good condition.",
+          "scope": "Property upkeep"
+        },
+        {
+          "duty": "Promptly notify Landlord of any needed repairs.",
+          "scope": "Repair requests"
+        },
+        {
+          "duty": "Comply with all local ordinances, building codes, and homeowner association regulations.",
+          "scope": "Legal compliance"
+        }
+      ]
+    }
+  },
+  "omissions": {
+    "omissions": [
+      {
+        "item": "Maintenance Schedule & Responsibilities (Specifics)",
+        "impact": "Lack of a detailed maintenance schedule leaves ambiguity about who is responsible for what repairs and preventative maintenance.  This can lead to disagreements and delayed repairs.",
+        "priority": "high" as const
+      },
+      {
+        "item": "Landlord Responsibilities for Habitability",
+        "impact": "Oregon law requires landlords to maintain uninhabitable conditions. The agreement doesn't explicitly state the landlord's responsibility for maintaining habitable conditions, potentially leaving the Tenant vulnerable.",
+        "priority": "high" as const
+      },
+      {
+        "item": "Insurance Requirements",
+        "impact": "The agreement does not specify insurance requirements for either party.  Tenant's personal property is not adequately protected, and landlord's liability is unclear.",
+        "priority": "medium" as const
+      }
+    ],
+    "questions": [
+      "What is the landlord's preferred method for reporting maintenance requests, and what is the typical response time?",
+      "What specific repairs are covered under the landlord's responsibility, and what is the process for requesting those repairs?",
+      "What type of insurance does the landlord carry on the property?",
+      "What are the rules regarding noise levels and quiet enjoyment of the property, and how will disputes be handled?",
+      "Is there a specific process for requesting and approving subletting, and what requirements are placed on subtenants?"
+    ]
+  },
+  "translatedAt": "2025-10-16T07:59:27.168Z"
 };
 
+export const MOCK_ONBOARDING_STATE = {
+  currentStep: 'complete',
+  isValidContract: true,
+  validationError: null,
+  documentType: 'Lease Agreement',
+  detectedLanguage: 'en',
+  selectedOutputLanguage: 'en',
+  userPreferredLanguage: 'en',
+  detectedParties: {
+    confidence: 'high' as const,
+    contractType: 'bilateral' as const,
+    parties: {
+      party1: {
+        name: 'Olivia Green',
+        role: 'Landlord',
+        location: '241 Oakwood Drive, Portland, Oregon 97205'
+      },
+      party2: {
+        name: 'James Parker',
+        role: 'Tenant',
+        location: '117 North Street, Portland, Oregon 97205'
+      }
+    }
+  },
+  selectedRole: 'tenant',
+  pendingContractText: 'Mock lease agreement content for design purposes...',
+  canProceed: true,
+  isProcessing: false,
+  error: null,
+};
+export const MOCK_CONTRACT =  {
+  id: 'mock-lease-001',
+  text: 'Mock lease agreement content for design purposes...',
+  fileName: 'Sample Lease Agreement.pdf',
+  fileSize: 245760,
+  fileType: 'application/pdf',
+  uploadedAt: new Date(),
+  wordCount: 1250,
+  estimatedReadingTime: 5,
+};

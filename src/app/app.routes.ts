@@ -18,18 +18,18 @@ export const routes: Routes = [
             (m) => m.ContractUpload
           ),
       },
-      // {
-      //   path: 'analysis',
-      //   loadComponent: () =>
-      //     import('./features/analysis-dashboard/analysis-dashboard').then(
-      //       (m) => m.AnalysisDashboard
-      //     ),
-      // },
       {
         path: 'analysis',
         loadComponent: () =>
           import('./features/analysis-dashboard/analysis-dashboard.component').then(
             (m) => m.AnalysisDashboard
+          ),
+      },
+      {
+        path: 'mock',
+        loadComponent: () =>
+          import('./features/mock-route/mock-route.component').then(
+            (m) => m.MockRouteComponent
           ),
       },
     ],
