@@ -2,9 +2,46 @@
   [type]="type()"
   [disabled]="disabled() || loading()"
   (click)="onClick($event)"
+  [class]="
+    'flex items-center justify-center gap-2 select-none ' +
+    (fullWidth() ? 'w-full ' : 'inline-flex ') +
+    (size() === 'sm'
+      ? 'px-3 py-1.5 text-sm '
+      : size() === 'md'
+        ? 'px-4 py-2 text-base '
+        : 'px-6 py-3 text-lg ') +
+    ((disabled() || loading()) ? 'cursor-not-allowed ' : 'cursor-pointer ')
+  "
 >
   @if (loading()) {
-    <span class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></span>
+    <app-loading-spinner 
+      [size]='getSpinnerSize()'
+      [colorClass]='getSpinnerColor()'>
+    </app-loading-spinner>
+    @if (text()) {
+      <span [class]='getTextClasses()'>{{ text() }}</span>
+    }
+  } @else {
+    @if (hasIcon() && iconPosition() === 'left') {
+      <lucide-icon [name]='icon()' [class]='getIconClasses()'></lucide-icon>
+    }
+
+    @if (text() && iconPosition() !== 'center') {
+      <span [class]='getTextClasses()'>{{ text() }}</span>
+    }
+
+    @if (hasIcon() && iconPosition() === 'center') {
+      <lucide-icon [name]='icon()' [class]='getIconClasses()'></lucide-icon>
+    }
+
+    @if (text() && iconPosition() === 'center') {
+      <span [class]='getTextClasses()'>{{ text() }}</span>
+    }
+
+    @if (hasIcon() && iconPosition() === 'right') {
+      <lucide-icon [name]='icon()' [class]='getIconClasses()'></lucide-icon>
+    }
   }
+
   <ng-content></ng-content>
 </button>

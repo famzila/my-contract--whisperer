@@ -34,14 +34,16 @@
       </div>
       
       <!-- Close Button -->
-      <button
+      <app-button
+        (clicked)="dismiss()"
+        variant="ghost"
+        [iconOnly]="true"
+        size="sm"
+        [icon]="XIcon"
+        customClasses="flex-shrink-0 text-slate-500 hover:bg-slate-200 hover:text-blue-900"
         type="button"
-        (click)="dismiss()"
-        class="flex-shrink-0 flex items-center justify-center w-8 h-8 bg-transparent border-0 rounded-md text-slate-500 cursor-pointer transition-all duration-150 hover:bg-slate-200 hover:text-blue-900"
-        aria-label="Dismiss"
       >
-        <lucide-icon [img]="XIcon" class="w-5 h-5"></lucide-icon>
-      </button>
+      </app-button>
     </div>
   </div>
 }

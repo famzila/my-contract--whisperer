@@ -7,10 +7,11 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { Globe, FileText, X } from '../../icons/lucide-icons';
 import { LanguageStore } from '../../../core/stores/language.store';
+import { Button } from '../button/button';
 
 @Component({
   selector: 'app-language-banner',
-  imports: [TranslatePipe, LucideAngularModule],
+  imports: [TranslatePipe, LucideAngularModule, Button],
   templateUrl: './language-banner.html',
 })
 export class LanguageBanner {

@@ -31,3 +31,4 @@ export class TabHeader {
   iconBgClass = input.required<string>();
   iconColorClass = input.required<string>();
 }
+

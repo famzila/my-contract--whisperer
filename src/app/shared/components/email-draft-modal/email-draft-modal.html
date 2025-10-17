@@ -1,14 +1,18 @@
 <app-base-modal [config]="modalConfig">
   <!-- Rewrite Options Toggle -->
   <div class="mb-4">
-    <button
-      (click)="onToggleRewriteOptions()"
-      class="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors rtl:flex-row-reverse">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <app-button
+      (clicked)="onToggleRewriteOptions()"
+      variant="link"
+      size="sm"
+      [text]="showRewriteOptionsState ? ('analysis.email.hideRewriteOptions' | translate) : ('analysis.email.showRewriteOptions' | translate)"
+      customClasses="text-indigo-600 hover:text-indigo-700 rtl:flex-row-reverse"
+    >
+      <!-- Custom SVG icon as content projection since it's not a Lucide icon -->
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
       </svg>
-      {{ showRewriteOptionsState ? ('analysis.email.hideRewriteOptions' | translate) : ('analysis.email.showRewriteOptions' | translate) }}
-    </button>
+    </app-button>
 
     @if (showRewriteOptionsState) {
       <div class="mt-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200 animate-fade-in">
@@ -57,22 +61,17 @@
 
         <!-- Apply Button -->
         <app-button
-          (click)="onRewriteEmail()"
+          (clicked)="onRewriteEmail()"
           [disabled]="isCurrentlyRewriting"
           variant="primary"
           size="md"
-          class="w-full">
-          @if (isCurrentlyRewriting) {
-            <span class="flex items-center justify-center gap-2 rtl:flex-row-reverse">
-              <app-loading-spinner size="sm" />
-              {{ 'analysis.email.rewriting' | translate }}
-            </span>
-          } @else {
-            <span class="flex items-center gap-2 rtl:flex-row-reverse">
-              <lucide-icon [img]="RefreshCwIcon" class="w-4 h-4"></lucide-icon>
-              {{ 'analysis.email.applyChanges' | translate }}
-            </span>
-          }
+          [fullWidth]="true"
+          [text]="isCurrentlyRewriting ? ('analysis.email.rewriting' | translate) : ('analysis.email.applyChanges' | translate)"
+          [icon]="isCurrentlyRewriting ? null : RefreshCwIcon"
+          [loading]="isCurrentlyRewriting"
+          [loadingText]="'analysis.email.rewriting' | translate"
+          customClasses="rtl:flex-row-reverse"
+        >
         </app-button>
       </div>
     }

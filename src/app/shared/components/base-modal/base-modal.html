@@ -13,12 +13,15 @@
         }
       </h2>
     </div>
-    <button
-      (click)="onClose()"
-      class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+    <app-button
+      (clicked)="onClose()"
+      variant="ghost"
+      [iconOnly]="true"
+      size="md"
+      [icon]="XIcon"
+      customClasses="text-gray-500"
     >
-      <lucide-icon [img]="XIcon" class="w-5 h-5 text-gray-500"></lucide-icon>
-    </button>
+    </app-button>
   </div>
 
   <!-- Content -->
@@ -34,35 +37,26 @@
       @if (getActionButtons().length > 0) {
         <!-- Configurable Action Buttons -->
         @for (button of getActionButtons(); track $index) {
-          <button
-            (click)="onActionButtonClick(button)"
-            [disabled]="button.disabled"
-            [class]="getButtonClasses(button.variant)"
-            [class.opacity-50]="button.disabled"
-            [class.cursor-not-allowed]="button.disabled"
+          <app-button
+            (clicked)="onActionButtonClick(button)"
+            [disabled]="button.disabled || false"
+            [variant]="button.variant || 'primary'"
+            size="md"
+            [icon]="button.icon"
+            [text]="button.textKey ? (button.textKey | translate) : button.text"
           >
-            @if (button.icon) {
-              <lucide-icon [img]="button.icon" class="w-4 h-4"></lucide-icon>
-            }
-            @if (button.textKey) {
-              {{ button.textKey | translate }}
-            } @else {
-              {{ button.text }}
-            }
-          </button>
+          </app-button>
         }
       } @else {
-        <!-- Legacy Close Button -->
-        <button
-          (click)="onClose()"
-          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        <!--  Close Button -->
+        <app-button
+          (clicked)="onClose()"
+          variant="primary"
+          size="md"
+          [icon]="XIcon"
+          [text]="getFooterButtonKey() ? (getFooterButtonKey() | translate) : getFooterButtonText()"
         >
-          @if (getFooterButtonKey()) {
-            {{ getFooterButtonKey() | translate }}
-          } @else {
-            {{ getFooterButtonText() }}
-          }
-        </button>
+        </app-button>
       }
     </div>
   }

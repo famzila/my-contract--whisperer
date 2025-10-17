@@ -13,14 +13,6 @@
             <p class="text-xs text-gray-500">{{ 'navbar.subtitle' | translate }}</p>
           </div>
         </div>
-
-        <!-- Navigation -->
-        <nav class="hidden md:flex items-center gap-6">
-          <button routerLink="/" class="text-gray-600 hover:text-gray-900 transition-colors">{{ 'navbar.home' | translate }}</button>
-          <button (click)="showHowItWorks()" class="text-gray-600 hover:text-gray-900 transition-colors">{{ 'navbar.howItWorks' | translate }}</button>
-          <button (click)="showPrivacyPolicy()" class="text-gray-600 hover:text-gray-900 transition-colors">{{ 'navbar.privacy' | translate }}</button>
-        </nav>
-
         <!-- Language Selector -->
         <div class="flex items-center gap-4">
           <app-language-selector></app-language-selector>
@@ -58,9 +50,9 @@
         <div>
           <h3 class="font-semibold text-gray-900 mb-3">{{ 'footer.quickLinks' | translate }}</h3>
           <ul class="space-y-2 text-sm text-gray-600">
-            <li><button (click)="showPrivacyPolicy()" class="hover:text-gray-900 text-left">{{ 'footer.privacyPolicy' | translate }}</button></li>
-            <li><button (click)="showTermsOfService()" class="hover:text-gray-900 text-left">{{ 'footer.termsOfService' | translate }}</button></li>
-            <li><a href="mailto:famzil.contact@gmail.com?subject=Contract Whisperer Support&body=Hi, I have a question about Contract Whisperer:" class="hover:text-gray-900">{{ 'footer.contactUs' | translate }}</a></li>
+            <li><button (click)="showPrivacyPolicy()" class="text-left hover:text-primary transition-colors">{{ 'footer.privacyPolicy' | translate }}</button></li>
+            <li><button (click)="showTermsOfService()" class="text-left hover:text-primary transition-colors">{{ 'footer.termsOfService' | translate }}</button></li>
+            <li><a href="mailto:famzil.contact@gmail.com?subject=Contract Whisperer Support&body=Hi, I have a question about Contract Whisperer:" class="hover:text-primary transition-colors">{{ 'footer.contactUs' | translate }}</a></li>
           </ul>
         </div>
 

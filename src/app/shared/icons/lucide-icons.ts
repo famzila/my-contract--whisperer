@@ -20,7 +20,6 @@ import {
   User,
   Bell,
   Shield,
-  Lock,
   Eye,
   EyeOff,
   Building2,
@@ -46,7 +45,8 @@ import {
   Copy,
   Edit,
   Save,
-  Trash2
+  Trash2,
+  Lock
 } from 'lucide-angular';
 
 import { 

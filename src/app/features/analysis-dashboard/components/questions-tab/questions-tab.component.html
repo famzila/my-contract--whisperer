@@ -11,31 +11,25 @@
   </app-tab-header>
   @if (hasQuestions) {
   <div class="flex items-center gap-3">
-    <button
-      (click)="copyAllQuestions.emit()"
-      class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+    <app-button
+      (clicked)="copyAllQuestions.emit()"
+      variant="secondary"
+      size="md"
+      [text]="copyAllButtonState() === 'copy' ? ('analysis.questions.copyAll' | translate) : ('analysis.questions.copied' | translate)"
+      [icon]="copyAllButtonState() === 'copy' ? CopyIcon : CheckIcon"
+      [customClasses]="copyAllButtonState() === 'copied' ? 'text-green-600' : ''"
     >
-      @if (copyAllButtonState() === 'copy') {
-      <lucide-icon [name]="CopyIcon" class="w-4 h-4"></lucide-icon>
-      {{ 'analysis.questions.copyAll' | translate }}
-      } @else {
-      <lucide-icon [name]="CheckIcon" class="w-4 h-4 text-green-600"></lucide-icon>
-      {{ 'analysis.questions.copied' | translate }}
-      }
-    </button>
+    </app-button>
     @if (!isContractProvider()) {
-    <app-button (click)="draftEmail.emit()" [disabled]="isDrafting()" variant="primary" size="md">
-      @if (isDrafting()) {
-      <span class="flex items-center gap-2">
-        <app-loading-spinner size="sm" />
-        {{ 'analysis.questions.drafting' | translate }}
-      </span>
-      } @else {
-      <span class="flex items-center gap-2">
-        <lucide-icon [name]="MailIcon" class="w-4 h-4"></lucide-icon>
-        {{ 'analysis.questions.writeEmail' | translate }}
-      </span>
-      }
+    <app-button 
+      (clicked)="draftEmail.emit()" 
+      [disabled]="isDrafting()" 
+      variant="primary" 
+      size="md"
+      [text]="isDrafting() ? ('analysis.questions.drafting' | translate) : ('analysis.questions.writeEmail' | translate)"
+      [icon]="isDrafting() ? null : MailIcon"
+      [loading]="isDrafting()"
+    >
     </app-button>
     }
   </div>
@@ -76,12 +70,15 @@
             </p>
           </div>
         </div>
-        <button
-          (click)="copyQuestion.emit(question)"
-          class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+        <app-button
+          (clicked)="copyQuestion.emit(question)"
+          variant="ghost"
+          [iconOnly]="true"
+          size="sm"
+          [icon]="CopyIcon"
+          customClasses="text-gray-400 hover:text-gray-600"
         >
-          <lucide-icon [name]="CopyIcon" class="w-4 h-4"></lucide-icon>
-        </button>
+        </app-button>
       </div>
     </div>
   </app-card>

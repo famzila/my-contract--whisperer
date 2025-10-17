@@ -1,12 +1,25 @@
 <div class="py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-3xl mx-auto">
+    <div class="flex justify-center mb-8">
+      <div
+        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 text-white font-semibold text-sm rounded-full shadow-md pulse-glow"
+      >
+          <lucide-icon [img]="LockIcon" class="w-4 h-4"></lucide-icon>
+        <span>{{ 'upload.privateSecure' | translate }}</span>
+      </div>
+    </div>
+
+
     <!-- Header -->
     <div class="text-center mb-8">
-      <h2 class="text-3xl font-bold text-gray-900 mb-2">
+      <h2 class="text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 dark:from-indigo-400 dark:via-indigo-300 dark:to-sky-400 bg-clip-text text-transparent">
         {{ 'upload.title' | translate }}
       </h2>
-      <p class="text-lg text-gray-600">
+      <p class="text-xl text-slate-600 dark:text-slate-400 mb-4">
         {{ 'upload.subtitle' | translate }}
+      </p>
+      <p class="text-sm text-slate-500 dark:text-slate-500">
+        {{ 'upload.details' | translate }}
       </p>
     </div>
 
@@ -53,6 +66,7 @@
 
     <!-- File Upload Mode -->
     @if (mode() === 'file') {
+      
       <div class="bg-white rounded-xl shadow-lg p-8">
         <div
           (drop)="onFileDrop($event)"
@@ -60,7 +74,7 @@
           (dragleave)="onDragLeave($event)"
           [class.border-primary]="isDragging()"
           [class.bg-primary/5]="isDragging()"
-          class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center transition-all"
+          class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center transition-all duration-300 hover:border-primary-600 dark:hover:border-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950 cursor-pointer"
         >
           @if (contractStore.isLoading()) {
             <div class="py-8">
@@ -68,18 +82,16 @@
               <p class="mt-4 text-gray-600">{{ 'upload.processingContract' | translate }}</p>
             </div>
           } @else {
-            <div class="space-y-4">
-              <div class="flex justify-center">
+            <div class="space-y-4 ">
+              <div class="flex justify-center float-animation">
                 <lucide-icon [img]="UploadIcon" class="w-16 h-16 text-gray-400"></lucide-icon>
               </div>
-              <div>
                 <p class="text-lg font-medium text-gray-900 mb-2">
                   {{ 'upload.dropHere' | translate }}
                 </p>
                 <p class="text-sm text-gray-500 mb-4">
                   {{ 'upload.orClickBrowse' | translate }}
                 </p>
-              </div>
               <input
                 type="file"
                 (change)="onFileSelected($event)"
@@ -87,12 +99,13 @@
                 class="hidden"
                 #fileInput
               />
-              <button
-                (click)="fileInput.click()"
-                class="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
+              <app-button
+                (clicked)="fileInput.click()"
+                variant="primary"
+                [text]="'upload.chooseFile' | translate"
+                [icon]="UploadIcon"
               >
-                {{ 'upload.chooseFile' | translate }}
-              </button>
+              </app-button>
               <p class="text-xs text-gray-400 mt-4">
                 {{ 'upload.supportedFormats' | translate }}
               </p>
@@ -114,7 +127,7 @@
               id="contract-text"
               [(ngModel)]="contractText"
               name="contractText"
-              rows="15"
+              rows="10"
               [placeholder]="'upload.pastePlaceholder' | translate"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
               [disabled]="contractStore.isLoading()"
@@ -136,20 +149,16 @@
           }
 
           <!-- Submit Button -->
-          <button
+          <app-button
             type="submit"
             [disabled]="contractStore.isLoading() || !contractText().trim()"
-            class="w-full px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            [loading]="contractStore.isLoading()"
+            variant="primary"
+            [fullWidth]="true"
+            [text]="contractStore.isLoading() ? ('upload.processing' | translate) : ('upload.analyzeContract' | translate)"
+            [loadingText]="'upload.processing' | translate"
           >
-            @if (contractStore.isLoading()) {
-              <span class="flex items-center justify-center gap-2">
-                <span class="inline-block animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
-                {{ 'upload.processing' | translate }}
-              </span>
-            } @else {
-              {{ 'upload.analyzeContract' | translate }}
-            }
-          </button>
+          </app-button>
         </form>
       </div>
     }
@@ -160,24 +169,30 @@
     <div class="mt-12 text-center">
       <h3 class="text-sm font-medium text-gray-700 mb-3">{{ 'upload.needHelp' | translate }}</h3>
       <div class="flex justify-center gap-6 text-sm text-gray-500">
-        <button 
-          (click)="viewSampleContract()"
-          class="hover:text-gray-900 transition-colors flex items-center gap-2">
-          <lucide-icon [img]="BookOpenIcon" class="w-4 h-4"></lucide-icon>
-          {{ 'upload.viewSample' | translate }}
-        </button>
-        <button 
-          (click)="showHowItWorks()"
-          class="hover:text-gray-900 transition-colors flex items-center gap-2">
-          <lucide-icon [img]="HelpCircleIcon" class="w-4 h-4"></lucide-icon>
-          {{ 'upload.howItWorks' | translate }}
-        </button>
-        <button 
-          (click)="showPrivacyPolicy()"
-          class="hover:text-gray-900 transition-colors flex items-center gap-2">
-          <lucide-icon [img]="ShieldIcon" class="w-4 h-4"></lucide-icon>
-          {{ 'upload.privacyPolicy' | translate }}
-        </button>
+        <app-button
+          (clicked)="viewSampleContract()"
+          variant="link"
+          size="sm"
+          [text]="'upload.viewSample' | translate"
+          [icon]="BookOpenIcon"
+        >
+        </app-button>
+        <app-button
+          (clicked)="showHowItWorks()"
+          variant="link"
+          size="sm"
+          [text]="'upload.howItWorks' | translate"
+          [icon]="HelpCircleIcon"
+        >
+        </app-button>
+        <app-button
+          (clicked)="showPrivacyPolicy()"
+          variant="link"
+          size="sm"
+          [text]="'upload.privacyPolicy' | translate"
+          [icon]="ShieldIcon"
+        >
+        </app-button>
       </div>
     </div>
   </div>

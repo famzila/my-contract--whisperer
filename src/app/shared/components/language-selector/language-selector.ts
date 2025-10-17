@@ -4,7 +4,7 @@
  */
 import { Component, computed, inject, signal } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { Languages, LucideAngularModule } from 'lucide-angular';
 import { LanguageStore } from '../../../core/stores/language.store';
 import { ContractStore } from '../../../core/stores/contract.store';
 import { TranslatorService } from '../../../core/services/ai/translator.service';
@@ -23,6 +23,7 @@ export class LanguageSelector {
   
   // Lucide icons
   readonly GlobeIcon = Globe;
+  readonly LanguagesIcon = Languages;
   readonly ChevronDownIcon = ChevronDown;
   readonly CheckIcon = Check;
   

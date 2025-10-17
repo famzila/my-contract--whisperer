@@ -2,13 +2,37 @@
 @import "tailwindcss";
 @import '@angular/cdk/overlay-prebuilt.css';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Design System Tokens */
 @theme {
-  /* Color Palette */
-  --color-primary: #2563eb;
-  --color-primary-dark: #1e40af;
+  /* Color Palette - Using Indigo Values */
+  --color-primary: #4f46e5;        /* indigo-600 */
+  --color-primary-dark: #4338ca;   /* indigo-700 */
+  --color-primary-light: #6366f1;  /* indigo-500 */
+  --color-primary-50: #eef2ff;     /* indigo-50 */
+  --color-primary-100: #e0e7ff;    /* indigo-100 */
+  --color-primary-200: #c7d2fe;    /* indigo-200 */
+  --color-primary-400: #a5b4fc;    /* indigo-400 */
+  --color-primary-600: #818cf8;    /* indigo-600 */
+  --color-primary-700: #4338ca;    /* indigo-700 */
+  --color-primary-900: #312e81;    /* indigo-900 */
+  --color-primary-950: #1e1b4b;    /* indigo-950 */
   --color-secondary: #64748b;
   --color-accent: #0ea5e9;
+  
+  /* Border Colors */
+  --color-border-primary: #e0e7ff;
+  --color-border-primary-dark: #c7d2fe;
+  --color-border-primary-light: #a5b4fc;
+  --color-border-primary-50: #eef2ff;
+  --color-border-primary-100: #e0e7ff;
+  --color-border-primary-200: #c7d2fe;
+  --color-border-primary-400: #a5b4fc;
+  --color-border-primary-600: #818cf8;
+  --color-border-primary-700: #4338ca;
+  --color-border-primary-900: #312e81;
+  --color-border-primary-950: #1e1b4b;
   
   /* Risk Colors */
   --color-risk-high: #dc2626;
@@ -97,4 +121,18 @@ body {
 /* Custom backdrop blur effect */
 .cdk-overlay-backdrop {
   backdrop-filter: blur(2px);
+}
+
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.float-animation {
+  animation: float 3s ease-in-out infinite;
 }

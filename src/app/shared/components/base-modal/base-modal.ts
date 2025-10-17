@@ -4,6 +4,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DialogRef } from '@angular/cdk/dialog';
 import { X } from '../../icons/lucide-icons';
+import { Button } from '../button/button';
 
 export interface ActionButton {
   text?: string;
@@ -28,7 +29,7 @@ export interface BaseModalConfig {
 
 @Component({
   selector: 'app-base-modal',
-  imports: [LucideAngularModule, TranslatePipe],
+  imports: [LucideAngularModule, TranslatePipe, Button],
   templateUrl: './base-modal.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

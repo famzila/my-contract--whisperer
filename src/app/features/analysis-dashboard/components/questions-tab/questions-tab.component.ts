@@ -4,7 +4,6 @@ import { LucideAngularModule } from 'lucide-angular';
 import { Card } from '../../../../shared/components/card/card';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader';
 import { Button } from '../../../../shared/components/button/button';
-import { LoadingSpinner } from '../../../../shared/components/loading-spinner/loading-spinner';
 import { 
   Info, 
   Copy, 
@@ -18,7 +17,7 @@ import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
 
 @Component({
   selector: 'app-questions-tab',
-  imports: [TranslateModule, LucideAngularModule, Card, SkeletonLoader, Button, LoadingSpinner, Alert, TabHeader],
+  imports: [TranslateModule, LucideAngularModule, Card, SkeletonLoader, Button, Alert, TabHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './questions-tab.component.html'
 })

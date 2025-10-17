@@ -8,7 +8,7 @@ import { FileText, Bot, Shield, Menu } from '../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterLink, RouterOutlet,   TranslatePipe, LucideAngularModule, LanguageSelector],
+  imports: [RouterLink, RouterOutlet, TranslatePipe, LucideAngularModule, LanguageSelector],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

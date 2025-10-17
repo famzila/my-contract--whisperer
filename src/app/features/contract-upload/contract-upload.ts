@@ -2,22 +2,24 @@ import { ChangeDetectionStrategy, Component, signal, inject, effect } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { TranslatePipe, TranslateService  } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { 
-  FileText, 
-  Edit, 
-  Upload, 
-  AlertTriangle, 
-  BarChart3, 
-  Clock, 
-  CheckCircle, 
-  BookOpen, 
-  HelpCircle, 
-  Shield, 
-  Globe, 
-  Lightbulb, 
-  Search 
+import { Button } from '../../shared/components/button/button';
+import {
+  FileText,
+  Edit,
+  Upload,
+  AlertTriangle,
+  BarChart3,
+  Clock,
+  CheckCircle,
+  BookOpen,
+  HelpCircle,
+  Shield,
+  Globe,
+  Lightbulb,
+  Search,
+  Lock,
 } from '../../shared/icons/lucide-icons';
 import { ContractStore } from '../../core/stores/contract.store';
 import { UiStore } from '../../core/stores/ui.store';
@@ -25,15 +27,36 @@ import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { LanguageStore } from '../../core/stores/language.store';
 import { ContractParserService } from '../../core/services/contract-parser.service';
 import { TranslatorService } from '../../core/services/ai/translator.service';
-import { isAppLanguageSupported, isGeminiNanoSupported, getLanguageTranslationKey, LANGUAGES } from '../../core/constants/languages';
+import {
+  isAppLanguageSupported,
+  isGeminiNanoSupported,
+  getLanguageTranslationKey,
+  LANGUAGES,
+} from '../../core/constants/languages';
 
 type UploadMode = 'file' | 'text';
 
 @Component({
   selector: 'app-contract-upload',
-  imports: [CommonModule, FormsModule, TranslatePipe, LucideAngularModule],
+  imports: [CommonModule, FormsModule, TranslatePipe, LucideAngularModule, Button],
   templateUrl: './contract-upload.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styles: [
+    `
+      @keyframes pulse-glow {
+        0%,
+        100% {
+          box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+        }
+      }
+      .pulse-glow {
+        animation: pulse-glow 2s ease-in-out infinite;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContractUpload {
   // Stores and services
@@ -42,7 +65,7 @@ export class ContractUpload {
   languageStore = inject(LanguageStore);
   translate = inject(TranslateService);
   uiStore = inject(UiStore);
-  
+
   // Lucide icons
   readonly FileTextIcon = FileText;
   readonly EditIcon = Edit;
@@ -57,6 +80,7 @@ export class ContractUpload {
   readonly GlobeIcon = Globe;
   readonly LightbulbIcon = Lightbulb;
   readonly SearchIcon = Search;
+  readonly LockIcon = Lock;
   private parserService = inject(ContractParserService);
   private translatorService = inject(TranslatorService);
   private router = inject(Router);
@@ -70,9 +94,9 @@ export class ContractUpload {
   constructor() {
     effect(() => {
       if (!this.shouldProcessOnboarding()) return;
-      
+
       const onboardingState = this.getOnboardingState();
-      
+
       // Handle onboarding flow with clear priority order
       if (this.shouldShowLanguageMismatchModal(onboardingState)) {
         this.showLanguageMismatchModal();
@@ -104,7 +128,9 @@ export class ContractUpload {
   /**
    * Check if language mismatch modal should be shown
    */
-  private shouldShowLanguageMismatchModal(state: ReturnType<typeof this.getOnboardingState>): boolean {
+  private shouldShowLanguageMismatchModal(
+    state: ReturnType<typeof this.getOnboardingState>
+  ): boolean {
     return state.needsLanguageSelection;
   }
 
@@ -113,12 +139,13 @@ export class ContractUpload {
    */
   private shouldShowPartySelector(state: ReturnType<typeof this.getOnboardingState>): boolean {
     if (this.partySelectorDialogRef) return false; // Already open
-    
+
     // Priority 2: Party extraction loading state
-    const isLoadingParties = !state.needsLanguageSelection && 
-                            state.selectedOutputLanguage !== null &&
-                            state.detectedParties === null;
-    
+    const isLoadingParties =
+      !state.needsLanguageSelection &&
+      state.selectedOutputLanguage !== null &&
+      state.detectedParties === null;
+
     // Priority 3: Party selection (when parties are detected)
     return isLoadingParties || state.needsPartySelection;
   }
@@ -181,10 +208,10 @@ export class ContractUpload {
     try {
       // Reset onboarding state for new upload
       this.onboardingStore.reset();
-      
+
       // Let the store handle parsing and analysis (stops at party selection)
       await this.contractStore.parseAndAnalyzeFile(file);
-      
+
       // Navigation happens after user selects role in modal
     } catch (err) {
       const error = err as Error;
@@ -198,7 +225,7 @@ export class ContractUpload {
    */
   async onTextSubmit(): Promise<void> {
     const text = this.contractText();
-    
+
     if (!text.trim()) {
       this.uiStore.showToast('Please enter contract text', 'error');
       return;
@@ -207,10 +234,10 @@ export class ContractUpload {
     try {
       // Reset onboarding state for new upload
       this.onboardingStore.reset();
-      
+
       // Let the store handle parsing and analysis (stops at party selection)
       await this.contractStore.parseAndAnalyzeText(text);
-      
+
       // Navigation happens after user selects role in modal
     } catch (err) {
       const error = err as Error;
@@ -223,40 +250,44 @@ export class ContractUpload {
    */
   async onSelectRole(role: string | null): Promise<void> {
     if (!role) return;
-    
+
     // Map party1/party2 to actual roles
     let actualRole: string = role;
     const detectedParties = this.onboardingStore.detectedParties();
-    
+
     if (role === 'party1' && detectedParties?.parties?.party1) {
       // Map party1 to its actual role (e.g., 'landlord', 'employer')
       actualRole = this.mapPartyRoleToUserRole(detectedParties.parties.party1.role);
-      console.log(`👤 [Selection] User selected Party 1 (${detectedParties.parties.party1.name}) → Role: ${actualRole}`);
+      console.log(
+        `👤 [Selection] User selected Party 1 (${detectedParties.parties.party1.name}) → Role: ${actualRole}`
+      );
     } else if (role === 'party2' && detectedParties?.parties?.party2) {
       // Map party2 to its actual role (e.g., 'tenant', 'employee')
       actualRole = this.mapPartyRoleToUserRole(detectedParties.parties.party2.role);
-      console.log(`👤 [Selection] User selected Party 2 (${detectedParties.parties.party2.name}) → Role: ${actualRole}`);
+      console.log(
+        `👤 [Selection] User selected Party 2 (${detectedParties.parties.party2.name}) → Role: ${actualRole}`
+      );
     } else {
       console.log(`👤 [Selection] User selected generic role: ${actualRole}`);
     }
-    
+
     // Set role in onboarding store
     this.onboardingStore.setSelectedRole(actualRole as any);
-    
+
     // Get pending contract text
     const pendingText = this.onboardingStore.pendingContractText();
     if (!pendingText) {
       this.uiStore.showToast('No contract found', 'error');
       return;
     }
-    
+
     // Now trigger analysis with the selected role
     this.uiStore.showToast('Starting analysis...', 'info');
-    
+
     try {
       // Re-parse and analyze with selected role (progressive loading)
       const parsedContract = this.parserService.parseText(pendingText, 'pending-analysis');
-      
+
       // Start analysis - navigation happens automatically when metadata is ready!
       // Don't await - let it run in background while we navigate
       this.contractStore.analyzeContract(parsedContract).catch((error) => {
@@ -265,13 +296,13 @@ export class ContractUpload {
         // Just show toast - they can see what sections loaded successfully
         this.uiStore.showToast('Some sections failed to load. Please try refreshing.', 'warning');
       });
-      
+
       // Note: Navigation to /analysis happens automatically in the store when metadata is ready (~1s)
     } catch (error) {
       this.uiStore.showToast('Analysis failed', 'error');
     }
   }
-  
+
   /**
    * Map detected party role to UserRole enum
    * Party roles from AI: "Landlord", "Tenant", "Employer", "Employee", etc.
@@ -279,17 +310,17 @@ export class ContractUpload {
    */
   private mapPartyRoleToUserRole(partyRole: string): string {
     const roleMap: Record<string, string> = {
-      'Landlord': 'landlord',
-      'Tenant': 'tenant',
-      'Employer': 'employer',
-      'Employee': 'employee',
-      'Client': 'client',
-      'Contractor': 'contractor',
-      'Partner': 'partner',
-      'Lessor': 'landlord',
-      'Lessee': 'tenant',
+      Landlord: 'landlord',
+      Tenant: 'tenant',
+      Employer: 'employer',
+      Employee: 'employee',
+      Client: 'client',
+      Contractor: 'contractor',
+      Partner: 'partner',
+      Lessor: 'landlord',
+      Lessee: 'tenant',
     };
-    
+
     return roleMap[partyRole] || partyRole.toLowerCase();
   }
 
@@ -305,19 +336,21 @@ export class ContractUpload {
 
     // Pre-initialize translator if needed (requires user gesture!)
     if (!isGeminiNanoSupported(detectedLang)) {
-      console.log(`🌍 Pre-initializing translator for ${detectedLang} → en (user gesture available)`);
+      console.log(
+        `🌍 Pre-initializing translator for ${detectedLang} → en (user gesture available)`
+      );
       try {
         await this.translatorService.createTranslator({
           sourceLanguage: detectedLang,
-          targetLanguage: LANGUAGES.ENGLISH
+          targetLanguage: LANGUAGES.ENGLISH,
         });
-        
+
         // Also pre-initialize reverse translator for post-translation
         await this.translatorService.createTranslator({
           sourceLanguage: LANGUAGES.ENGLISH,
-          targetLanguage: detectedLang
+          targetLanguage: detectedLang,
         });
-        
+
         console.log(`✅ Translators pre-initialized successfully`);
       } catch (error) {
         console.error(`❌ Failed to pre-initialize translators:`, error);
@@ -339,7 +372,9 @@ export class ContractUpload {
         // this.uiStore.showToast(`App switched to ${this.getLanguageName(detectedLang)}`, 'info');
       }
     } else {
-      console.warn(`⚠️ ${detectedLang} not supported for app UI, keeping ${this.languageStore.preferredLanguage()}`);
+      console.warn(
+        `⚠️ ${detectedLang} not supported for app UI, keeping ${this.languageStore.preferredLanguage()}`
+      );
       // App stays in current language, analysis will be in contract language
     }
   }
@@ -363,7 +398,7 @@ export class ContractUpload {
    */
   getLanguageName(code: string | null): string {
     if (!code) return this.translate.instant('languages.unknown');
-    
+
     const translationKey = getLanguageTranslationKey(code);
     return this.translate.instant(translationKey);
   }
@@ -373,7 +408,7 @@ export class ContractUpload {
    */
   getLanguageFlag(code: string | null): string {
     if (!code) return '🌍';
-    const lang = this.languageStore.availableLanguages().find(l => l.code === code);
+    const lang = this.languageStore.availableLanguages().find((l) => l.code === code);
     return lang?.flag || '🌍';
   }
 
@@ -388,17 +423,17 @@ export class ContractUpload {
       detectedLanguage: detectedLang,
       preferredLanguage: preferredLang,
       isContractLanguageSupported: isAppLanguageSupported(detectedLang!),
-      
+
       // NEW: Language support information for Phase 0
       isContractLanguageAvailableInUI: isAppLanguageSupported(detectedLang!),
       canAnalyzeDirectly: isGeminiNanoSupported(detectedLang!),
       needsPreTranslation: !isGeminiNanoSupported(detectedLang!),
       fallbackLanguage: isAppLanguageSupported(detectedLang!) ? detectedLang! : 'en',
-      
+
       onSelectContractLanguage: () => this.selectContractLanguage(),
       onSelectUserLanguage: () => this.selectUserLanguage(),
       getLanguageName: (code: string) => this.getLanguageName(code),
-      getLanguageFlag: (code: string) => this.getLanguageFlag(code)
+      getLanguageFlag: (code: string) => this.getLanguageFlag(code),
     };
 
     this.uiStore.openLanguageMismatch(languageData);
@@ -419,7 +454,7 @@ export class ContractUpload {
   get wordCount(): number {
     const text = this.contractText();
     if (!text) return 0;
-    return text.split(/\s+/).filter(word => word.length > 0).length;
+    return text.split(/\s+/).filter((word) => word.length > 0).length;
   }
 
   /**
@@ -458,18 +493,19 @@ export class ContractUpload {
     if (this.partySelectorDialogRef) {
       return; // Already open
     }
-    
+
     // Check if we're in loading state (extracting parties)
-    const isLoading = this.onboardingStore.isValidContract() === true && 
-                     !this.onboardingStore.needsLanguageSelection() && 
-                     this.onboardingStore.selectedOutputLanguage() !== null &&
-                     this.onboardingStore.detectedParties() === null;
-    
+    const isLoading =
+      this.onboardingStore.isValidContract() === true &&
+      !this.onboardingStore.needsLanguageSelection() &&
+      this.onboardingStore.selectedOutputLanguage() !== null &&
+      this.onboardingStore.detectedParties() === null;
+
     this.partySelectorDialogRef = this.uiStore.openPartySelector({
       data: {
         detectedParties: this.onboardingStore.detectedParties(),
-        isLoading: isLoading
-      }
+        isLoading: isLoading,
+      },
     });
 
     // Subscribe to role selection
@@ -484,5 +520,4 @@ export class ContractUpload {
       this.partySelectorDialogRef = null;
     });
   }
-
 }

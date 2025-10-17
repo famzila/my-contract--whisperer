@@ -61,8 +61,10 @@
     "copyright": "Contract Whisperer. Built with Angular & Chrome AI."
   },
   "upload": {
-    "title": "Upload Your Contract",
-    "subtitle": "Get AI-powered analysis in seconds",
+    "title": "Understand Any Contract",
+    "subtitle": "Upload your contract and let AI instantly explain key terms, risks, and rights — privately and clearly.",
+    "details": "100% client-side processing · No uploads · Secure & confidential",
+    "privateSecure": "100% Private & Secure",
     "uploadFile": "Upload File",
     "pasteText": "Paste Text",
     "dropHere": "Drop your contract here",
