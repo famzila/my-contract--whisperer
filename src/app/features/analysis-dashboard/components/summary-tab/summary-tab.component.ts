@@ -11,10 +11,12 @@ import {
   DollarSign, 
   DoorOpen, 
   Shield,
-  FileX
+  FileX,
+  View
 } from '../../../../shared/icons/lucide-icons';
 import { Alert } from "../../../../shared/components/alert/alert";
 import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
+import { Notice } from "../../../../shared/components/notice/notice";
 
 // Use the actual ContractSummary type from the store
 export interface SummaryData {
@@ -49,7 +51,7 @@ export interface PerspectiveContext {
 
 @Component({
   selector: 'app-summary-tab',
-  imports: [TranslateModule, LucideAngularModule, SkeletonLoader, DecimalPipe, Alert, TabHeader],
+  imports: [TranslateModule, LucideAngularModule, SkeletonLoader, DecimalPipe, Alert, TabHeader, Notice],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './summary-tab.component.html'
 })
@@ -70,4 +72,5 @@ export class SummaryTabComponent {
   DoorOpenIcon = DoorOpen;
   ShieldIcon = Shield;
   FileXIcon = FileX;
+  ViewIcon = View;
 }

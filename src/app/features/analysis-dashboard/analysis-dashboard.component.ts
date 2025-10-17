@@ -6,7 +6,6 @@ import {
   computed,
   OnInit,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
@@ -41,11 +40,11 @@ import {
   Languages,
 } from '../../shared/icons/lucide-icons';
 import { Alert } from "../../shared/components/alert/alert";
+import { Notice } from "../../shared/components/notice/notice";
 
 @Component({
   selector: 'app-analysis-dashboard',
   imports: [
-    CommonModule,
     TranslateModule,
     LucideAngularModule,
     LoadingSpinner,
@@ -57,7 +56,7 @@ import { Alert } from "../../shared/components/alert/alert";
     OmissionsTabComponent,
     QuestionsTabComponent,
     DisclaimerTabComponent,
-    Alert
+    Alert,
 ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './analysis-dashboard.component.html',
@@ -84,7 +83,6 @@ export class AnalysisDashboard implements OnInit {
   FileXIcon = FileX;
   InfoIcon = Info;
   ScaleIcon = Scale;
-  GlobeIcon = Globe;
   LanguagesIcon = Languages;
 
   // Computed signals for reactive data

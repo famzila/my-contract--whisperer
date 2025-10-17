@@ -20,26 +20,24 @@
       } @else {
         <!-- Selection State -->
         <!-- Header Description -->
-        <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p class="text-sm text-blue-900 leading-relaxed">
-            <span class="font-semibold flex items-center gap-2 rtl:flex-row-reverse">
-              <lucide-icon [img]="LightbulbIcon" class="w-4 h-4"></lucide-icon>
-              {{ 'partySelector.subtitle' | translate }}
-            </span>
-          </p>
-        </div>
+        <app-notice
+          type="primary"
+          [icon]="SparklesIcon"
+          titleKey="partySelector.title"
+          messageKey="partySelector.subtitle"
+          class="mb-6">
+        </app-notice>
         <!-- Detection Confidence Badge (if high confidence) -->
         @if (detectedParties()?.confidence === 'high' && detectedParties()?.parties) {
-          <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p class="text-sm font-medium text-blue-900 flex items-center gap-2 rtl:flex-row-reverse">
-              <lucide-icon [img]="SparklesIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-              {{ 'partySelector.detectedParties' | translate }}
-            </p>
-          </div>
+        <app-notice
+          type="info"
+          [icon]="SparklesIcon"
+          titleKey="partySelector.detectedParties"
+          class="mb-6">
+        </app-notice>
         }
-        
         <!-- Party Options Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           @for (option of partyOptions(); track option.value) {
             <button
               type="button"
@@ -78,13 +76,12 @@
         </div>
         
         <!-- Info Box -->
-        <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <p class="text-sm text-gray-700 flex items-start gap-2 rtl:flex-row-reverse">
-            <lucide-icon [img]="LightbulbIcon" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></lucide-icon>
-            <span class="rtl:text-right">
-              <strong>{{ 'partySelector.proTip' | translate }}</strong> {{ 'partySelector.proTipMessage' | translate }}
-            </span>
-          </p>
-        </div>
+        <app-notice
+          type="default"
+          [icon]="LightbulbIcon"
+          titleKey="partySelector.proTip"
+          messageKey="partySelector.proTipMessage"
+          class="mt-6">
+        </app-notice>
       }
 </app-base-modal>

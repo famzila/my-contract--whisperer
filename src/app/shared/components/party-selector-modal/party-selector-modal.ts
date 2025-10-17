@@ -4,7 +4,6 @@
  */
 import { Component, input, output, computed, inject } from '@angular/core';
 import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
-import { CommonModule } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
@@ -23,6 +22,7 @@ import {
   X,
   Search
 } from '../../../shared/icons/lucide-icons';
+import { Notice } from '../notice/notice';
 import type { PartyDetectionResult, UserRole } from '../../../core/stores/onboarding.store';
 
 interface PartyOption {
@@ -39,7 +39,7 @@ interface PartySelectorData {
 
 @Component({
   selector: 'app-party-selector-modal',
-  imports: [CommonModule, TranslatePipe, LucideAngularModule, BaseModal],
+  imports: [TranslatePipe, LucideAngularModule, BaseModal, Notice],
   templateUrl: './party-selector-modal.html',
 })
 export class PartySelectorModal {

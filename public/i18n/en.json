@@ -139,7 +139,7 @@
     "viewingInDifferentLanguage": "Viewing analysis in different language",
     "analysisLanguage": "Analysis Language",
     "uiLanguage": "UI Language",
-    "switchUITo": "Switch UI to",
+    "switchUITo": "Switch language to",
     "tabs": {
       "summary": "Summary",
       "risks": "Risks",
@@ -248,7 +248,8 @@
       "rewriting": "Rewriting...",
       "copyToClipboard": "Copy"
     },
-    "emailHelpText": "Need to reach out? Click the \"Write Email\" button to generate a professional email draft with these questions that you can send to the other party.",
+    "emailHelpText": "Click the \"Write Email\" button to generate a professional email draft with these questions that you can send to the other party.",
+    "emailHelpTitle": "Need to reach out?",
     "unknownContractType": "Unknown",
     "perspectiveAnalysis": {
       "employeeTitle": "Analyzed from Your Perspective as an Employee",

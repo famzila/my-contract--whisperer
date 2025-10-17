@@ -121,8 +121,8 @@ export class ModalService {
    */
   openLanguageMismatch(languageData: any, config?: ModalConfig): DialogRef<any, any> {
     const dialogRef = this.dialog.open(LanguageMismatchModal, {
-      width: '90vw',
-      maxWidth: '28rem', // md = 28rem
+      width: '100vw',
+      maxWidth: '32rem',
       maxHeight: '90vh',
       panelClass: 'language-mismatch-modal',
       hasBackdrop: true,

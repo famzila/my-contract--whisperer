@@ -53,11 +53,12 @@
 </app-tab-header>
 
 @if (perspectiveContext()) {
-<app-alert
+<app-notice
   type="info"
-  [title]="perspectiveContext()!.title"
-  [message]="perspectiveContext()!.message"
-></app-alert>
+  [icon]="ViewIcon"
+  [titleKey]="perspectiveContext()!.title"
+  [messageKey]="perspectiveContext()!.message"
+></app-notice>
 }
 
 <div class="space-y-6">

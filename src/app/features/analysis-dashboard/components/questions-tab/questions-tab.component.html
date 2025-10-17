@@ -89,16 +89,12 @@
 @if (!isContractProvider()) {
 <div class="mt-8">
   <app-card>
-    <div class="p-6 bg-blue-50 border border-blue-200 rounded-lg">
-      <div class="flex items-center gap-3">
-        <lucide-icon [name]="MailIcon" class="w-6 h-6 text-blue-600 flex-shrink-0"></lucide-icon>
-        <div>
-          <p class="text-sm text-blue-800 leading-relaxed">
-            {{ 'analysis.emailHelpText' | translate }}
-          </p>
-        </div>
-      </div>
-    </div>
+    <app-notice
+      type="info"
+      [icon]="MailIcon"
+      [titleKey]="'analysis.emailHelpTitle'"
+      messageKey="analysis.emailHelpText">
+    </app-notice>
   </app-card>
 </div>
 } 

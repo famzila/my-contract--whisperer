@@ -14,10 +14,11 @@ import {
 } from '../../../../shared/icons/lucide-icons';
 import { Alert } from "../../../../shared/components/alert/alert";
 import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
+import { Notice } from "../../../../shared/components/notice/notice";
 
 @Component({
   selector: 'app-questions-tab',
-  imports: [TranslateModule, LucideAngularModule, Card, SkeletonLoader, Button, Alert, TabHeader],
+  imports: [TranslateModule, LucideAngularModule, Card, SkeletonLoader, Button, Alert, TabHeader, Notice],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './questions-tab.component.html'
 })

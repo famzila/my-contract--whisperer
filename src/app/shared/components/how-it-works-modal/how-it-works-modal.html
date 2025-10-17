@@ -1,13 +1,11 @@
 <app-base-modal [config]="modalConfig">
-          <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div class="flex items-center gap-2 mb-2 rtl:flex-row-reverse">
-              <lucide-icon [img]="HelpCircleIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
-              <h3 class="font-semibold text-blue-800">{{ 'howItWorks.title' | translate }}</h3>
-            </div>
-            <p class="text-sm text-blue-700">
-              {{ 'howItWorks.headerDescription' | translate }}
-            </p>
-          </div>
+  <app-notice
+    type="info"
+    [icon]="HelpCircleIcon"
+    titleKey="howItWorks.title"
+    messageKey="howItWorks.headerDescription"
+    class="mb-6">
+  </app-notice>
 
           <div class="space-y-6">
           <!-- Step 1 -->

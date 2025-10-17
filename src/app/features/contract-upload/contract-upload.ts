@@ -33,12 +33,13 @@ import {
   getLanguageTranslationKey,
   LANGUAGES,
 } from '../../core/constants/languages';
+import { Notice } from "../../shared/components/notice/notice";
 
 type UploadMode = 'file' | 'text';
 
 @Component({
   selector: 'app-contract-upload',
-  imports: [CommonModule, FormsModule, TranslatePipe, LucideAngularModule, Button],
+  imports: [CommonModule, FormsModule, TranslatePipe, LucideAngularModule, Button, Notice],
   templateUrl: './contract-upload.html',
   styles: [
     `

@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideAngularModule, Sparkles } from 'lucide-angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
@@ -8,6 +7,7 @@ import { Mail, Copy, RefreshCw, X, Check } from '../../icons/lucide-icons';
 import { Button } from '../button/button';
 import { LoadingSpinner } from '../loading-spinner/loading-spinner';
 import { EmailDraftStore } from '../../../core/stores/email-draft.store';
+import { Notice } from '../notice/notice';
 
 export interface EmailDraftData {
   emailContent: string;
@@ -23,7 +23,7 @@ export interface EmailDraftData {
 @Component({
   selector: 'app-email-draft-modal',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, TranslatePipe, BaseModal, Button, LoadingSpinner],
+  imports: [LucideAngularModule, TranslatePipe, BaseModal, Button, LoadingSpinner, Notice],
   templateUrl: './email-draft-modal.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -45,6 +45,7 @@ export class EmailDraftModal {
   readonly RefreshCwIcon = RefreshCw;
   readonly XIcon = X;
   readonly CheckIcon = Check;
+  readonly SparklesIcon = Sparkles;
 
   // Copy button state
   copyButtonState = signal<'copy' | 'copied'>('copy');

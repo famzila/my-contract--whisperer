@@ -31,11 +31,8 @@ import {
   Newspaper,
   ArrowLeft,
   Users,
-  DoorOpen
-} from 'lucide-angular';
-
-import { 
-  FileText, 
+  DoorOpen,
+  View, 
   Upload, 
   Download, 
   File, 
@@ -46,20 +43,14 @@ import {
   Edit,
   Save,
   Trash2,
-  Lock
-} from 'lucide-angular';
-
-import { 
+  Lock,
   Globe, 
   Languages, 
   MessageSquare, 
   Mail, 
   Phone,
   Send,
-  Reply
-} from 'lucide-angular';
-
-import { 
+  Reply,
   BarChart3, 
   PieChart, 
   TrendingUp, 
@@ -73,10 +64,7 @@ import {
   Zap,
   Brain,
   BookOpen,
-  FileSearch
-} from 'lucide-angular';
-
-import { 
+  FileSearch,
   Scale, 
   Gavel, 
   FileSignature, 
@@ -86,11 +74,9 @@ import {
   DollarSign,
   Percent,
   Hash,
-  Tag
-} from 'lucide-angular';
-
-import { 
-  Loader2, 
+  Tag,
+  FileText,
+  LoaderCircle, 
   RefreshCw, 
   RotateCcw, 
   Play, 
@@ -137,7 +123,7 @@ export {
   ArrowLeft,
   Users,
   DoorOpen,
-  
+
   // File & Document
   FileText,
   Upload,
@@ -150,7 +136,7 @@ export {
   Edit,
   Save,
   Trash2,
-  
+
   // Language & Communication
   Globe,
   Languages,
@@ -159,7 +145,7 @@ export {
   Phone,
   Send,
   Reply,
-  
+
   // Analysis & Data
   BarChart3,
   PieChart,
@@ -175,7 +161,7 @@ export {
   Brain,
   BookOpen,
   FileSearch,
-  
+
   // Contract & Legal
   Scale,
   Gavel,
@@ -187,9 +173,9 @@ export {
   Percent,
   Hash,
   Tag,
-  
+
   // Status & Feedback
-  Loader2,
+  LoaderCircle,
   RefreshCw,
   RotateCcw,
   Play,
@@ -202,5 +188,5 @@ export {
   Theater,
   Wrench,
   CircleQuestionMark,
-  CircleCheckBig
+  CircleCheckBig, View
 };

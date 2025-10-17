@@ -6,7 +6,7 @@
       variant="link"
       size="sm"
       [text]="showRewriteOptionsState ? ('analysis.email.hideRewriteOptions' | translate) : ('analysis.email.showRewriteOptions' | translate)"
-      customClasses="text-indigo-600 hover:text-indigo-700 rtl:flex-row-reverse"
+      customClasses="text-indigo-600 hover:text-indigo-700"
     >
       <!-- Custom SVG icon as content projection since it's not a Lucide icon -->
       <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -15,12 +15,15 @@
     </app-button>
 
     @if (showRewriteOptionsState) {
-      <div class="mt-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200 animate-fade-in">
-        <h4 class="text-sm font-semibold text-indigo-900 mb-3 rtl:text-right">{{ 'analysis.email.customizeStyle' | translate }}</h4>
+      <app-notice
+        type="primary"
+        [icon]="SparklesIcon"
+        titleKey="analysis.email.customizeStyle"
+        class="mt-4 animate-fade-in">
 
         <!-- Tone Selection -->
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-indigo-800 mb-2 rtl:text-right">{{ 'analysis.email.tone' | translate }}</label>
+        <div class="my-4">
+          <label class="block text-sm font-medium uppercase text-indigo-800 mb-2 rtl:text-right">{{ 'analysis.email.tone' | translate }}</label>
           <div class="flex flex-wrap gap-2 rtl:justify-end">
             @for (tone of ['formal', 'neutral', 'casual']; track tone) {
               <button
@@ -39,8 +42,8 @@
         </div>
 
         <!-- Length Selection -->
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-indigo-800 mb-2 rtl:text-right">{{ 'analysis.email.length' | translate }}</label>
+        <div class="my-4">
+          <label class="block text-sm font-medium uppercase text-indigo-800 mb-2 rtl:text-right">{{ 'analysis.email.length' | translate }}</label>
           <div class="flex flex-wrap gap-2 rtl:justify-end">
             @for (length of ['short', 'medium', 'long']; track length) {
               <button
@@ -73,7 +76,7 @@
           customClasses="rtl:flex-row-reverse"
         >
         </app-button>
-      </div>
+      </app-notice>
     }
   </div>
 

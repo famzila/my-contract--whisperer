@@ -12,7 +12,7 @@
 
     <!-- Header -->
     <div class="text-center mb-8">
-      <h2 class="text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 dark:from-indigo-400 dark:via-indigo-300 dark:to-sky-400 bg-clip-text text-transparent">
+      <h2 class="text-5xl pb-4 font-bold bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 dark:from-indigo-400 dark:via-indigo-300 dark:to-sky-400 bg-clip-text text-transparent">
         {{ 'upload.title' | translate }}
       </h2>
       <p class="text-xl text-slate-600 dark:text-slate-400 mb-4">
@@ -53,15 +53,14 @@
 
     <!-- Error Message -->
     @if (contractStore.uploadError() || contractStore.analysisError()) {
-      <div class="mb-6 p-4 bg-error/10 border border-error rounded-lg">
-        <div class="flex items-start">
-          <lucide-icon [img]="AlertTriangleIcon" class="w-6 h-6 text-error mr-3 flex-shrink-0"></lucide-icon>
-          <div>
-            <h3 class="font-semibold text-error mb-1">{{ 'common.error' | translate }}</h3>
-            <p class="text-sm text-gray-700">{{ contractStore.uploadError() || contractStore.analysisError() }}</p>
-          </div>
-        </div>
-      </div>
+      <app-notice
+        type="error"
+        [icon]="AlertTriangleIcon"
+        titleKey="common.error"
+        [message]="contractStore.uploadError() || contractStore.analysisError()"
+        class="mb-6">
+      </app-notice>
+      
     }
 
     <!-- File Upload Mode -->

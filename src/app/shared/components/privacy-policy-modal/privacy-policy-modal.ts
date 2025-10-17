@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DialogRef } from '@angular/cdk/dialog';
 import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
 import { Shield, Lock, Eye, EyeOff } from '../../icons/lucide-icons';
+import { Notice } from '../notice/notice';
 
 @Component({
   selector: 'app-privacy-policy-modal',
-  imports: [CommonModule, LucideAngularModule, TranslatePipe, BaseModal],
+  imports: [LucideAngularModule, TranslatePipe, BaseModal, Notice],
   templateUrl: './privacy-policy-modal.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
