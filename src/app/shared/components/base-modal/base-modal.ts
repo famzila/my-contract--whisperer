@@ -1,15 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, input, computed, effect } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DialogRef } from '@angular/cdk/dialog';
 import { X } from '../../icons/lucide-icons';
 import { Button } from '../button/button';
+import { LanguageStore } from '../../../core/stores/language.store';
 
 export interface ActionButton {
   text?: string;
-  textKey?: string; // Translation key for button text
-  icon?: any; // Lucide icon component
+  textKey?: string;
+  icon?: any;
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
   disabled?: boolean;
   callback: () => void;
@@ -17,12 +17,12 @@ export interface ActionButton {
 
 export interface BaseModalConfig {
   title?: string;
-  titleKey?: string; // Translation key for title
-  icon?: any; // Lucide icon component
+  titleKey?: string;
+  icon?: any;
   showFooter?: boolean;
   footerButtonText?: string;
-  footerButtonKey?: string; // Translation key for footer button (legacy - only used if no actionButtons)
-  actionButtons?: ActionButton[]; // Custom action buttons provided by the consuming modal
+  footerButtonKey?: string;
+  actionButtons?: ActionButton[];
   maxWidth?: string;
   maxHeight?: string;
 }
@@ -35,12 +35,17 @@ export interface BaseModalConfig {
 })
 export class BaseModal {
   private dialogRef = inject(DialogRef);
+  private readonly languageStore = inject(LanguageStore);
 
   // Configuration inputs
   config = input.required<BaseModalConfig>();
 
   // Icons
   readonly XIcon = X;
+
+  // Expose RTL as a computed signal for the template
+  // This makes zoneless track changes automatically
+  isRTL = computed(() => this.languageStore.isRTL());
 
   /**
    * Close modal
@@ -52,13 +57,42 @@ export class BaseModal {
   /**
    * Get modal container classes
    */
-  getModalClasses(): string {
+  modalClasses = computed(() => {
     const config = this.config();
     const maxWidth = config.maxWidth || 'max-w-4xl';
     const maxHeight = config.maxHeight || 'max-h-[90vh]';
     
     return `bg-white rounded-2xl shadow-2xl ${maxWidth} w-full ${maxHeight} flex flex-col`;
-  }
+  });
+
+  /**
+   * Header classes - uses flex-row-reverse for RTL
+   */
+  headerClasses = computed(() => {
+    const isRTL = this.isRTL();
+    const baseClasses = 'flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-2xl';
+    return isRTL ? `${baseClasses} flex-row-reverse` : baseClasses;
+  });
+
+  /**
+   * Header content classes - icon and title container
+   */
+  headerContentClasses = computed(() => {
+    const isRTL = this.isRTL();
+    const baseClasses = 'flex items-center gap-3';
+    return isRTL ? `${baseClasses} flex-row-reverse` : baseClasses;
+  });
+
+  /**
+   * Footer classes - reverses button order for RTL
+   */
+  footerClasses = computed(() => {
+    const isRTL = this.isRTL();
+    const baseClasses = 'flex gap-3 p-6 border-t border-gray-200 flex-shrink-0 rounded-b-2xl';
+    // In RTL, we want buttons on the left (which visually appears as right in RTL context)
+    const alignment = isRTL ? 'justify-start' : 'justify-end';
+    return `${baseClasses} ${alignment}`;
+  });
 
   /**
    * Get footer button translation key with default
@@ -73,7 +107,7 @@ export class BaseModal {
    */
   shouldShowFooter(): boolean {
     const config = this.config();
-    return config.showFooter !== false; // Default to true unless explicitly set to false
+    return config.showFooter !== false;
   }
 
   /**
@@ -106,26 +140,6 @@ export class BaseModal {
   getActionButtons(): ActionButton[] {
     const config = this.config();
     return config.actionButtons || [];
-  }
-
-  /**
-   * Get button variant classes
-   */
-  getButtonClasses(variant: string = 'primary'): string {
-    const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2';
-    
-    switch (variant) {
-      case 'primary':
-        return `${baseClasses} bg-blue-600 text-white hover:bg-blue-700`;
-      case 'secondary':
-        return `${baseClasses} bg-gray-100 text-gray-700 hover:bg-gray-200`;
-      case 'danger':
-        return `${baseClasses} bg-red-600 text-white hover:bg-red-700`;
-      case 'ghost':
-        return `${baseClasses} text-gray-600 hover:bg-gray-100`;
-      default:
-        return `${baseClasses} bg-blue-600 text-white hover:bg-blue-700`;
-    }
   }
 
   /**

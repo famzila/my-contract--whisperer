@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideAngularModule, Sparkles } from 'lucide-angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DialogRef } from '@angular/cdk/dialog';
 import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
@@ -22,6 +22,7 @@ export class HowItWorksModal {
   readonly BotIcon = Bot;
   readonly ShieldIcon = Shield;
   readonly CheckCircleIcon = CircleCheckBig;
+  readonly SparklesIcon = Sparkles;
 
   // Base modal configuration
   readonly modalConfig: BaseModalConfig = {

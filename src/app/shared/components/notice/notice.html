@@ -1,37 +1,36 @@
 <div [class]="containerClasses()">
-  @if (hasHeader()) {
-    <div 
-      class="flex items-center gap-2 rtl:flex-row-reverse"
-      [class.mb-2]="hasMessage()">
-      @if (hasIcon()) {
-        <lucide-icon 
-          [img]="icon()" 
-          [class]="iconClasses()">
-        </lucide-icon>
-      }
-      @if (hasTitle()) {
-        <h3 [class]="titleClasses()">
-          @if (titleKey()) {
-            {{ titleKey() | translate }}
-          } @else {
-            {{ title() }}
-          }
-        </h3>
-      }
-    </div>
-  }
-
-  @if (hasMessage()) {
-    <p [class]="messageClasses()" class="rtl:text-right">
-      @if (messageKey()) {
-        {{ messageKey() | translate }}
-      } @else {
-        <span [innerHTML]="message()"></span>
-      }
-    </p>
-  }
-
-  <!-- Projected content always appears after message -->
-  <ng-content></ng-content>
-</div>
-
+    @if (hasHeader()) {
+      <div 
+        [class]="headerClasses()"
+        [class.mb-2]="hasMessage()">
+        @if (hasIcon()) {
+          <lucide-icon 
+            [img]="icon()" 
+            [class]="iconClasses()">
+          </lucide-icon>
+        }
+        @if (hasTitle()) {
+          <h3 [class]="titleClasses()">
+            @if (titleKey()) {
+              {{ titleKey() | translate }}
+            } @else {
+              {{ title() }}
+            }
+          </h3>
+        }
+      </div>
+    }
+  
+    @if (hasMessage()) {
+      <p [class]="messageClasses()">
+        @if (messageKey()) {
+          {{ messageKey() | translate }}
+        } @else {
+          <span [innerHTML]="message()"></span>
+        }
+      </p>
+    }
+  
+    <!-- Projected content always appears after message -->
+    <ng-content></ng-content>
+  </div>

@@ -74,12 +74,13 @@ const LANGUAGE_STORAGE_KEY = 'contract-whisperer-language';
  * Get saved language from localStorage
  */
 function getSavedLanguage(): string {
-  try {
-    const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    return saved && SUPPORTED_LANGUAGES.some(lang => lang.code === saved) ? saved : DEFAULT_LANGUAGE;
-  } catch {
-    return DEFAULT_LANGUAGE;
-  }
+  // try {
+  //   const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  //   return saved && SUPPORTED_LANGUAGES.some(lang => lang.code === saved) ? saved : DEFAULT_LANGUAGE;
+  // } catch {
+  // }
+  // Always return default English (until we fix RTL issues)
+  return DEFAULT_LANGUAGE;
 }
 
 /**
@@ -351,11 +352,10 @@ export const LanguageStore = signalStore(
         // Apply RTL if needed
         if (isRTL(languageCode)) {
           document.documentElement.setAttribute('dir', 'rtl');
-          console.log(`↔️ [Language Sync] Applied RTL direction for ${languageCode}`);
         } else {
           document.documentElement.setAttribute('dir', 'ltr');
         }
-        
+                
         // Update language store
         patchState(store, { 
           preferredLanguage: languageCode,
@@ -372,7 +372,6 @@ export const LanguageStore = signalStore(
         console.warn(`⚠️ [Language Sync] ${languageCode} not supported for app UI, falling back to English`);
         
         translateService.use(LANGUAGES.ENGLISH);
-        document.documentElement.setAttribute('dir', 'ltr');
         
         patchState(store, { 
           preferredLanguage: LANGUAGES.ENGLISH,
@@ -391,7 +390,6 @@ export const LanguageStore = signalStore(
      */
     reset: () => {
       patchState(store, initialState);
-      document.documentElement.setAttribute('dir', 'ltr');
       // Clear localStorage
       try {
         localStorage.removeItem(LANGUAGE_STORAGE_KEY);
@@ -408,7 +406,6 @@ export const LanguageStore = signalStore(
  */
 export function initializeLanguageStore(translateService: TranslateService): void {
   const savedLanguage = getSavedLanguage();
-  
   // Set the initial language in TranslateService
   translateService.use(savedLanguage);
   
@@ -416,9 +413,9 @@ export function initializeLanguageStore(translateService: TranslateService): voi
   if (isRTL(savedLanguage)) {
     document.documentElement.setAttribute('dir', 'rtl');
   } else {
-    document.documentElement.setAttribute('dir', 'ltr');
+    // remove dir attribute
+    document.documentElement.removeAttribute('dir');
+    // document.documentElement.setAttribute('dir', 'ltr');
   }
-  
-  console.log(`🔄 Language store initialized with: ${savedLanguage}`);
 }
 

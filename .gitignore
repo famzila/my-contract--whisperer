@@ -43,3 +43,5 @@ __screenshots__/
 Thumbs.db
 Priming.md
 .env
+RTL_STRATEGY.md
+RTL_TESTING.md

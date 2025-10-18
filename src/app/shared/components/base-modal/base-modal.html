@@ -1,7 +1,7 @@
-<div [class]="getModalClasses()">
+<div [class]="modalClasses()">
   <!-- Header -->
-  <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-2xl rtl:flex-row-reverse">
-    <div class="flex items-center gap-3 rtl:flex-row-reverse">
+  <div [class]="headerClasses()">
+    <div [class]="headerContentClasses()">
       @if (config().icon) {
         <lucide-icon [img]="config().icon" class="w-6 h-6 text-blue-600"></lucide-icon>
       }
@@ -33,7 +33,7 @@
 
   <!-- Footer -->
   @if (shouldShowFooter()) {
-    <div class="flex justify-end rtl:justify-start gap-3 p-6 border-t border-gray-200 flex-shrink-0 rounded-b-2xl">
+    <div [class]="footerClasses()">
       @if (getActionButtons().length > 0) {
         <!-- Configurable Action Buttons -->
         @for (button of getActionButtons(); track $index) {

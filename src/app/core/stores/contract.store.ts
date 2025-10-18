@@ -648,6 +648,10 @@ export const ContractStore = signalStore(
      * Switch analysis language (re-translate results)
      */
     async switchAnalysisLanguage(targetLanguage: string): Promise<void> {
+      // check if we are in analysis route otherwise we don't have analysis to translate
+      if (!router.url.includes('/analysis')) {
+        return;
+      }
       const contract = store.contract();
       if (!contract) {
         console.warn('⚠️ [Store] No contract found for language switch');

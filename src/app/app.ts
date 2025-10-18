@@ -25,9 +25,6 @@ export class App {
       LANGUAGES.CHINESE
     ]);
     
-    // Set fallback language
-    this.translate.setDefaultLang(DEFAULT_LANGUAGE);
-    
     // Initialize language from localStorage
     initializeLanguageStore(this.translate);
   }

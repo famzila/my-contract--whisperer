@@ -69,9 +69,11 @@
           </div>
 
           <!-- Features -->
-          <div class="mt-8 p-4 bg-gray-50 rounded-lg">
-            <h3 class="font-semibold text-gray-900 mb-3 rtl:text-right">{{ 'howItWorks.keyFeaturesTitle' | translate }}</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+          <app-notice
+            type="default"
+            [icon]="SparklesIcon"
+            titleKey="howItWorks.keyFeaturesTitle">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mt-4">
               <div class="flex items-center gap-2 rtl:flex-row-reverse">
                 <lucide-icon [img]="CheckCircleIcon" class="w-4 h-4 text-green-600 flex-shrink-0"></lucide-icon>
                 <span class="text-gray-700 rtl:text-right">{{ 'howItWorks.feature2' | translate }}</span>
@@ -97,6 +99,6 @@
                 <span class="text-gray-700 rtl:text-right">{{ 'howItWorks.feature5' | translate }}</span>
               </div>
             </div>
-          </div>
+          </app-notice>
         </div>
 </app-base-modal>
