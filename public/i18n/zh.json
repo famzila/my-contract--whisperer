@@ -12,7 +12,25 @@
     "previous": "上一步",
     "done": "完成",
     "words": "字词",
-    "minRead": "分钟阅读"
+    "minRead": "分钟阅读",
+    "notAvailable": "不可用",
+    "fileTypes": {
+      "pdf": "PDF",
+      "docx": "DOCX"
+    }
+  },
+  "errors": {
+    "contractTextTooLong": "合同文本太长。最多允许50,000个字符。",
+    "notAValidContract": "这似乎不是一个有效的合同文件。",
+    "analysisFailed": "很抱歉，发生了错误。我们无法分析您的合同。请重试。",
+    "translationFailed": "翻译失败。请重试。",
+    "aiServicesUnavailable": "所需功能目前不可用",
+    "promptApiUnavailable": "分析功能目前不可用",
+    "translatorApiUnavailable": "翻译功能目前不可用",
+    "writerApiUnavailable": "写作功能目前不可用",
+    "languageDetectorUnavailable": "语言检测目前不可用",
+    "summarizerUnavailable": "摘要功能目前不可用",
+    "sessionNotInitialized": "服务未准备好。请刷新页面。"
   },
   "language": {
     "select": "选择语言",
@@ -254,6 +272,24 @@
     "contactDescription": "如果您对这些服务条款或应用的隐私功能有任何疑问，请通过以下方式联系我们：",
     "contactLink": "联系我们。",
     "iAgree": "我同意"
+  },
+  "theme": {
+    "switchToLight": "切换到浅色模式",
+    "switchToDark": "切换到深色模式"
+  },
+  "languages": {
+    "english": "英语",
+    "french": "法语",
+    "arabic": "阿拉伯语",
+    "spanish": "西班牙语",
+    "german": "德语",
+    "japanese": "日语",
+    "chinese": "中文",
+    "korean": "韩语",
+    "unknown": "未知"
+  },
+  "dateFormat": {
+    "analyzedOn": "分析于 {{date}}"
   }
 }
 

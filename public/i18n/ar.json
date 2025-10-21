@@ -14,7 +14,12 @@
     "previous": "السابق",
     "done": "تم",
     "words": "كلمات",
-    "minRead": "دقيقة قراءة"
+    "minRead": "دقيقة قراءة",
+    "notAvailable": "غير متوفر",
+    "fileTypes": {
+      "pdf": "PDF",
+      "docx": "DOCX"
+    }
   },
   "language": {
     "select": "اختر اللغة",
@@ -24,18 +29,18 @@
     "analyzeIn": "تحليل باللغة",
     "mismatchDetected": "تم اكتشاف اختلاف في اللغة",
     "mismatchMessage": "يبدو أن عقدك مكتوب باللغة",
-    "appLanguageSet": "لكن لغة التطبيق مضبوطة على",
+    "appLanguageSet": "لكن لغة الواجهة مضبوطة على",
     "whichLanguage": "أي لغة تفضل للتحليل؟",
     "originalLanguage": "تحليل بلغة العقد الأصلية",
     "preferredLanguage": "تحليل بلغتك المفضلة",
     "tipTitle": "نصيحة:",
     "tipMessage": "سيقوم الذكاء الاصطناعي بتحليل العقد وتقديم النتائج باللغة التي تختارها. لن يتم تعديل نص العقد الأصلي.",
-    "appWillSwitch": "سيتم تبديل التطبيق إلى هذه اللغة",
-    "appWillStayInCurrent": "سيبقى التطبيق باللغة الحالية (الواجهة غير متوفرة)",
-    "noAppSwitch": "لا يوجد تبديل للغة التطبيق",
+    "appWillSwitch": "سيتم تبديل الواجهة إلى هذه اللغة",
+    "appWillStayInCurrent": "ستبقى الواجهة باللغة الحالية (الواجهة غير متوفرة)",
+    "noAppSwitch": "لا يوجد تبديل للغة الواجهة",
     "limitedSupport": "دعم محدود للغة",
     "willTranslateForAnalysis": "سيتم ترجمة العقد إلى الإنجليزية للتحليل، ثم ترجمة النتائج مرة أخرى",
-    "appWillSwitchWithTranslation": "سيتم تبديل التطبيق إلى هذه اللغة (مع الترجمة)",
+    "appWillSwitchWithTranslation": "سيتم تبديل الواجهة إلى هذه اللغة (مع الترجمة)",
     "uiNotAvailable": "واجهة {{language}} غير متوفرة، سيتم استخدام {{fallback}}",
     "availableTranslations": "الترجمات المتاحة",
     "cached": "مخزنة مؤقتاً"
@@ -130,6 +135,13 @@
     "translatingTo": "الترجمة إلى {{language}}...",
     "translationComplete": "اكتملت الترجمة!",
     "translationFailed": "فشلت الترجمة. يرجى المحاولة مرة أخرى.",
+    "loading": {
+      "summary": "جارٍ تحميل الملخص...",
+      "risks": "جارٍ تحميل المخاطر...",
+      "obligations": "جارٍ تحميل الالتزامات...",
+      "omissions": "جارٍ تحميل النقصانات...",
+      "questions": "جارٍ تحميل الأسئلة..."
+    },
     "tabs": {
       "summary": "الملخص",
       "risks": "الخطر",
@@ -177,7 +189,9 @@
       "paySalary": "دفع الراتب",
       "provideBenefits": "توفير المزايا",
       "maintainConfidentiality": "الحفاظ على السرية",
-      "complyWithContract": "الالتزام بالعقد"
+      "complyWithContract": "الالتزام بالعقد",
+      "noEmployerObligations": "لم يتم العثور على التزامات صاحب العمل.",
+      "noEmployeeObligations": "لم يتم العثور على التزامات الموظف."
     },
     "omissions": {
       "title": "ما هو النقصان",
@@ -261,6 +275,10 @@
     "theme": "المظهر",
     "notifications": "الإشعارات",
     "privacy": "الخصوصية"
+  },
+  "theme": {
+    "switchToLight": "التبديل إلى الوضع الفاتح",
+    "switchToDark": "التبديل إلى الوضع الداكن"
   },
   "partySelector": {
     "title": "من أنت في هذا العقد؟",
@@ -427,6 +445,7 @@
   "errors": {
     "contractTextEmpty": "نص العقد لا يمكن أن يكون فارغاً",
     "contractTextTooShort": "نص العقد قصير جداً (الحد الأدنى 100 حرف)",
+    "contractTextTooLong": "نص العقد طويل جداً. الحد الأقصى 50,000 حرف.",
     "fileSizeExceeded": "حجم الملف يتجاوز حد 5 ميجابايت",
     "unsupportedFileType": "نوع ملف غير مدعوم: {{type}}. الأنواع المدعومة: TXT, PDF, DOCX",
     "fileEmpty": "الملف فارغ",
@@ -436,14 +455,17 @@
     "docxEmpty": "يبدو أن ملف DOCX فارغ",
     "docxExtractionFailed": "فشل في استخراج النص من DOCX",
     "docxParsingFailed": "فشل في تحليل DOCX: {{error}}. جرب نسخ النص ولصقه مباشرة.",
-    "aiServicesUnavailable": "خدمات الذكاء الاصطناعي المطلوبة غير متاحة",
-    "promptApiUnavailable": "واجهة برمجة التطبيقات للطلبات غير متاحة",
-    "translatorApiUnavailable": "واجهة برمجة التطبيقات للمترجم غير متاحة",
-    "writerApiUnavailable": "واجهات برمجة التطبيقات للكاتب/المعيد غير متاحة",
-    "languageDetectorUnavailable": "واجهة برمجة التطبيقات لكاشف اللغة غير متاحة",
-    "summarizerUnavailable": "واجهة برمجة التطبيقات للملخص غير متاحة",
-    "sessionNotInitialized": "الجلسة غير مهيأة. استدعِ createSession() أولاً.",
-    "notAContract": "ليس عقداً: {{reason}}"
+    "aiServicesUnavailable": "الميزات المطلوبة غير متاحة حالياً",
+    "promptApiUnavailable": "ميزات التحليل غير متاحة حالياً",
+    "translatorApiUnavailable": "ميزات الترجمة غير متاحة حالياً",
+    "writerApiUnavailable": "ميزات الكتابة غير متاحة حالياً",
+    "languageDetectorUnavailable": "كشف اللغة غير متاح حالياً",
+    "summarizerUnavailable": "ميزات الملخص غير متاحة حالياً",
+    "sessionNotInitialized": "الخدمة غير جاهزة. يرجى تحديث الصفحة.",
+    "notAContract": "ليس عقداً: {{reason}}",
+    "notAValidContract": "لا يبدو أن هذا مستند عقد صالح.",
+    "analysisFailed": "نأسف، حدث خطأ. لم نتمكن من تحليل عقدك. يرجى المحاولة مرة أخرى.",
+    "translationFailed": "فشلت الترجمة. يرجى المحاولة مرة أخرى."
   },
   "languages": {
     "english": "الإنجليزية",

@@ -229,14 +229,14 @@ export class ContractParserService {
     if (text.length < minLength) {
       return {
         valid: false,
-        message: `Contract text is too short. Minimum ${minLength} characters required.`,
+        message: this.translate.instant('errors.contractTextTooShort'),
       };
     }
 
     if (text.length > maxLength) {
       return {
         valid: false,
-        message: `Contract text is too long. Maximum ${maxLength} characters allowed.`,
+        message: this.translate.instant('errors.contractTextTooLong'),
       };
     }
 

@@ -47,7 +47,7 @@ export class SampleContractModal {
       download: 'nda-contract.docx',
       titleKey: 'sampleContract.ndaContract',
       descriptionKey: 'sampleContract.ndaDescription',
-      fileType: 'DOCX',
+      fileType: 'common.fileTypes.docx',
       bgColor: 'bg-red-100 dark:bg-red-900',
       hoverBgColor: 'bg-red-200 dark:bg-red-800',
       iconColor: 'text-red-600 dark:text-red-400'
@@ -58,7 +58,7 @@ export class SampleContractModal {
       download: 'freelance-contract.pdf',
       titleKey: 'sampleContract.freelanceContract',
       descriptionKey: 'sampleContract.freelanceDescription',
-      fileType: 'PDF',
+      fileType: 'common.fileTypes.pdf',
       bgColor: 'bg-blue-100 dark:bg-blue-900',
       hoverBgColor: 'bg-blue-200 dark:bg-blue-800',
       iconColor: 'text-blue-600 dark:text-blue-400'
@@ -69,7 +69,7 @@ export class SampleContractModal {
       download: 'residential-lease-contract.docx',
       titleKey: 'sampleContract.leaseContract',
       descriptionKey: 'sampleContract.leaseDescription',
-      fileType: 'DOCX',
+      fileType: 'common.fileTypes.docx',
       bgColor: 'bg-green-100 dark:bg-green-900',
       hoverBgColor: 'bg-green-200 dark:bg-green-800',
       iconColor: 'text-green-600 dark:text-green-400'
@@ -80,7 +80,7 @@ export class SampleContractModal {
       download: 'arabic-contract.docx',
       titleKey: 'sampleContract.arabicContract',
       descriptionKey: 'sampleContract.arabicDescription',
-      fileType: 'DOCX',
+      fileType: 'common.fileTypes.docx',
       bgColor: 'bg-purple-100 dark:bg-purple-900',
       hoverBgColor: 'bg-purple-200 dark:bg-purple-800',
       iconColor: 'text-purple-600 dark:text-purple-400'

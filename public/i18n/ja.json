@@ -12,7 +12,25 @@
     "previous": "前へ",
     "done": "完了",
     "words": "単語",
-    "minRead": "分で読めます"
+    "minRead": "分で読めます",
+    "notAvailable": "利用不可",
+    "fileTypes": {
+      "pdf": "PDF",
+      "docx": "DOCX"
+    }
+  },
+  "errors": {
+    "contractTextTooLong": "契約書のテキストが長すぎます。最大50,000文字まで。",
+    "notAValidContract": "これは有効な契約書ではないようです。",
+    "analysisFailed": "申し訳ございません。エラーが発生しました。契約書を分析できませんでした。もう一度お試しください。",
+    "translationFailed": "翻訳に失敗しました。もう一度お試しください。",
+    "aiServicesUnavailable": "必要な機能は現在利用できません",
+    "promptApiUnavailable": "分析機能は現在利用できません",
+    "translatorApiUnavailable": "翻訳機能は現在利用できません",
+    "writerApiUnavailable": "書き込み機能は現在利用できません",
+    "languageDetectorUnavailable": "言語検出は現在利用できません",
+    "summarizerUnavailable": "要約機能は現在利用できません",
+    "sessionNotInitialized": "サービスの準備ができていません。ページを更新してください。"
   },
   "language": {
     "select": "言語を選択",
@@ -254,6 +272,24 @@
     "contactDescription": "これらの利用規約やアプリのプライバシー機能について質問がある場合は、次をご利用ください：",
     "contactLink": "お問い合わせはこちら。",
     "iAgree": "同意します"
+  },
+  "theme": {
+    "switchToLight": "ライトモードに切り替え",
+    "switchToDark": "ダークモードに切り替え"
+  },
+  "languages": {
+    "english": "英語",
+    "french": "フランス語",
+    "arabic": "アラビア語",
+    "spanish": "スペイン語",
+    "german": "ドイツ語",
+    "japanese": "日本語",
+    "chinese": "中国語",
+    "korean": "韓国語",
+    "unknown": "不明"
+  },
+  "dateFormat": {
+    "analyzedOn": "{{date}}に分析"
   }
 }
 

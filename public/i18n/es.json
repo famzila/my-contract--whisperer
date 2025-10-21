@@ -1,18 +1,36 @@
 {
   "common": {
-    "loading": "Wird geladen...",
-    "error": "Fehler",
-    "success": "Erfolg",
-    "cancel": "Abbrechen",
-    "confirm": "Bestätigen",
-    "save": "Speichern",
-    "close": "Schließen",
-    "back": "Zurück",
-    "next": "Weiter",
-    "previous": "Zurück",
-    "done": "Fertig",
-    "words": "Wörter",
-    "minRead": "Min. Lesezeit"
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Guardar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "done": "Hecho",
+    "words": "palabras",
+    "minRead": "min de lectura",
+    "notAvailable": "No disponible",
+    "fileTypes": {
+      "pdf": "PDF",
+      "docx": "DOCX"
+    }
+  },
+  "errors": {
+    "contractTextTooLong": "El texto del contrato es demasiado largo. Máximo 50,000 caracteres permitidos.",
+    "notAValidContract": "Esto no parece ser un documento contractual válido.",
+    "analysisFailed": "Lo sentimos, ocurrió un error. No pudimos analizar su contrato. Por favor, inténtelo de nuevo.",
+    "translationFailed": "La traducción falló. Por favor, inténtelo de nuevo.",
+    "aiServicesUnavailable": "Las funciones requeridas no están disponibles actualmente",
+    "promptApiUnavailable": "Las funciones de análisis no están disponibles actualmente",
+    "translatorApiUnavailable": "Las funciones de traducción no están disponibles actualmente",
+    "writerApiUnavailable": "Las funciones de escritura no están disponibles actualmente",
+    "languageDetectorUnavailable": "La detección de idioma no está disponible actualmente",
+    "summarizerUnavailable": "Las funciones de resumen no están disponibles actualmente",
+    "sessionNotInitialized": "Servicio no disponible. Por favor, actualice la página."
   },
   "language": {
     "select": "Seleccionar idioma",
@@ -22,15 +40,15 @@
     "analyzeIn": "Analizar en",
     "mismatchDetected": "Desajuste de idioma detectado",
     "mismatchMessage": "Este contrato está en",
-    "appLanguageSet": "pero el idioma de tu aplicación está configurado en",
+    "appLanguageSet": "pero el idioma de tu interfaz está configurado en",
     "whichLanguage": "Elige tu idioma preferido para los resultados del análisis:",
     "originalLanguage": "Analizar en el idioma original del contrato",
     "preferredLanguage": "Mostrar en mi idioma (traducido para mejor comprensión)",
     "tipTitle": "Nota:",
     "tipMessage": "El contrato se analizará en su idioma original para preservar la precisión legal. Traduciremos los resultados a tu idioma elegido.",
-    "appWillSwitch": "La aplicación cambiará a este idioma",
-    "appWillStayInCurrent": "La aplicación permanecerá en el idioma actual (UI no disponible)",
-    "noAppSwitch": "Sin cambio de idioma de la aplicación"
+    "appWillSwitch": "La interfaz cambiará a este idioma",
+    "appWillStayInCurrent": "La interfaz permanecerá en el idioma actual (interfaz no disponible)",
+    "noAppSwitch": "Sin cambio de idioma de la interfaz"
   },
   "navbar": {
     "title": "Contract Whisperer",
@@ -254,5 +272,23 @@
     "contactDescription": "Si tienes preguntas sobre estas condiciones de uso, por favor utiliza ",
     "contactLink": "Contáctanos.",
     "iAgree": "Acepto"
+  },
+  "theme": {
+    "switchToLight": "Cambiar a modo claro",
+    "switchToDark": "Cambiar a modo oscuro"
+  },
+  "languages": {
+    "english": "Inglés",
+    "french": "Francés",
+    "arabic": "Árabe",
+    "spanish": "Español",
+    "german": "Alemán",
+    "japanese": "Japonés",
+    "chinese": "Chino",
+    "korean": "Coreano",
+    "unknown": "Desconocido"
+  },
+  "dateFormat": {
+    "analyzedOn": "Analizado el {{date}}"
   }
 }

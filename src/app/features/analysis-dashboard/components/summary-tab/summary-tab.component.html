@@ -29,7 +29,7 @@
     type="list"
     [items]="5"
     listItemPadding="p-1"
-    loadingText="Loading summary..."
+    [loadingText]="'analysis.loading.summary' | translate"
   >
   </app-skeleton-loader>
 </div>
@@ -68,7 +68,7 @@
       <lucide-icon [name]="UsersIcon" class="w-5 h-5 text-blue-600 dark:text-blue-400"></lucide-icon>
       {{ 'analysis.summary.parties' | translate }}
     </h3>
-    <p class="text-body">{{ summary()?.parties || 'N/A' }}</p>
+    <p class="text-body">{{ summary()?.parties || ('common.notAvailable' | translate) }}</p>
   </div>
 
   <!-- Role -->
@@ -77,7 +77,7 @@
       <lucide-icon [name]="BriefcaseIcon" class="w-5 h-5 text-green-600 dark:text-green-400"></lucide-icon>
       {{ 'analysis.summary.roleRelationship' | translate }}
     </h3>
-    <p class="text-body">{{ summary()?.role || 'N/A' }}</p>
+    <p class="text-body">{{ summary()?.role || ('common.notAvailable' | translate) }}</p>
   </div>
 
   <!-- Responsibilities -->

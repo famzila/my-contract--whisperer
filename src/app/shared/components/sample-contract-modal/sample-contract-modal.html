@@ -88,7 +88,7 @@
       <p class="text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition-colors">
         {{ contract.titleKey | translate }}
       </p>
-      <p class="text-body-xs">{{ contract.fileType }} • {{ contract.descriptionKey | translate }}</p>
+      <p class="text-body-xs">{{ contract.fileType | translate }} • {{ contract.descriptionKey | translate }}</p>
     </div>
     <lucide-icon [img]="DownloadIcon" class="w-4 h-4 text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors flex-shrink-0"></lucide-icon>
   </a>

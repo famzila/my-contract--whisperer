@@ -17,7 +17,7 @@
   type="list"
   [items]="4"
   listItemPadding="p-4"
-  loadingText="Loading obligations..."
+  [loadingText]="'analysis.loading.obligations' | translate"
 >
 </app-skeleton-loader>
 } @else {
@@ -73,7 +73,7 @@
           <div class="text-gray-400 dark:text-gray-500 mb-2">
             <lucide-icon [name]="CheckCircleIcon" class="w-8 h-8 mx-auto"></lucide-icon>
           </div>
-          <p class="text-muted">No employer obligations found.</p>
+          <p class="text-muted">{{ 'analysis.obligations.noEmployerObligations' | translate }}</p>
         </div>
         }
       </div>
@@ -114,7 +114,7 @@
           <div class="text-gray-400 dark:text-gray-500 mb-2">
             <lucide-icon [name]="AlertTriangleIcon" class="w-8 h-8 mx-auto"></lucide-icon>
           </div>
-          <p class="text-muted">No employee obligations found.</p>
+          <p class="text-muted">{{ 'analysis.obligations.noEmployeeObligations' | translate }}</p>
         </div>
         }
       </div>

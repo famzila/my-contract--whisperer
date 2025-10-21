@@ -48,7 +48,7 @@
   type="list"
   [items]="4"
   listItemPadding="p-6"
-  loadingText="Loading questions..."
+  [loadingText]="'analysis.loading.questions' | translate"
 >
 </app-skeleton-loader>
 } @else if (hasQuestions) {

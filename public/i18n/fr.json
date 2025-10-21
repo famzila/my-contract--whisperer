@@ -12,7 +12,12 @@
     "previous": "Précédent",
     "done": "Terminé",
     "words": "mots",
-    "minRead": "min de lecture"
+    "minRead": "min de lecture",
+    "notAvailable": "Non disponible",
+    "fileTypes": {
+      "pdf": "PDF",
+      "docx": "DOCX"
+    }
   },
   "language": {
     "select": "Sélectionner la langue",
@@ -22,15 +27,15 @@
     "analyzeIn": "Analyser en",
     "mismatchDetected": "Incohérence de langue détectée",
     "mismatchMessage": "Votre contrat semble être en",
-    "appLanguageSet": "mais la langue de votre application est définie sur",
+    "appLanguageSet": "mais la langue de votre interface est définie sur",
     "whichLanguage": "Quelle langue souhaitez-vous pour l'analyse ?",
     "originalLanguage": "Analyser dans la langue originale du contrat",
     "preferredLanguage": "Analyser dans votre langue préférée",
     "tipTitle": "Astuce :",
     "tipMessage": "L'IA analysera le contrat et fournira les résultats dans la langue choisie. Le texte original du contrat ne sera pas modifié.",
-    "appWillSwitch": "L'application basculera vers cette langue",
-    "appWillStayInCurrent": "L'application restera dans la langue actuelle (UI non disponible)",
-    "noAppSwitch": "Aucun changement de langue de l'application"
+    "appWillSwitch": "L'interface basculera vers cette langue",
+    "appWillStayInCurrent": "L'interface restera dans la langue actuelle (interface non disponible)",
+    "noAppSwitch": "Aucun changement de langue de l'interface"
   },
   "navbar": {
     "title": "Contract Whisperer",
@@ -100,13 +105,12 @@
   "analysis": {
     "title": "Analyse du contrat",
     "summary": "Résumé",
-    "obligations": "Obligations",
-    "redFlags": "Points d’alerte",
+    "redFlags": "Points d'alerte",
     "compare": "Comparer",
     "uploadNew": "Téléverser un nouveau contrat",
     "analyzedOn": "Analysé le",
     "contractType": "Type de contrat",
-    "effectiveDate": "Date d’entrée en vigueur",
+    "effectiveDate": "Date d'entrée en vigueur",
     "endDate": "Date de fin",
     "expiringSoon": "Expire bientôt",
     "jurisdiction": "Juridiction",
@@ -114,7 +118,19 @@
     "mockMode": "Mode de simulation",
     "contractSummary": "Résumé du contrat",
     "noContract": "Aucun contrat téléversé pour le moment",
-    "uploadFirst": "Veuillez téléverser un contrat pour commencer l’analyse"
+    "uploadFirst": "Veuillez téléverser un contrat pour commencer l'analyse",
+    "loading": {
+      "summary": "Chargement du résumé...",
+      "risks": "Chargement des risques...",
+      "obligations": "Chargement des obligations...",
+      "omissions": "Chargement des omissions...",
+      "questions": "Chargement des questions..."
+    },
+    "obligations": {
+      "title": "Obligations",
+      "noEmployerObligations": "Aucune obligation d'employeur trouvée.",
+      "noEmployeeObligations": "Aucune obligation d'employé trouvée."
+    }
   },
   "settings": {
     "title": "Paramètres",
@@ -122,6 +138,10 @@
     "theme": "Thème",
     "notifications": "Notifications",
     "privacy": "Confidentialité"
+  },
+  "theme": {
+    "switchToLight": "Passer en mode clair",
+    "switchToDark": "Passer en mode sombre"
   },
   "partySelector": {
     "title": "Qui êtes-vous dans ce contrat ?",
@@ -255,5 +275,34 @@
     "contactDescription": "Si vous avez des questions concernant ces conditions d'utilisation, veuillez utiliser ",
     "contactLink": "Contactez-nous.",
     "iAgree": "J'accepte"
+  },
+  "errors": {
+    "contractTextEmpty": "Le texte du contrat ne peut pas être vide",
+    "contractTextTooShort": "Le texte du contrat est trop court (minimum 100 caractères)",
+    "contractTextTooLong": "Le texte du contrat est trop long. Maximum 50 000 caractères autorisés.",
+    "notAValidContract": "Ceci ne semble pas être un document contractuel valide.",
+    "analysisFailed": "Nous sommes désolés, une erreur s'est produite. Nous n'avons pas pu analyser votre contrat. Veuillez réessayer.",
+    "translationFailed": "La traduction a échoué. Veuillez réessayer.",
+    "aiServicesUnavailable": "Les fonctionnalités requises sont actuellement indisponibles",
+    "promptApiUnavailable": "Les fonctionnalités d'analyse sont actuellement indisponibles",
+    "translatorApiUnavailable": "Les fonctionnalités de traduction sont actuellement indisponibles",
+    "writerApiUnavailable": "Les fonctionnalités d'écriture sont actuellement indisponibles",
+    "languageDetectorUnavailable": "La détection de langue est actuellement indisponible",
+    "summarizerUnavailable": "Les fonctionnalités de résumé sont actuellement indisponibles",
+    "sessionNotInitialized": "Service non prêt. Veuillez actualiser la page."
+  },
+  "languages": {
+    "english": "Anglais",
+    "french": "Français",
+    "arabic": "Arabe",
+    "spanish": "Espagnol",
+    "german": "Allemand",
+    "japanese": "Japonais",
+    "chinese": "Chinois",
+    "korean": "Coréen",
+    "unknown": "Inconnu"
+  },
+  "dateFormat": {
+    "analyzedOn": "Analysé le {{date}}"
   }
 }

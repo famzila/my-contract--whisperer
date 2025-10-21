@@ -17,7 +17,7 @@
   type="list"
   [items]="4"
   listItemPadding="p-4"
-  loadingText="Loading omissions..."
+  [loadingText]="'analysis.loading.omissions' | translate"
 >
 </app-skeleton-loader>
 } @else { @if (omissions() && omissions().length > 0) {

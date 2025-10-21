@@ -267,7 +267,7 @@ export const ContractStore = signalStore(
             validationResult.reason
           );
           patchState(store, { 
-            uploadError: 'Not a valid contract document',
+            uploadError: translate.instant('errors.notAValidContract'),
             isUploading: false,
           });
           throw new Error(translate.instant('errors.notAContract', { reason: validationResult.reason }));
@@ -306,7 +306,8 @@ export const ContractStore = signalStore(
         console.log('✅ Contract validated, language detected, and parties extracted.');
         
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'File parsing failed';
+        const errorMessage = error instanceof Error ? error.message : translate.instant('errors.analysisFailed');
+        console.error('File parsing failed:', error); // Log technical details for debugging
         onboardingStore.setProcessing(false);
         patchState(store, { 
           uploadError: errorMessage,
@@ -340,7 +341,7 @@ export const ContractStore = signalStore(
             validationResult.reason
           );
           patchState(store, { 
-            uploadError: 'Not a valid contract document',
+            uploadError: translate.instant('errors.notAValidContract'),
             isUploading: false,
           });
           throw new Error(translate.instant('errors.notAContract', { reason: validationResult.reason }));
@@ -379,7 +380,8 @@ export const ContractStore = signalStore(
         console.log('✅ Contract validated, language detected, and parties extracted.');
         
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Text parsing failed';
+        const errorMessage = error instanceof Error ? error.message : translate.instant('errors.analysisFailed');
+        console.error('Text parsing failed:', error); // Log technical details for debugging
         onboardingStore.setProcessing(false);
         patchState(store, { 
           uploadError: errorMessage,
@@ -554,7 +556,7 @@ export const ContractStore = signalStore(
           },
           error: (error) => {
             console.error('❌ RxJS streaming analysis failed:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Analysis failed';
+            const errorMessage = error instanceof Error ? error.message : translate.instant('errors.analysisFailed');
         patchState(store, { 
               analysisError: errorMessage,
           isUploading: false,
@@ -632,7 +634,7 @@ export const ContractStore = signalStore(
         });
         
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Analysis failed';
+        const errorMessage = error instanceof Error ? error.message : translate.instant('errors.analysisFailed');
         patchState(store, { 
           analysisError: errorMessage,
           isUploading: false,
@@ -697,7 +699,8 @@ export const ContractStore = signalStore(
         console.log(`📋 [Store] Available languages: ${availableLanguages.join(', ')}`);
         
         if (availableLanguages.length === 0) {
-          throw new Error('No analysis data found in cache. Please re-analyze the contract.');
+          // TODO: Auto-start analysis if contract text exists, or redirect to upload page
+          throw new Error(translate.instant('errors.analysisFailed'));
         }
         
         // Select best source language (prefer direct-from-Gemini languages)
@@ -705,7 +708,9 @@ export const ContractStore = signalStore(
         const sourceAnalysis = translationCache.getAnalysis(contract.id, sourceLanguage);
         
         if (!sourceAnalysis) {
-          throw new Error(`Source analysis not found for language: ${sourceLanguage}`);
+          // TODO: Handle missing source language gracefully - possibly reload analysis
+          console.error(`Source analysis not found for language: ${sourceLanguage}`);
+          throw new Error(translate.instant('errors.analysisFailed'));
         }
         
         console.log(`🔄 [Store] Translating from ${sourceLanguage} to ${targetLanguage}...`);
@@ -744,11 +749,11 @@ export const ContractStore = signalStore(
       } catch (error) {
         console.error(`❌ [Store] Translation to ${targetLanguage} failed:`, error);
         
-        // Clear loading state and show error
+        // Clear loading state and show user-friendly error
         patchState(store, {
           isTranslating: false,
           translatingToLanguage: null,
-          analysisError: `Translation to ${targetLanguage} failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          analysisError: translate.instant('errors.translationFailed')
         });
       }
     },

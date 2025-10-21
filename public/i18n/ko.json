@@ -12,7 +12,25 @@
     "previous": "이전",
     "done": "완료",
     "words": "단어",
-    "minRead": "분 읽기"
+    "minRead": "분 읽기",
+    "notAvailable": "사용 불가",
+    "fileTypes": {
+      "pdf": "PDF",
+      "docx": "DOCX"
+    }
+  },
+  "errors": {
+    "contractTextTooLong": "계약서 텍스트가 너무 깁니다. 최대 50,000자까지 허용됩니다.",
+    "notAValidContract": "유효한 계약서 문서가 아닌 것 같습니다.",
+    "analysisFailed": "죄송합니다. 오류가 발생했습니다. 계약서를 분석할 수 없습니다. 다시 시도해 주세요.",
+    "translationFailed": "번역에 실패했습니다. 다시 시도해 주세요.",
+    "aiServicesUnavailable": "필요한 기능을 현재 사용할 수 없습니다",
+    "promptApiUnavailable": "분석 기능을 현재 사용할 수 없습니다",
+    "translatorApiUnavailable": "번역 기능을 현재 사용할 수 없습니다",
+    "writerApiUnavailable": "쓰기 기능을 현재 사용할 수 없습니다",
+    "languageDetectorUnavailable": "언어 감지를 현재 사용할 수 없습니다",
+    "summarizerUnavailable": "요약 기능을 현재 사용할 수 없습니다",
+    "sessionNotInitialized": "서비스가 준비되지 않았습니다. 페이지를 새로고침하세요."
   },
   "language": {
     "select": "언어 선택",
@@ -254,5 +272,23 @@
     "contactDescription": "이 서비스 이용약관이나 앱의 개인정보 보호 기능에 대한 질문이 있는 경우, 다음을 이용하세요:",
     "contactLink": "문의하기.",
     "iAgree": "동의합니다"
+  },
+  "theme": {
+    "switchToLight": "라이트 모드로 전환",
+    "switchToDark": "다크 모드로 전환"
+  },
+  "languages": {
+    "english": "영어",
+    "french": "프랑스어",
+    "arabic": "아랍어",
+    "spanish": "스페인어",
+    "german": "독일어",
+    "japanese": "일본어",
+    "chinese": "중국어",
+    "korean": "한국어",
+    "unknown": "알 수 없음"
+  },
+  "dateFormat": {
+    "analyzedOn": "{{date}}에 분석됨"
   }
 }

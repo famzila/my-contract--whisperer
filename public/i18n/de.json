@@ -10,7 +10,25 @@
     "back": "Zurück",
     "next": "Weiter",
     "previous": "Vorherige",
-    "done": "Fertig"
+    "done": "Fertig",
+    "notAvailable": "Nicht verfügbar",
+    "fileTypes": {
+      "pdf": "PDF",
+      "docx": "DOCX"
+    }
+  },
+  "errors": {
+    "contractTextTooLong": "Vertragstext ist zu lang. Maximal 50.000 Zeichen erlaubt.",
+    "notAValidContract": "Dies scheint kein gültiges Vertragsdokument zu sein.",
+    "analysisFailed": "Es tut uns leid, ein Fehler ist aufgetreten. Wir konnten Ihren Vertrag nicht analysieren. Bitte versuchen Sie es erneut.",
+    "translationFailed": "Übersetzung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "aiServicesUnavailable": "Erforderliche Funktionen sind derzeit nicht verfügbar",
+    "promptApiUnavailable": "Analysefunktionen sind derzeit nicht verfügbar",
+    "translatorApiUnavailable": "Übersetzungsfunktionen sind derzeit nicht verfügbar",
+    "writerApiUnavailable": "Schreibfunktionen sind derzeit nicht verfügbar",
+    "languageDetectorUnavailable": "Spracherkennung ist derzeit nicht verfügbar",
+    "summarizerUnavailable": "Zusammenfassungsfunktionen sind derzeit nicht verfügbar",
+    "sessionNotInitialized": "Dienst nicht bereit. Bitte aktualisieren Sie die Seite."
   },
   "language": {
     "select": "Sprache auswählen",
@@ -20,21 +38,35 @@
     "analyzeIn": "Analysieren in",
     "mismatchDetected": "Sprachkonflikt erkannt",
     "mismatchMessage": "Dieser Vertrag ist in",
-    "appLanguageSet": "aber Ihre App-Sprache ist eingestellt auf",
+    "appLanguageSet": "aber Ihre Schnittstellensprache ist eingestellt auf",
     "whichLanguage": "Wählen Sie Ihre bevorzugte Sprache für die Analyseergebnisse:",
     "originalLanguage": "In der Originalsprache des Vertrags analysieren",
     "preferredLanguage": "In meiner Sprache anzeigen (übersetzt für besseres Verständnis)",
     "tipTitle": "Hinweis:",
     "tipMessage": "Der Vertrag wird in seiner Originalsprache analysiert, um die rechtliche Genauigkeit zu wahren. Wir übersetzen die Ergebnisse in Ihre gewählte Sprache.",
-    "appWillSwitch": "Die App wechselt zu dieser Sprache",
-    "appWillStayInCurrent": "Die App bleibt in der aktuellen Sprache (UI nicht verfügbar)",
-    "noAppSwitch": "Kein Sprachwechsel der App"
+    "appWillSwitch": "Die Schnittstelle wechselt zu dieser Sprache",
+    "appWillStayInCurrent": "Die Schnittstelle bleibt in der aktuellen Sprache (Schnittstelle nicht verfügbar)",
+    "noAppSwitch": "Kein Schnittstellensprachwechsel"
   },
   "navbar": {
     "title": "Contract Whisperer",
-    "upload": "Vertrag hochladen",
-    "analysis": "Analyse",
-    "settings": "Einstellungen"
+    "subtitle": "KI-gestützte Vertragsanalyse",
+    "home": "Startseite",
+    "howItWorks": "So funktioniert's",
+    "privacy": "Datenschutz"
+  },
+  "footer": {
+    "about": "Über Contract Whisperer",
+    "aboutText": "KI-gestützte Vertragsanalyse, die Ihnen hilft, juristische Dokumente in einfacher Sprache zu verstehen.",
+    "disclaimer": "Konsultieren Sie immer einen qualifizierten Rechtsexperten für wichtige Entscheidungen. Dieses Tool bietet KI-gestützte Analyse nur zu Informationszwecken.",
+    "quickLinks": "Schnellzugriffe",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "termsOfService": "Nutzungsbedingungen",
+    "contactUs": "Kontakt",
+    "poweredBy": "Powered By",
+    "chromeAI": "Chrome integrierte KI (Gemini Nano)",
+    "clientSide": "100% Client-seitige Verarbeitung",
+    "copyright": "Contract Whisperer. Erstellt mit Angular & Chrome AI."
   },
   "upload": {
     "title": "Laden Sie Ihren Vertrag hoch",
@@ -46,6 +78,27 @@
     "processing": "Vertrag wird verarbeitet...",
     "error": "Fehler beim Hochladen des Vertrags",
     "success": "Vertrag erfolgreich hochgeladen"
+  },
+  "nonContract": {
+    "title": "Hmm, das sieht nicht nach einem Vertrag aus",
+    "analyzed": "Wir haben Ihr Dokument analysiert und es scheint ein/eine zu sein:",
+    "whatWeSupport": "Contract Whisperer ist spezialisiert auf rechtliche Vereinbarungen wie:",
+    "employmentContracts": "Arbeitsverträge",
+    "rentalAgreements": "Mietverträge",
+    "ndasFreelance": "NDAs & Freiberufler-Verträge",
+    "serviceAgreements": "Dienstleistungsverträge",
+    "tipTitle": "Tipp:",
+    "tipMessage": "Stellen Sie sicher, dass Ihr Dokument Begriffe wie „Vereinbarung", „Parteien", „Verpflichtungen" oder „Kündigung" enthält.",
+    "tryAnother": "Anderes Dokument versuchen",
+    "documentTypes": {
+      "email_or_letter": "E-Mail oder Brief",
+      "academic_paper": "Akademische Arbeit oder Aufsatz",
+      "story_or_book": "Geschichte oder Buchkapitel",
+      "recipe": "Rezept",
+      "instructions_or_tutorial": "Anleitung oder Tutorial",
+      "article": "Artikel oder Blog-Beitrag",
+      "other": "Dokument"
+    }
   },
   "analysis": {
     "title": "Vertragsanalyse",
@@ -62,6 +115,10 @@
     "theme": "Design",
     "notifications": "Benachrichtigungen",
     "privacy": "Datenschutz"
+  },
+  "theme": {
+    "switchToLight": "Zum hellen Modus wechseln",
+    "switchToDark": "Zum dunklen Modus wechseln"
   },
   "partySelector": {
     "title": "Wer sind Sie in diesem Vertrag?",
@@ -194,6 +251,20 @@
     "contactDescription": "Wenn Sie Fragen zu diesen Nutzungsbedingungen haben, verwenden Sie bitte ",
     "contactLink": "Kontaktieren Sie uns.",
     "iAgree": "Ich stimme zu"
+  },
+  "languages": {
+    "english": "Englisch",
+    "french": "Französisch",
+    "arabic": "Arabisch",
+    "spanish": "Spanisch",
+    "german": "Deutsch",
+    "japanese": "Japanisch",
+    "chinese": "Chinesisch",
+    "korean": "Koreanisch",
+    "unknown": "Unbekannt"
+  },
+  "dateFormat": {
+    "analyzedOn": "Analysiert am {{date}}"
   }
 }
 
