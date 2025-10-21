@@ -1,31 +1,32 @@
-<div class="border-b border-gray-200 mb-6">
-  <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" role="tablist">
+<div class="tabs-container">
+  <ul class="tabs-list" role="tablist">
     @for (tab of tabs(); track tab.id) {
-      <li class="me-2" role="presentation">
-        <button 
+      <li class="tabs-item" role="presentation">
+        <a 
           [class]="getTabClasses(tab)"
-          [disabled]="tab.disabled"
-          (click)="selectTab(tab.id)"
+          (click)="selectTab(tab.id, $event)"
           role="tab"
           [attr.aria-selected]="tab.id === activeTab()"
-          [attr.aria-controls]="tab.id + '-panel'">
-          <lucide-icon [name]="tab.icon" class="w-4 h-4 mr-2"></lucide-icon>
+          [attr.aria-controls]="tab.id + '-panel'"
+          [attr.tabindex]="tab.disabled ? -1 : 0"
+          [attr.aria-disabled]="tab.disabled">
+          <lucide-icon [name]="tab.icon" [class]="getIconClasses(tab)"></lucide-icon>
           <span>{{ tab.label }}</span>
           @if (tab.isLoading) {
-            <app-loading-spinner size="sm" class="ml-2"></app-loading-spinner>
+            <app-loading-spinner size="sm" class="ms-2"></app-loading-spinner>
           }
           @if (tab.badge) {
             <span [class]="getBadgeClasses(tab)">
               {{ tab.badge }}
             </span>
           }
-        </button>
+        </a>
       </li>
     }
   </ul>
 </div>
-<div class="tab-content p-8 rounded-lg bg-white shadow-lg shadow-slate-200/20 border border-slate-200/60">
-  <div class="space-y-6">
+<div class="tabs-content">
+  <div class="tabs-content-inner">
     <ng-content></ng-content>
   </div>
 </div>

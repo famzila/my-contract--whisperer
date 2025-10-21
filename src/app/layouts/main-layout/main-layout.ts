@@ -1,14 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/core';
 import { RouterModule, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { LanguageSelector } from '../../shared/components';
+import { LanguageSelector, Button } from '../../shared/components';
 import { UiStore } from '../../core/stores/ui.store';
-import { FileText, Bot, Shield, Menu } from '../../shared/icons/lucide-icons';
+import { FileText, Bot, Shield, Menu, Sun, Moon } from '../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterLink, RouterOutlet, TranslatePipe, LucideAngularModule, LanguageSelector],
+  imports: [RouterLink, RouterOutlet, TranslatePipe, LucideAngularModule, LanguageSelector, Button],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,8 +21,13 @@ export class MainLayout {
   readonly BotIcon = Bot;
   readonly ShieldIcon = Shield;
   readonly MenuIcon = Menu;
+  readonly SunIcon = Sun;
+  readonly MoonIcon = Moon;
   
   currentYear = new Date().getFullYear();
+  
+  // Computed properties
+  isDarkMode = computed(() => this.uiStore.isDarkMode());
 
   /**
    * Show how it works modal
@@ -43,5 +48,12 @@ export class MainLayout {
    */
   showTermsOfService(): void {
     this.uiStore.openTermsOfService();
+  }
+
+  /**
+   * Toggle theme between light and dark
+   */
+  toggleTheme(): void {
+    this.uiStore.toggleTheme();
   }
 }

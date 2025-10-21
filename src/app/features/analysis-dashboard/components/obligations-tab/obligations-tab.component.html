@@ -2,16 +2,16 @@
   [title]="'analysis.obligations.title' | translate"
   [subtitle]="'analysis.obligations.subtitle' | translate"
   [icon]="ClockIcon"
-  iconBgClass="bg-green-100"
-  iconColorClass="text-green-600"
+  iconBgClass="bg-green-100 dark:bg-green-900"
+  iconColorClass="text-green-600 dark:text-green-400"
 >
 </app-tab-header>
 @if (isLoading()) { @if (isRetrying()) {
-  <app-alert 
+  <app-notice 
   type="loading"
   [title]="('analysis.retrying' | translate) + ' (' + ('analysis.attempt' | translate) + ' ' + retryCount() + '/3' + ')'"
   [message]="('analysis.retryMessage' | translate)"
-></app-alert>
+></app-notice>
 }
 <app-skeleton-loader
   type="list"
@@ -24,104 +24,100 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
   <!-- Employer/Party 1 -->
-  <app-card>
-    <div class="p-6 border border-gray-200 h-full">
-      <h3 class="text-xl font-semibold text-gray-700 mb-3 flex items-center gap-2">
-        <lucide-icon [name]="CheckCircleIcon" class="w-8 h-8 text-green-600"></lucide-icon>
+  <div class="p-6 border border-divider h-full bg-white dark:bg-slate-800 rounded-lg">
+      <h3 class="mb-3 flex items-center gap-2">
+        <lucide-icon [name]="CheckCircleIcon" class="w-8 h-8 text-green-600 dark:text-green-400"></lucide-icon>
         {{ 'analysis.obligations.employer' | translate }}
       </h3>
       <div class="space-y-3">
         @if (obligations() === null) {
-        <app-alert
+        <app-notice
           type="error"
           [message]="'analysis.obligations.extractionError' | translate"
-        ></app-alert>
+        ></app-notice>
         } @else if (obligations() && obligations()?.employer && obligations()!.employer.length > 0)
         { @for (obligation of obligations()?.employer || []; track $index) {
-        <div class="bg-white rounded-lg p-4 border border-blue-200">
-          <p class="font-medium text-gray-900 mb-1">{{ obligation.duty }}</p>
-          <div class="text-sm text-gray-600 space-y-1">
+        <div class="bg-white dark:bg-slate-800 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+          <p class="font-medium text-body mb-1">{{ obligation.duty }}</p>
+          <div class="text-body-sm space-y-1">
             @if (obligation.amount) {
             <p class="flex items-center gap-2">
-              <lucide-icon [name]="DollarSignIcon" class="w-4 h-4 text-green-600"></lucide-icon>
+              <lucide-icon [name]="DollarSignIcon" class="w-4 h-4 text-green-600 dark:text-green-400"></lucide-icon>
               ${{ obligation.amount.toLocaleString() }}
             </p>
             } @if (obligation.frequency) {
             <p class="flex items-center gap-2">
-              <lucide-icon [name]="RefreshCwIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+              <lucide-icon [name]="RefreshCwIcon" class="w-4 h-4 text-blue-600 dark:text-blue-400"></lucide-icon>
               {{ obligation.frequency }}
             </p>
             } @if (obligation.startDate) {
             <p class="flex items-center gap-2">
-              <lucide-icon [name]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+              <lucide-icon [name]="ClockIcon" class="w-4 h-4 text-blue-600 dark:text-blue-400"></lucide-icon>
               {{ 'analysis.obligations.starts' | translate }}: {{ obligation.startDate }}
             </p>
             } @if (obligation.duration) {
             <p class="flex items-center gap-2">
-              <lucide-icon [name]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+              <lucide-icon [name]="ClockIcon" class="w-4 h-4 text-blue-600 dark:text-blue-400"></lucide-icon>
               {{ 'analysis.obligations.duration' | translate }}: {{ obligation.duration }}
             </p>
             } @if (obligation.scope) {
             <p class="flex items-center gap-2">
-              <lucide-icon [name]="ClipboardIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+              <lucide-icon [name]="ClipboardIcon" class="w-4 h-4 text-blue-600 dark:text-blue-400"></lucide-icon>
               {{ obligation.scope }}
             </p>
             }
           </div>
         </div>
         } } @else {
-        <div class="bg-white rounded-lg p-6 border border-blue-200 text-center">
-          <div class="text-gray-400 mb-2">
+        <div class="bg-white dark:bg-slate-800 rounded-lg p-6 border border-blue-200 dark:border-blue-800 text-center">
+          <div class="text-gray-400 dark:text-gray-500 mb-2">
             <lucide-icon [name]="CheckCircleIcon" class="w-8 h-8 mx-auto"></lucide-icon>
           </div>
-          <p class="text-gray-500 text-sm">No employer obligations found.</p>
+          <p class="text-muted">No employer obligations found.</p>
         </div>
         }
       </div>
     </div>
-  </app-card>
 
   <!-- Employee/Party 2 -->
-  <app-card>
-    <div class="p-6 border border-gray-200 h-full">
-      <h3 class="text-xl font-semibold text-gray-700 mb-3 flex items-center gap-2">
-        <lucide-icon [name]="CheckCircleIcon" class="w-8 h-8 text-green-600"></lucide-icon>
+  <div class="p-6 border border-divider h-full bg-white dark:bg-slate-800 rounded-lg">
+      <h3 class="mb-3 flex items-center gap-2">
+        <lucide-icon [name]="CheckCircleIcon" class="w-8 h-8 text-green-600 dark:text-green-400"></lucide-icon>
         {{ 'analysis.obligations.employee' | translate }}
       </h3>
       <div class="space-y-3">
         @if (obligations() === null) {
-        <app-alert
+        <app-notice
           type="error"
           [message]="'analysis.obligations.extractionError' | translate"
-        ></app-alert>
+        ></app-notice>
         } @else if (obligations() && obligations()?.employee && obligations()!.employee.length > 0)
         { @for (obligation of obligations()?.employee || []; track $index) {
-        <div class="bg-white rounded-lg p-4 border border-purple-200">
-          <p class="font-medium text-gray-900 mb-1">{{ obligation.duty }}</p>
-          <div class="text-sm text-gray-600 space-y-1">
+        <div class="bg-white dark:bg-slate-800 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+          <p class="font-medium text-body mb-1">{{ obligation.duty }}</p>
+          <div class="text-body-sm space-y-1">
             @if (obligation.scope) {
             <p class="flex items-center gap-2">
-              <lucide-icon [name]="ClipboardIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+              <lucide-icon [name]="ClipboardIcon" class="w-4 h-4 text-blue-600 dark:text-blue-400"></lucide-icon>
               {{ obligation.scope }}
             </p>
             } @if (obligation.duration) {
             <p class="flex items-center gap-2">
-              <lucide-icon [name]="ClockIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
+              <lucide-icon [name]="ClockIcon" class="w-4 h-4 text-blue-600 dark:text-blue-400"></lucide-icon>
               {{ obligation.duration }}
             </p>
             }
           </div>
         </div>
         } } @else {
-        <div class="rounded-lg p-6 border h-full border-gray-200 text-center">
-          <div class="text-gray-400 mb-2">
+        <div class="rounded-lg p-6 border h-full border-divider text-center">
+          <div class="text-gray-400 dark:text-gray-500 mb-2">
             <lucide-icon [name]="AlertTriangleIcon" class="w-8 h-8 mx-auto"></lucide-icon>
           </div>
-          <p class="text-gray-500 text-sm">No employee obligations found.</p>
+          <p class="text-muted">No employee obligations found.</p>
         </div>
         }
       </div>
     </div>
-  </app-card>
-</div>
+  </div>
 }

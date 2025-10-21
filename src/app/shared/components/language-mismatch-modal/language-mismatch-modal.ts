@@ -54,7 +54,7 @@ export interface LanguageMismatchData {
       </app-notice>
 
       <div class="space-y-3 mb-3">
-        <p class="font-medium mb-3">
+        <p class="font-medium mb-3 text-secondary">
           {{ 'language.whichLanguage' | translate }}
         </p>
 
@@ -62,7 +62,7 @@ export interface LanguageMismatchData {
         <button
           type="button"
           (click)="onSelectContractLanguage()"
-          class="w-full flex items-start justify-between p-4 text-left rtl:text-right bg-white border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-all"
+          class="w-full flex items-start justify-between p-4 text-left rtl:text-right card-surface rounded-xl hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
         >
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-2 rtl:flex-row-reverse rtl:justify-end">
@@ -71,16 +71,14 @@ export interface LanguageMismatchData {
                 {{ getLanguageName(data.detectedLanguage) }}
               </div>
             </div>
-            <div class="text-sm text-gray-600 mb-2">
+            <div class="text-body-sm mb-2">
               {{ 'language.originalLanguage' | translate }}
             </div>
 
             <!-- Show different badges based on language support -->
             @if (data.isContractLanguageAvailableInUI && data.canAnalyzeDirectly) {
             <!-- Best case: Direct analysis + UI available -->
-            <div
-              class="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 text-sm rounded-lg border border-green-200 rtl:flex-row-reverse"
-            >
+            <div class="badge badge-blue rtl:flex-row-reverse">
               <lucide-icon [img]="CheckIcon" class="w-4 h-4 flex-shrink-0"></lucide-icon>
               <span>{{ 'language.appWillSwitch' | translate }}</span>
             </div>
@@ -101,9 +99,7 @@ export interface LanguageMismatchData {
             <!-- Warning for unsupported contract languages (needs pre-translation) -->
             } @else {
             <!-- UI not available - fallback to English -->
-            <div
-              class="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 text-yellow-700 text-sm rounded-lg border border-yellow-200 rtl:flex-row-reverse"
-            >
+            <div class="badge badge-amber rtl:flex-row-reverse">
               <lucide-icon [img]="AlertCircleIcon" class="w-4 h-4 flex-shrink-0"></lucide-icon>
               <span>{{
                 'language.uiNotAvailable'
@@ -122,7 +118,7 @@ export interface LanguageMismatchData {
         <button
           type="button"
           (click)="onSelectUserLanguage()"
-          class="w-full flex items-start justify-between p-4 text-left rtl:text-right bg-white border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-all"
+          class="w-full flex items-start justify-between p-4 text-left rtl:text-right card-surface rounded-xl hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
         >
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-2 rtl:flex-row-reverse rtl:justify-end">
@@ -131,7 +127,7 @@ export interface LanguageMismatchData {
                 {{ getLanguageName(data.preferredLanguage) }}
               </div>
             </div>
-            <div class="text-sm text-gray-600 mb-2">
+            <div class="text-body-sm mb-2">
               {{ 'language.preferredLanguage' | translate }}
             </div>
           </div>
@@ -141,7 +137,7 @@ export interface LanguageMismatchData {
       <!-- Cached Languages Section -->
       @if (data.availableLanguages && data.availableLanguages.length > 0) {
       <div class="mt-6">
-        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+        <h3 class="text-sm font-semibold text-secondary mb-3 flex items-center gap-2">
           <lucide-icon [img]="LanguagesIcon" class="w-4 h-4"></lucide-icon>
           {{ 'language.availableTranslations' | translate }}
         </h3>
@@ -150,15 +146,13 @@ export interface LanguageMismatchData {
           <button
             type="button"
             (click)="onSelectCachedLanguage(lang)"
-            class="w-full flex items-center justify-between p-3 text-left rtl:text-right bg-gray-50 border border-gray-200 rounded-lg hover:border-primary hover:bg-blue-50 transition-all"
+            class="w-full flex items-center justify-between p-3 text-left rtl:text-right surface-muted rounded-lg hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
           >
             <div class="flex items-center gap-3">
               <span class="text-xl">{{ getLanguageFlag(lang) }}</span>
               <span class="font-medium">{{ getLanguageName(lang) }}</span>
             </div>
-            <div
-              class="flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-xs rounded border border-green-200"
-            >
+            <div class="badge badge-blue text-xs">
               <lucide-icon [img]="CheckIcon" class="w-3 h-3"></lucide-icon>
               <span>{{ 'language.cached' | translate }}</span>
             </div>

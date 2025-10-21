@@ -48,9 +48,9 @@ export class SampleContractModal {
       titleKey: 'sampleContract.ndaContract',
       descriptionKey: 'sampleContract.ndaDescription',
       fileType: 'DOCX',
-      bgColor: 'bg-red-100',
-      hoverBgColor: 'bg-red-200',
-      iconColor: 'text-red-600'
+      bgColor: 'bg-red-100 dark:bg-red-900',
+      hoverBgColor: 'bg-red-200 dark:bg-red-800',
+      iconColor: 'text-red-600 dark:text-red-400'
     },
     {
       id: 'freelance',
@@ -59,9 +59,9 @@ export class SampleContractModal {
       titleKey: 'sampleContract.freelanceContract',
       descriptionKey: 'sampleContract.freelanceDescription',
       fileType: 'PDF',
-      bgColor: 'bg-blue-100',
-      hoverBgColor: 'bg-blue-200',
-      iconColor: 'text-blue-600'
+      bgColor: 'bg-blue-100 dark:bg-blue-900',
+      hoverBgColor: 'bg-blue-200 dark:bg-blue-800',
+      iconColor: 'text-blue-600 dark:text-blue-400'
     },
     {
       id: 'lease',
@@ -70,9 +70,9 @@ export class SampleContractModal {
       titleKey: 'sampleContract.leaseContract',
       descriptionKey: 'sampleContract.leaseDescription',
       fileType: 'DOCX',
-      bgColor: 'bg-green-100',
-      hoverBgColor: 'bg-green-200',
-      iconColor: 'text-green-600'
+      bgColor: 'bg-green-100 dark:bg-green-900',
+      hoverBgColor: 'bg-green-200 dark:bg-green-800',
+      iconColor: 'text-green-600 dark:text-green-400'
     },
     {
       id: 'arabic',
@@ -81,9 +81,9 @@ export class SampleContractModal {
       titleKey: 'sampleContract.arabicContract',
       descriptionKey: 'sampleContract.arabicDescription',
       fileType: 'DOCX',
-      bgColor: 'bg-purple-100',
-      hoverBgColor: 'bg-purple-200',
-      iconColor: 'text-purple-600'
+      bgColor: 'bg-purple-100 dark:bg-purple-900',
+      hoverBgColor: 'bg-purple-200 dark:bg-purple-800',
+      iconColor: 'text-purple-600 dark:text-purple-400'
     }
   ]);
 

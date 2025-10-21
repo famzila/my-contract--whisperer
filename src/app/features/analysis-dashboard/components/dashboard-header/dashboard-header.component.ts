@@ -1,8 +1,10 @@
-import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { Component, input, output, computed, ChangeDetectionStrategy, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideAngularModule, Upload } from 'lucide-angular';
 import { Button } from '../../../../shared/components/button/button';
+import { SeverityBadge } from '../../../../shared/components/severity-badge/severity-badge';
+import { LanguageStore } from '../../../../core/stores/language.store';
 import { 
   Theater, 
   Globe, 
@@ -22,11 +24,13 @@ export interface PerspectiveBadge {
 
 @Component({
   selector: 'app-dashboard-header',
-  imports: [CommonModule, TranslateModule, LucideAngularModule, Button, DatePipe],
+  imports: [CommonModule, TranslateModule, LucideAngularModule, Button, SeverityBadge],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard-header.component.html'
 })
 export class DashboardHeaderComponent {
+  private languageStore = inject(LanguageStore);
+
   // Modern input signals
   metadata = input<ContractMetadata | null>(null);
   isMockMode = input<boolean>(false);
@@ -48,9 +52,36 @@ export class DashboardHeaderComponent {
   AlertTriangleIcon = AlertTriangle;
   CalendarIcon = Calendar;
   UsersIcon = Users;
+  UploadIcon = Upload;
 
   // Computed signals
   hasContractText = computed(() => !!this.metadata());
+
+  // Format date based on app language, not browser locale
+  formattedDate = computed(() => {
+    const date = this.todayDate();
+    const language = this.languageStore.preferredLanguage();
+    
+    // Map app language to proper locale for date formatting
+    const localeMap: Record<string, string> = {
+      'en': 'en-US',    // MM/DD/YYYY
+      'fr': 'fr-FR',    // DD/MM/YYYY
+      'ar': 'ar-SA',    // DD/MM/YYYY
+      'es': 'es-ES',    // DD/MM/YYYY
+      'de': 'de-DE',    // DD.MM.YYYY
+      'ja': 'ja-JP',    // YYYY/MM/DD
+      'zh': 'zh-CN',    // YYYY年MM月DD日
+      'ko': 'ko-KR'     // YYYY. MM. DD.
+    };
+
+    const locale = localeMap[language] || 'en-US';
+    
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(date);
+  });
 
   isContractExpiringSoon(): boolean {
     const metadata = this.metadata();

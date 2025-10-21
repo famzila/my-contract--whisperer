@@ -59,23 +59,23 @@ export interface SkeletonImage {
   selector: 'app-skeleton-loader',
   imports: [CommonModule],
   template: `
-    <div [class]="containerClasses()" role="status" [attr.aria-label]="ariaLabel()">
+    <div class="skeleton-container" [class]="containerClasses()" role="status" [attr.aria-label]="ariaLabel()">
       @switch (type()) { @case ('text') {
-      <div class="space-y-2 animate-pulse">
+      <div class="space-y-2">
         @for (line of textLines(); track $index) {
         <div
-          class="bg-gray-200rounded-full animate-pulse"
+          class="skeleton-text-line"
           [style.width]="line.width"
           [style.height]="line.height"
         ></div>
         }
       </div>
       } @case ('card') {
-      <div class="bg-gray-200 rounded-lg animate-pulse" [class]="cardClasses()">
+      <div class="skeleton-card" [class]="cardClasses()">
         <div class="space-y-3">
           @for (line of cardLines(); track $index) {
           <div
-            class="bg-gray-300 rounded-full animate-pulse"
+            class="skeleton-card-line"
             [style.width]="line.width"
             [style.height]="line.height"
           ></div>
@@ -85,11 +85,11 @@ export interface SkeletonImage {
       } @case ('list') {
       <div class="space-y-3">
         @for (item of listItems(); track $index) {
-        <div class="bg-gray-200 rounded-lg animate-pulse" [class]="listItemClasses()">
+        <div class="skeleton-list-item" [class]="listItemClasses()">
           <div class="space-y-2">
             @for (line of listItemLines(); track $index) {
             <div
-              class="bg-gray-300 rounded-full animate-pulse"
+              class="skeleton-list-item-line"
               [style.width]="line.width"
               [style.height]="line.height"
             ></div>
@@ -99,12 +99,9 @@ export interface SkeletonImage {
         }
       </div>
       } @case ('image') {
-      <div
-        class="flex items-center justify-center bg-gray-300 animate-pulse"
-        [class]="imageClasses()"
-      >
+      <div class="skeleton-image" [class]="imageClasses()">
         <svg
-          class="w-10 h-10 text-gray-200 "
+          class="skeleton-image-icon"
           aria-hidden="true"
           xmlns="http://www.w3.org/2000/svg"
           fill="currentColor"
@@ -117,13 +114,13 @@ export interface SkeletonImage {
       </div>
       } @case ('avatar') {
       <div
-        class="bg-gray-300  rounded-full animate-pulse"
+        class="skeleton-avatar"
         [style.width]="avatarSize()"
         [style.height]="avatarSize()"
       ></div>
       } @case ('button') {
       <div
-        class="bg-gray-300  rounded-lg animate-pulse"
+        class="skeleton-button"
         [style.width]="buttonWidth()"
         [style.height]="buttonHeight()"
       ></div>
@@ -133,7 +130,7 @@ export interface SkeletonImage {
         <div class="flex space-x-4">
           @for (cell of tableCells(); track $index) {
           <div
-            class="bg-gray-300  rounded animate-pulse"
+            class="skeleton-table-cell"
             [style.width]="cell.width"
             [style.height]="cell.height"
           ></div>
@@ -146,7 +143,7 @@ export interface SkeletonImage {
       <div class="space-y-2">
         @for (line of customLines(); track $index) {
         <div
-          class="bg-gray-200 rounded-full animate-pulse"
+          class="skeleton-text-line"
           [style.width]="line.width"
           [style.height]="line.height"
         ></div>

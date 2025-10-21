@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideAngularModule, Sparkles } from 'lucide-angular';
 import { Button } from '../../shared/components/button/button';
 import {
   FileText,
@@ -41,22 +41,7 @@ type UploadMode = 'file' | 'text';
   selector: 'app-contract-upload',
   imports: [CommonModule, FormsModule, TranslatePipe, LucideAngularModule, Button, Notice],
   templateUrl: './contract-upload.html',
-  styles: [
-    `
-      @keyframes pulse-glow {
-        0%,
-        100% {
-          box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-        }
-        50% {
-          box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
-        }
-      }
-      .pulse-glow {
-        animation: pulse-glow 2s ease-in-out infinite;
-      }
-    `,
-  ],
+  styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContractUpload {
@@ -82,16 +67,17 @@ export class ContractUpload {
   readonly LightbulbIcon = Lightbulb;
   readonly SearchIcon = Search;
   readonly LockIcon = Lock;
+  SparklesIcon = Sparkles;
   private parserService = inject(ContractParserService);
   private translatorService = inject(TranslatorService);
-  private router = inject(Router);
 
   // Local UI state
   mode = signal<UploadMode>('file');
   contractText = signal('');
   isDragging = signal(false);
   private partySelectorDialogRef: any = null;
-
+  
+  
   constructor() {
     effect(() => {
       if (!this.shouldProcessOnboarding()) return;

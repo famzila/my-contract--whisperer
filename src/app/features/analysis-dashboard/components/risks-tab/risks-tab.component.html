@@ -2,16 +2,16 @@
   [title]="'analysis.risks.title' | translate"
   [subtitle]="'analysis.risks.subtitle' | translate"
   [icon]="AlertTriangleIcon"
-  iconBgClass="bg-red-100"
-  iconColorClass="text-red-600">
+  iconBgClass="bg-red-100 dark:bg-red-900"
+  iconColorClass="text-red-600 dark:text-red-400">
 </app-tab-header>
 @if (isLoading()) {
     @if (isRetrying()) {
-      <app-alert 
+      <app-notice 
         type="loading"
         [title]="('analysis.retrying' | translate) + ' (' + ('analysis.attempt' | translate) + ' ' + retryCount() + '/3' + ')'"
         [message]="('analysis.retryMessage' | translate)"
-      ></app-alert>
+      ></app-notice>
     }
     <app-skeleton-loader 
       type="list" 
@@ -24,54 +24,54 @@
     @if (risks() && risks().length > 0) {
       <!-- High Risks -->
       @if (highRisks().length > 0) {
-        <div class="space-y-4">
+        <div class="space-y-2">
           @for (risk of highRisks(); track $index) {
-            <app-alert type="error" [showIcon]="false" [title]="risk.title" [message]="risk.description">
-              <div class="pt-1">
-                <div class="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-red-200/50 shadow-sm">
-                  <p class="text-sm font-medium text-red-700 flex items-center gap-2 mb-2">
-                    <lucide-icon [name]="AlertTriangleIcon" class="w-4 h-4"></lucide-icon>
-                    {{ 'analysis.risks.impact' | translate }}
-                  </p>
-                  <p class="text-sm text-gray-700 leading-relaxed">{{ risk.impact }}</p>
-                </div>
-              </div>
-            </app-alert>
+            <app-contract-insight-card
+              [title]="risk.title"
+              [description]="risk.description"
+              [severity]="'high'"
+              [impactLabel]="'analysis.risks.impact' | translate"
+              [impactText]="risk.impact"
+              [expanded]="false"
+            />
           }
         </div>
       }
       
       <!-- Medium Risks -->
       @if (mediumRisks().length > 0) {
-        <div class="space-y-4">
+        <div class="space-y-2">
           @for (risk of mediumRisks(); track $index) {
-            <app-alert type="warning" [showIcon]="false" [title]="risk.title" [message]="risk.description">
-              <div class="pt-1">
-                <div class="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-yellow-200/50 shadow-sm">
-                  <p class="text-sm font-medium text-yellow-700 flex items-center gap-2 mb-2">
-                    <lucide-icon [name]="LightbulbIcon" class="w-4 h-4"></lucide-icon>
-                    {{ 'analysis.risks.impact' | translate }}
-                  </p>
-                  <p class="text-sm text-gray-700 leading-relaxed">{{ risk.impact }}</p>
-                </div>
-              </div>
-            </app-alert>
+            <app-contract-insight-card
+              [title]="risk.title"
+              [description]="risk.description"
+              [severity]="'medium'"
+              [impactLabel]="'analysis.risks.impact' | translate"
+              [impactText]="risk.impact"
+              [expanded]="false"
+            />
           }
         </div>
       }
       
       <!-- Low Risks -->
       @if (lowRisks().length > 0) {
-        <div class="space-y-4">
+        <div class="space-y-2">
           @for (risk of lowRisks(); track $index) {
-            <app-alert type="info" [showIcon]="false" [title]="risk.title" [message]="risk.description">
-            </app-alert>
+            <app-contract-insight-card
+              [title]="risk.title"
+              [description]="risk.description"
+              [severity]="'low'"
+              [impactLabel]="'analysis.risks.impact' | translate"
+              [impactText]="risk.impact"
+              [expanded]="false"
+            />
           }
         </div>
       }
     } @else {
-      <div class="p-8 text-center text-gray-500">
-        <lucide-icon [name]="FileXIcon" class="w-16 h-16 mx-auto mb-4 text-gray-400"></lucide-icon>
+      <div class="text-empty-state">
+        <lucide-icon [name]="FileXIcon" class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-500"></lucide-icon>
         <p>{{ 'analysis.risks.noRisks' | translate }}</p>
       </div>
     }

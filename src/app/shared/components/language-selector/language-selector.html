@@ -3,17 +3,26 @@
   <button
     type="button"
     (click)="toggleDropdown()"
-    class="flex items-center gap-2 px-4 py-2 bg-white border-2 border-slate-300 rounded-lg text-sm font-semibold text-slate-700 cursor-pointer transition-all duration-150 ease-in-out shadow-sm hover:bg-slate-50 hover:border-slate-400 hover:shadow-md focus:outline-none focus:ring-3 focus:ring-blue-500 focus:ring-offset-2 focus:border-blue-500"
+    [disabled]="isDisabled()"
+    [title]="isDisabled() ? ('language.disabledDuringAnalysis' | translate) : ''"
     [attr.aria-label]="'language.select' | translate"
     [attr.aria-expanded]="isDropdownOpen()"
+    [class.opacity-50]="isDisabled()"
+    [class.cursor-not-allowed]="isDisabled()"
+    class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 shadow-sm transition-all duration-150 ease-in-out hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500 hover:shadow-md focus:outline-none focus:ring-3 focus:ring-indigo-500 focus:ring-offset-2 focus:border-indigo-500"
   >
     @if (selectedLanguage()) {
-      <lucide-icon [img]="LanguagesIcon" class="w-5 h-5 text-slate-600"></lucide-icon>
-      <span class="font-semibold text-slate-900">{{ selectedLanguage()!.nativeName }}</span>
+      <lucide-icon 
+        [img]="LanguagesIcon" 
+        class="w-5 h-5 text-slate-600 dark:text-slate-400"
+      ></lucide-icon>
+      <span class="font-semibold text-slate-900 dark:text-slate-100">
+        {{ selectedLanguage()!.nativeName }}
+      </span>
     }
     <lucide-icon 
       [img]="ChevronDownIcon" 
-      class="w-4 h-4 text-slate-500 transition-transform duration-150 ease-in-out"
+      class="w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform duration-150 ease-in-out"
       [class.rotate-180]="isDropdownOpen()"
     ></lucide-icon>
   </button>
@@ -21,11 +30,11 @@
   <!-- Dropdown Menu -->
   @if (isDropdownOpen()) {
     <div 
-      class="absolute top-full right-0 rtl:left-0 rtl:right-auto z-50 mt-2 w-80 sm:min-w-80 bg-white border border-slate-200 rounded-xl shadow-xl animate-in slide-in-from-top-2 duration-200"
-      (click)="closeDropdown()"
+      class="absolute top-full right-0 rtl:left-0 rtl:right-auto z-50 mt-2 w-80 sm:min-w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl transition-all duration-200 ease-out"
+      (click)="$event.stopPropagation()"
     >
-      <div class="p-4 border-b border-slate-100">
-        <span class="flex items-center gap-2 text-sm font-semibold text-slate-900 mb-1">
+      <div class="p-4 border-b border-slate-100 dark:border-slate-700">
+        <span class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">
           {{ 'language.choose' | translate }}
         </span>
       </div>
@@ -35,18 +44,30 @@
           <button
             type="button"
             (click)="selectLanguage(lang.code)"
-            class="flex items-center gap-3 w-full p-3 bg-transparent border-none rounded-lg cursor-pointer transition-all duration-150 ease-in-out text-left hover:bg-slate-50"
-            [class.bg-blue-50]="lang.code === selectedLanguage()?.code"
+            class="flex items-center gap-3 w-full p-3 rounded-lg cursor-pointer text-left bg-transparent border-none transition-all duration-150 ease-in-out hover:bg-slate-50 dark:hover:bg-slate-700"
+            [class.bg-indigo-50]="lang.code === selectedLanguage()?.code"
+            [class.dark:bg-indigo-900/50]="lang.code === selectedLanguage()?.code"
             [class.border]="lang.code === selectedLanguage()?.code"
-            [class.border-blue-200]="lang.code === selectedLanguage()?.code"
+            [class.border-indigo-200]="lang.code === selectedLanguage()?.code"
+            [class.dark:border-indigo-800]="lang.code === selectedLanguage()?.code"
           >
-            <lucide-icon [img]="LanguagesIcon" class="w-6 h-6 text-slate-600 flex-shrink-0"></lucide-icon>
+            <lucide-icon 
+              [img]="LanguagesIcon" 
+              class="w-6 h-6 text-slate-600 dark:text-slate-400 flex-shrink-0"
+            ></lucide-icon>
             <div class="flex flex-col gap-0.5 flex-1">
-              <span class="text-sm font-medium text-slate-900">{{ lang.nativeName }}</span>
-              <span class="text-xs text-slate-500">{{ lang.name }}</span>
+              <span class="text-sm font-medium text-slate-900 dark:text-slate-100">
+                {{ lang.nativeName }}
+              </span>
+              <span class="text-xs text-slate-500 dark:text-slate-400">
+                {{ lang.name }}
+              </span>
             </div>
             @if (lang.code === selectedLanguage()?.code) {
-              <lucide-icon [img]="CheckIcon" class="w-4 h-4 text-blue-600 flex-shrink-0"></lucide-icon>
+              <lucide-icon 
+                [img]="CheckIcon" 
+                class="w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0"
+              ></lucide-icon>
             }
           </button>
         }

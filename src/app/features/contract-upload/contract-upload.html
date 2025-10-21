@@ -1,52 +1,44 @@
 <div class="py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-3xl mx-auto">
     <div class="flex justify-center mb-8">
-      <div
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 text-white font-semibold text-sm rounded-full shadow-md pulse-glow"
-      >
-          <lucide-icon [img]="LockIcon" class="w-4 h-4"></lucide-icon>
+      <div class="security-badge">
+        <lucide-icon [img]="LockIcon" class="security-badge-icon"></lucide-icon>
         <span>{{ 'upload.privateSecure' | translate }}</span>
       </div>
     </div>
 
-
-
     <!-- Header -->
     <div class="text-center mb-8">
-      <h2 class="text-5xl pb-4 font-bold bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 dark:from-indigo-400 dark:via-indigo-300 dark:to-sky-400 bg-clip-text text-transparent">
+      <h2 class="text-hero pb-4">
         {{ 'upload.title' | translate }}
       </h2>
       <p class="text-xl text-slate-600 dark:text-slate-400 mb-4">
         {{ 'upload.subtitle' | translate }}
       </p>
-      <p class="text-sm text-slate-500 dark:text-slate-500">
+      <p class="text-muted">
         {{ 'upload.details' | translate }}
       </p>
     </div>
 
     <!-- Mode Switcher -->
-    <div class="flex justify-center mb-8">
-      <div class="inline-flex rounded-lg bg-gray-200 p-1">
+    <div class="mode-switcher">
+      <div class="mode-switcher-container">
         <button
           (click)="setMode('file')"
-          [class.bg-white]="mode() === 'file'"
-          [class.shadow]="mode() === 'file'"
-          [class.text-gray-900]="mode() === 'file'"
-          [class.text-gray-600]="mode() !== 'file'"
-          class="px-6 py-2 rounded-md font-medium transition-all flex items-center gap-2"
+          [class.mode-switcher-button-active]="mode() === 'file'"
+          [class.mode-switcher-button-inactive]="mode() !== 'file'"
+          class="mode-switcher-button"
         >
-          <lucide-icon [img]="FileTextIcon" class="w-4 h-4"></lucide-icon>
+          <lucide-icon [img]="FileTextIcon" class="mode-switcher-icon"></lucide-icon>
           {{ 'upload.uploadFile' | translate }}
         </button>
         <button
           (click)="setMode('text')"
-          [class.bg-white]="mode() === 'text'"
-          [class.shadow]="mode() === 'text'"
-          [class.text-gray-900]="mode() === 'text'"
-          [class.text-gray-600]="mode() !== 'text'"
-          class="px-6 py-2 rounded-md font-medium transition-all flex items-center gap-2"
+          [class.mode-switcher-button-active]="mode() === 'text'"
+          [class.mode-switcher-button-inactive]="mode() !== 'text'"
+          class="mode-switcher-button"
         >
-          <lucide-icon [img]="EditIcon" class="w-4 h-4"></lucide-icon>
+          <lucide-icon [img]="EditIcon" class="mode-switcher-icon"></lucide-icon>
           {{ 'upload.pasteText' | translate }}
         </button>
       </div>
@@ -54,121 +46,125 @@
 
     <!-- Error Message -->
     @if (contractStore.uploadError() || contractStore.analysisError()) {
-      <app-notice
-        type="error"
-        [icon]="AlertTriangleIcon"
-        titleKey="common.error"
-        [message]="contractStore.uploadError() || contractStore.analysisError()"
-        class="mb-6">
-      </app-notice>
-      
+    <app-notice
+      type="error"
+      [icon]="AlertTriangleIcon"
+      titleKey="common.error"
+      [message]="contractStore.uploadError() || contractStore.analysisError()"
+      class="mb-6"
+    >
+    </app-notice>
+
     }
 
     <!-- File Upload Mode -->
     @if (mode() === 'file') {
-      
-      <div class="bg-white rounded-xl shadow-lg p-8">
-        <div
-          (drop)="onFileDrop($event)"
-          (dragover)="onDragOver($event)"
-          (dragleave)="onDragLeave($event)"
-          [class.border-primary]="isDragging()"
-          [class.bg-primary/5]="isDragging()"
-          class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center transition-all duration-300 hover:border-primary-600 dark:hover:border-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950 cursor-pointer"
-        >
-          @if (contractStore.isLoading()) {
-            <div class="py-8">
-              <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
-              <p class="mt-4 text-gray-600">{{ 'upload.processingContract' | translate }}</p>
-            </div>
-          } @else {
-            <div class="space-y-4 ">
-              <div class="flex justify-center float-animation">
-                <lucide-icon [img]="UploadIcon" class="w-16 h-16 text-gray-400"></lucide-icon>
-              </div>
-                <p class="text-lg font-medium text-gray-900 mb-2">
-                  {{ 'upload.dropHere' | translate }}
-                </p>
-                <p class="text-sm text-gray-500 mb-4">
-                  {{ 'upload.orClickBrowse' | translate }}
-                </p>
-              <input
-                type="file"
-                (change)="onFileSelected($event)"
-                accept=".txt,.pdf,.docx"
-                class="hidden"
-                #fileInput
-              />
-              <app-button
-                (clicked)="fileInput.click()"
-                variant="primary"
-                [text]="'upload.chooseFile' | translate"
-                [icon]="UploadIcon"
-              >
-              </app-button>
-              <p class="text-xs text-gray-400 mt-4">
-                {{ 'upload.supportedFormats' | translate }}
-              </p>
-            </div>
-          }
+
+    <div class="upload-card">
+      <div
+        (drop)="onFileDrop($event)"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        [class.upload-area-dragging]="isDragging()"
+        class="upload-area"
+      >
+        @if (contractStore.isLoading()) {
+        <div class="py-8">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">{{ 'upload.processingContract' | translate }}</p>
         </div>
+        } @else {
+        <div class="flex justify-center mb-6 float-animation">
+          <div class="upload-icon-container">
+            <lucide-icon [img]="UploadIcon" class="upload-icon"></lucide-icon>
+          </div>
+        </div>
+        <h3 class="upload-title">
+          {{ 'upload.dropHere' | translate }}
+        </h3>
+        <p class="upload-subtitle">
+          {{ 'upload.orClickBrowse' | translate }}
+        </p>
+        <input
+          type="file"
+          (change)="onFileSelected($event)"
+          accept=".txt,.pdf,.docx"
+          class="hidden"
+          #fileInput
+        />
+        <app-button
+          (clicked)="fileInput.click()"
+          [icon]="UploadIcon"
+          [text]="'upload.chooseFile' | translate"
+          variant="primary"
+          size="md"
+          [rounded]="'lg'"
+        ></app-button>
+        <p class="upload-formats">
+          {{ 'upload.supportedFormats' | translate }}
+        </p>
+        }
       </div>
+    </div>
     }
 
     <!-- Text Input Mode -->
     @if (mode() === 'text') {
-      <div class="bg-white rounded-xl shadow-lg p-8">
-        <form (ngSubmit)="onTextSubmit()">
-          <div class="mb-4">
-            <label for="contract-text" class="block text-sm font-medium text-gray-700 mb-2">
-              {{ 'upload.contractText' | translate }}
-            </label>
-            <textarea
-              id="contract-text"
-              [(ngModel)]="contractText"
-              name="contractText"
-              rows="10"
-              [placeholder]="'upload.pastePlaceholder' | translate"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-              [disabled]="contractStore.isLoading()"
-            ></textarea>
+    <div class="upload-card">
+      <form (ngSubmit)="onTextSubmit()">
+        <div class="mb-4">
+          <label for="contract-text" class="form-label">
+            {{ 'upload.contractText' | translate }}
+          </label>
+          <textarea
+            id="contract-text"
+            [(ngModel)]="contractText"
+            name="contractText"
+            rows="10"
+            [placeholder]="'upload.pastePlaceholder' | translate"
+            class="form-textarea"
+            [disabled]="contractStore.isLoading()"
+          ></textarea>
+        </div>
+
+        <!-- Stats -->
+        @if (contractText()) {
+        <div class="stats-container">
+          <div class="flex items-center gap-2">
+            <lucide-icon [img]="BarChart3Icon" class="stats-icon"></lucide-icon>
+            <span>{{ wordCount }} {{ 'common.words' | translate }}</span>
           </div>
+          <div class="flex items-center gap-2">
+            <lucide-icon [img]="ClockIcon" class="stats-icon"></lucide-icon>
+            <span>~{{ readingTime }} {{ 'common.minRead' | translate }}</span>
+          </div>
+        </div>
+        }
 
-          <!-- Stats -->
-          @if (contractText()) {
-            <div class="flex gap-6 mb-6 text-sm text-gray-600">
-              <div class="flex items-center gap-2">
-                <lucide-icon [img]="BarChart3Icon" class="w-4 h-4 text-gray-500"></lucide-icon>
-                <span>{{ wordCount }} {{ 'common.words' | translate }}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-gray-500"></lucide-icon>
-                <span>~{{ readingTime }} {{ 'common.minRead' | translate }}</span>
-              </div>
-            </div>
-          }
-
-          <!-- Submit Button -->
-          <app-button
-            type="submit"
-            [disabled]="contractStore.isLoading() || !contractText().trim()"
-            [loading]="contractStore.isLoading()"
-            variant="primary"
-            [fullWidth]="true"
-            [text]="contractStore.isLoading() ? ('upload.processing' | translate) : ('upload.analyzeContract' | translate)"
-            [loadingText]="'upload.processing' | translate"
-          >
-          </app-button>
-        </form>
-      </div>
+        <!-- Submit Button -->
+        <app-button
+          type="submit"
+          [disabled]="contractStore.isLoading() || !contractText().trim()"
+          [loading]="contractStore.isLoading()"
+          variant="primary"
+          [fullWidth]="true"
+          [icon]="SparklesIcon"
+          [text]="
+            contractStore.isLoading()
+              ? ('upload.processing' | translate)
+              : ('upload.analyzeContract' | translate)
+          "
+          [loadingText]="'upload.processing' | translate"
+        >
+        </app-button>
+      </form>
+    </div>
     }
 
-    
-
     <!-- Help Section -->
-    <div class="mt-12 text-center">
-      <h3 class="text-sm font-medium text-gray-700 mb-3">{{ 'upload.needHelp' | translate }}</h3>
-      <div class="flex justify-center gap-6 text-sm text-gray-500">
+    <div class="help-section">
+      <p class="help-text">{{ 'upload.needHelp' | translate }}</p>
+      <div class="help-links">
         <app-button
           (clicked)="viewSampleContract()"
           variant="link"
@@ -197,8 +193,3 @@
     </div>
   </div>
 </div>
-
-
-
-
-

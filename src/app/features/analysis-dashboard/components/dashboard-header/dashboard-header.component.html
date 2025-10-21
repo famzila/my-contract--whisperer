@@ -2,62 +2,37 @@
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
     <div class="flex-1">
       <div class="flex items-center gap-3 flex-wrap">
-        <h1 class="text-3xl font-bold text-gray-900">{{ 'analysis.title' | translate }}</h1>
+        <h1>{{ 'analysis.title' | translate }}</h1>
 
         @if (isMockMode()) {
-        <span
-          class="px-3 py-1 text-sm font-medium bg-amber-100 text-amber-800 rounded-full border border-amber-200 flex items-center gap-1"
-        >
-          <lucide-icon [name]="TheaterIcon" class="w-4 h-4"></lucide-icon>
-          {{ 'analysis.mockMode' | translate }}
-        </span>
+        <app-severity-badge [label]="'analysis.mockMode' | translate" variant="warning" [icon]="TheaterIcon" />
         }
 
         <!-- Perspective Badge -->
         @if (perspectiveBadge()) {
-        <span [class]="perspectiveBadge()!.className" class="flex items-center gap-2">
-          <lucide-icon [name]="perspectiveBadge()!.icon" class="w-4 h-4"></lucide-icon>
-          {{ perspectiveBadge()!.text }}
-        </span>
+        <app-severity-badge
+          [label]="perspectiveBadge()!.text"
+          variant="success"
+          [icon]="perspectiveBadge()!.icon"
+        />
         }
 
         <!-- Translation Badge -->
         @if (wasTranslated()) {
-        <span
-          class="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200 flex items-center gap-1"
-        >
-          <lucide-icon [name]="GlobeIcon" class="w-4 h-4"></lucide-icon>
-          {{ 'analysis.translatedFrom' | translate }} {{ sourceLanguageName() }}
-        </span>
+        <app-severity-badge [label]="('analysis.translatedFrom' | translate) + ' ' + sourceLanguageName()" variant="info" [icon]="GlobeIcon" />
         }
       </div>
 
       @if (hasContractText()) {
-      <p class="text-gray-600 mt-2">
-        {{ 'analysis.analyzedOn' | translate }} {{ todayDate() | date : 'medium' }}
+      <p class="text-secondary mt-2">
+        {{ 'analysis.analyzedOn' | translate }} {{ formattedDate() }}
       </p>
       }
     </div>
 
     <!-- Action Buttons -->
     <div class="flex items-center gap-3">
-      <!-- Toggle Original/Translated Button -->
-      <!-- @if (wasTranslated()) {
-        <app-button (click)="toggleOriginal.emit()" variant="secondary" size="md">
-          @if (showingOriginal()) {
-            <div class="flex items-center gap-2">
-              <lucide-icon [name]="RefreshCwIcon" class="w-4 h-4"></lucide-icon>
-              {{ 'analysis.showTranslated' | translate }}
-            </div>
-          } @else {
-            <div class="flex items-center gap-2">
-              <lucide-icon [name]="FileTextIcon" class="w-4 h-4"></lucide-icon>
-              {{ 'analysis.showOriginal' | translate }} {{ sourceLanguageName() }}
-            </div>
-          }
-        </app-button>
-      } -->
-      <app-button (click)="uploadNew.emit()" variant="primary" size="md">
+      <app-button (click)="uploadNew.emit()" variant="primary" size="md" [icon]="UploadIcon">
         {{ 'analysis.uploadNew' | translate }}
       </app-button>
     </div>
@@ -66,7 +41,7 @@
   <!-- Modern Metadata Banner -->
   @if (metadata()) {
   <div
-    class="bg-gradient-to-br from-indigo-50 via-purple-50 to-indigo-50 rounded-xl p-6 border border-indigo-200 shadow-sm"
+    class="bg-gradient-to-br from-indigo-50 via-purple-50 to-indigo-50 dark:from-indigo-900 dark:via-purple-900 dark:to-indigo-900 rounded-xl p-2 border border-indigo-200 dark:border-indigo-700 shadow-sm"
   >
     <div class="relative">
       <!-- Main Content Grid -->
@@ -76,15 +51,15 @@
           <!-- Contract Type -->
           <div class="flex items-start gap-3 p-4">
             <div
-              class="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg flex-shrink-0"
+              class="flex items-center justify-center w-10 h-10 bg-purple-100 dark:bg-white/10 backdrop-blur-sm rounded-lg flex-shrink-0 border border-purple-200 dark:border-white/10"
             >
-              <lucide-icon [name]="FileTextIcon" class="w-5 h-5 text-purple-600"></lucide-icon>
+              <lucide-icon [name]="FileTextIcon" class="w-5 h-5 text-purple-600 dark:text-white"></lucide-icon>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+              <p class="text-body-xs uppercase tracking-wide mb-1">
                 {{ 'analysis.contractType' | translate }}
               </p>
-              <p class="text-slate-900 font-semibold text-sm leading-tight">
+              <p class="text-body-sm font-semibold leading-tight">
                 {{ metadata()!.contractType }}
               </p>
             </div>
@@ -94,15 +69,15 @@
           @if (metadata()?.duration) {
           <div class="flex items-start gap-3 p-4">
             <div
-              class="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg flex-shrink-0"
+              class="flex items-center justify-center w-10 h-10 bg-purple-100 dark:bg-white/10 backdrop-blur-sm rounded-lg flex-shrink-0 border border-purple-200 dark:border-white/10"
             >
-              <lucide-icon [name]="CalendarIcon" class="w-5 h-5 text-purple-600"></lucide-icon>
+              <lucide-icon [name]="CalendarIcon" class="w-5 h-5 text-purple-600 dark:text-white"></lucide-icon>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+              <p class="text-body-xs uppercase tracking-wide mb-1">
                 {{ 'analysis.duration' | translate }}
               </p>
-              <p class="text-slate-900 font-semibold text-sm leading-tight">
+              <p class="text-body-sm font-semibold leading-tight">
                 {{ metadata()!.duration }}
               </p>
             </div>
@@ -116,15 +91,15 @@
           @if (metadata()!.effectiveDate) {
           <div class="flex items-start gap-3 p-4">
             <div
-              class="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg flex-shrink-0"
+              class="flex items-center justify-center w-10 h-10 bg-purple-100 dark:bg-white/10 backdrop-blur-sm rounded-lg flex-shrink-0 border border-purple-200 dark:border-white/10"
             >
-              <lucide-icon [name]="CalendarIcon" class="w-5 h-5 text-purple-600"></lucide-icon>
+              <lucide-icon [name]="CalendarIcon" class="w-5 h-5 text-purple-600 dark:text-white"></lucide-icon>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+              <p class="text-body-xs uppercase tracking-wide mb-1">
                 {{ 'analysis.effectiveDate' | translate }}
               </p>
-              <p class="text-slate-900 font-semibold text-sm leading-tight">
+              <p class="text-body-sm font-semibold leading-tight">
                 {{ metadata()!.effectiveDate }}
               </p>
             </div>
@@ -134,37 +109,25 @@
           <!-- End Date -->
           <div class="flex items-start gap-3 p-4">
             <div
-              class="flex items-center justify-center w-10 h-10 rounded-lg flex-shrink-0"
-              [class]="isContractExpiringSoon() ? 'bg-purple-100' : 'bg-purple-100'"
+              class="flex items-center justify-center w-10 h-10 bg-purple-100 dark:bg-white/10 backdrop-blur-sm rounded-lg flex-shrink-0 border border-purple-200 dark:border-white/10"
             >
               <lucide-icon
                 [name]="CalendarIcon"
-                class="w-5 h-5"
-                [class]="isContractExpiringSoon() ? 'text-purple-600' : 'text-purple-600'"
+                class="w-5 h-5 text-purple-600 dark:text-white"
               ></lucide-icon>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+              <p class="text-body-xs uppercase tracking-wide mb-1">
                 {{ 'analysis.endDate' | translate }}
               </p>
               @if (metadata()?.endDate && metadata()?.endDate !== "null") {
-              <p class="text-slate-900 font-semibold text-sm leading-tight">
+              <p class="text-body-sm font-semibold leading-tight">
                 {{ metadata()?.endDate }}
               </p>
               @if (isContractExpiringSoon()) {
-              <span
-                class="inline-flex items-center px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full mt-2 gap-1"
-              >
-                <lucide-icon [name]="AlertTriangleIcon" class="w-3 h-3"></lucide-icon>
-                {{ 'analysis.expiringSoon' | translate }}
-              </span>
+              <app-severity-badge [label]="'analysis.expiringSoon' | translate" variant="warning" [icon]="AlertTriangleIcon" />
               } } @else {
-              <span
-                class="inline-flex items-center px-2 py-1 text-xs font-medium bg-purple-100 text-purple-600 rounded-full gap-1"
-              >
-                <lucide-icon [name]="CalendarIcon" class="w-3 h-3"></lucide-icon>
-                {{ 'analysis.noEndDate' | translate }}
-              </span>
+              <app-severity-badge [label]="'analysis.noEndDate' | translate" variant="neutral" [icon]="CalendarIcon" />
               }
             </div>
           </div>
@@ -176,15 +139,15 @@
           @if (metadata()!.jurisdiction && metadata()!.jurisdiction !== "null") {
           <div class="flex items-start gap-3 p-4">
             <div
-              class="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg flex-shrink-0"
+              class="flex items-center justify-center w-10 h-10 bg-purple-100 dark:bg-white/10 backdrop-blur-sm rounded-lg flex-shrink-0 border border-purple-200 dark:border-white/10"
             >
-              <lucide-icon [name]="GlobeIcon" class="w-5 h-5 text-purple-600"></lucide-icon>
+              <lucide-icon [name]="GlobeIcon" class="w-5 h-5 text-purple-600 dark:text-white"></lucide-icon>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+              <p class="text-body-xs uppercase tracking-wide mb-1">
                 {{ 'analysis.jurisdiction' | translate }}
               </p>
-              <p class="text-slate-900 font-semibold text-sm leading-tight">
+              <p class="text-body-sm font-semibold leading-tight">
                 {{ metadata()!.jurisdiction }}
               </p>
             </div>
@@ -194,22 +157,22 @@
           <!-- Parties -->
           <div class="flex items-start gap-3 p-4">
             <div
-              class="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg flex-shrink-0"
+              class="flex items-center justify-center w-10 h-10 bg-purple-100 dark:bg-white/10 backdrop-blur-sm rounded-lg flex-shrink-0 border border-purple-200 dark:border-white/10"
             >
-              <lucide-icon [name]="UsersIcon" class="w-5 h-5 text-purple-600"></lucide-icon>
+              <lucide-icon [name]="UsersIcon" class="w-5 h-5 text-purple-600 dark:text-white"></lucide-icon>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
+              <p class="text-body-xs uppercase tracking-wide mb-2">
                 {{ 'analysis.parties' | translate }}
               </p>
               <div class="space-y-2">
                 @if (metadata()?.parties?.party1) {
                 <div class="flex items-center gap-2">
-                  <div class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                  <p class="text-slate-900 font-medium text-sm">
+                  <div class="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full flex-shrink-0"></div>
+                  <p class="text-body-sm font-medium">
                     {{ metadata()?.parties?.party1?.name }}
                     @if (metadata()?.parties?.party1?.role) {
-                    <span class="text-slate-500 font-normal ml-1"
+                    <span class="text-muted font-normal ml-1"
                       >({{ metadata()?.parties?.party1?.role }})</span
                     >
                     }
@@ -217,11 +180,11 @@
                 </div>
                 } @if (metadata()?.parties?.party2) {
                 <div class="flex items-center gap-2">
-                  <div class="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
-                  <p class="text-slate-900 font-medium text-sm">
+                  <div class="w-2 h-2 bg-purple-500 dark:bg-purple-400 rounded-full flex-shrink-0"></div>
+                  <p class="text-body-sm font-medium">
                     {{ metadata()?.parties?.party2?.name }}
                     @if (metadata()?.parties?.party2?.role) {
-                    <span class="text-slate-500 font-normal ml-1"
+                    <span class="text-muted font-normal ml-1"
                       >({{ metadata()?.parties?.party2?.role }})</span
                     >
                     }

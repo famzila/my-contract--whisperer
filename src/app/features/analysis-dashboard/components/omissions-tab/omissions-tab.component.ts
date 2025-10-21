@@ -3,13 +3,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader';
 import { 
-  FileX, 
-  AlertTriangle, 
-  Info,
-  Lightbulb
+  FileX
 } from '../../../../shared/icons/lucide-icons';
-import { Alert } from "../../../../shared/components/alert/alert";
+import { Notice } from "../../../../shared/components/notice/notice";
 import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
+import { ContractInsightCard } from "../../../../shared/components/contract-insight-card/contract-insight-card";
 
 export interface Omission {
   item: string;
@@ -19,7 +17,7 @@ export interface Omission {
 
 @Component({
   selector: 'app-omissions-tab',
-  imports: [TranslateModule, LucideAngularModule, SkeletonLoader, Alert, TabHeader],
+  imports: [TranslateModule, LucideAngularModule, SkeletonLoader, Notice, TabHeader, ContractInsightCard],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './omissions-tab.component.html'
 })
@@ -35,8 +33,5 @@ export class OmissionsTabComponent {
 
   // Icons
   FileXIcon = FileX;
-  AlertTriangleIcon = AlertTriangle;
-  InfoIcon = Info;
-  LightbulbIcon = Lightbulb;
 }
 

@@ -89,7 +89,9 @@ import {
   Theater,
   Wrench,
   CircleQuestionMark,
-  CircleCheckBig
+  CircleCheckBig,
+  Sun,
+  Moon
 } from 'lucide-angular';
 
 // Export individual icons for standalone component usage
@@ -188,5 +190,10 @@ export {
   Theater,
   Wrench,
   CircleQuestionMark,
-  CircleCheckBig, View
+  CircleCheckBig,
+  View,
+  
+  // Theme
+  Sun,
+  Moon
 };

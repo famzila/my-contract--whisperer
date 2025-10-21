@@ -14,9 +14,8 @@ import {
   FileX,
   View
 } from '../../../../shared/icons/lucide-icons';
-import { Alert } from "../../../../shared/components/alert/alert";
-import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
 import { Notice } from "../../../../shared/components/notice/notice";
+import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
 
 // Use the actual ContractSummary type from the store
 export interface SummaryData {
@@ -51,7 +50,7 @@ export interface PerspectiveContext {
 
 @Component({
   selector: 'app-summary-tab',
-  imports: [TranslateModule, LucideAngularModule, SkeletonLoader, DecimalPipe, Alert, TabHeader, Notice],
+  imports: [TranslateModule, LucideAngularModule, SkeletonLoader, DecimalPipe, TabHeader, Notice],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './summary-tab.component.html'
 })

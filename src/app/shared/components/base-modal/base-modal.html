@@ -3,9 +3,9 @@
   <div [class]="headerClasses()">
     <div [class]="headerContentClasses()">
       @if (config().icon) {
-        <lucide-icon [img]="config().icon" class="w-6 h-6 text-blue-600"></lucide-icon>
+        <lucide-icon [img]="config().icon" class="modal-header-icon"></lucide-icon>
       }
-      <h2 class="text-xl font-bold text-gray-900">
+      <h2 class="modal-header-title">
         @if (getTitleKey()) {
           {{ getTitleKey() | translate }}
         } @else {
@@ -19,14 +19,14 @@
       [iconOnly]="true"
       size="md"
       [icon]="XIcon"
-      customClasses="text-gray-500"
+      customClasses="modal-header-close"
     >
     </app-button>
   </div>
 
   <!-- Content -->
-  <div class="p-6 overflow-y-auto flex-1 min-h-0">
-    <div class="prose max-w-none pb-4">
+  <div class="modal-content">
+    <div class="modal-content-prose">
       <ng-content></ng-content>
     </div>
   </div>

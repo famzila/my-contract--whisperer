@@ -1,7 +1,6 @@
 import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { Card } from '../../../../shared/components/card/card';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader';
 import { Button } from '../../../../shared/components/button/button';
 import { 
@@ -12,13 +11,12 @@ import {
   HelpCircle,
   Sparkles
 } from '../../../../shared/icons/lucide-icons';
-import { Alert } from "../../../../shared/components/alert/alert";
-import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
 import { Notice } from "../../../../shared/components/notice/notice";
+import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
 
 @Component({
   selector: 'app-questions-tab',
-  imports: [TranslateModule, LucideAngularModule, Card, SkeletonLoader, Button, Alert, TabHeader, Notice],
+  imports: [TranslateModule, LucideAngularModule, SkeletonLoader, Button, TabHeader, Notice],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './questions-tab.component.html'
 })

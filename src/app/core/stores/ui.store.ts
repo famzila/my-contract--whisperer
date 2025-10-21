@@ -3,7 +3,7 @@
  * Manages global UI state (modals, toasts, theme)
  * Reference: https://ngrx.io/guide/signals/signal-store
  */
-import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals';
+import { signalStore, withState, withComputed, withMethods, withHooks } from '@ngrx/signals';
 import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { ModalConfig, ModalService } from '../services/modal.service';
@@ -53,7 +53,7 @@ interface UiState {
  * Initial state
  */
 const initialState: UiState = {
-  theme: 'light',
+  theme: 'dark',
   helpModal: { isOpen: false },
   settingsModal: { isOpen: false },
   toasts: [],
@@ -256,8 +256,18 @@ export const UiStore = signalStore(
     closeAllModals: () => {
       modalService.closeAll();
     },
-  }))
+  })),
+  
+  // Lifecycle hooks
+  withHooks({
+    onInit({ theme }) {
+      // Apply the initial theme to the document
+      if (theme() === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  })
 );
-
-
 

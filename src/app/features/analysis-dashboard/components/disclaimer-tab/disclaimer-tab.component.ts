@@ -13,11 +13,11 @@ import { Scale } from '../../../../shared/icons/lucide-icons';
       [title]="'analysis.disclaimer.title' | translate"
       [subtitle]="'analysis.disclaimer.subtitle' | translate"
       [icon]="ScaleIcon"
-      iconBgClass="bg-gray-100"
-      iconColorClass="text-gray-600">
+      iconBgClass="bg-gray-100 dark:bg-gray-900"
+      iconColorClass="text-gray-600 dark:text-gray-400">
     </app-tab-header>
 
-    <p class="text-gray-600 leading-relaxed text-lg">
+    <p class="text-body leading-relaxed">
       {{ 'analysis.disclaimer.text' | translate }}
     </p>
   `,

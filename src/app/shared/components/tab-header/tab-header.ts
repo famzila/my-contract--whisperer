@@ -12,11 +12,11 @@ import { LucideAngularModule } from 'lucide-angular';
           <lucide-icon [name]="icon()" class="w-6 h-6" [class]="iconColorClass()"></lucide-icon>
         </div>
         <div class="flex-1">
-          <h2 class="text-2xl font-bold text-gray-700 mb-1">
+          <h2 class="mb-1">
             {{ title() }}
           </h2>
           @if (subtitle()) {
-            <p class="text-gray-600 text-sm">{{ subtitle() }}</p>
+            <p class="text-body-sm">{{ subtitle() }}</p>
           }
         </div>
       </div>

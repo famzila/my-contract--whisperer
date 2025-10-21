@@ -39,7 +39,6 @@ import {
   Globe,
   Languages,
 } from '../../shared/icons/lucide-icons';
-import { Alert } from "../../shared/components/alert/alert";
 import { Notice } from "../../shared/components/notice/notice";
 
 @Component({
@@ -48,6 +47,7 @@ import { Notice } from "../../shared/components/notice/notice";
     TranslateModule,
     LucideAngularModule,
     LoadingSpinner,
+    Notice,
     TabsComponent,
     DashboardHeaderComponent,
     SummaryTabComponent,
@@ -56,7 +56,6 @@ import { Notice } from "../../shared/components/notice/notice";
     OmissionsTabComponent,
     QuestionsTabComponent,
     DisclaimerTabComponent,
-    Alert,
 ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './analysis-dashboard.component.html',
@@ -175,6 +174,7 @@ export class AnalysisDashboard implements OnInit {
       icon: this.ScaleIcon,
     },
   ]);
+
 
   ngOnInit(): void {
     // Redirect to upload if no analysis data is available

@@ -14,6 +14,7 @@ import { Globe, ChevronDown, Check } from '../../icons/lucide-icons';
   selector: 'app-language-selector',
   imports: [TranslatePipe, LucideAngularModule],
   templateUrl: './language-selector.html',
+  styleUrl: './language-selector.css',
 })
 export class LanguageSelector {
   languageStore = inject(LanguageStore);
@@ -33,6 +34,13 @@ export class LanguageSelector {
   // Computed values
   selectedLanguage = computed(() => this.languageStore.preferredLanguageInfo());
   availableLanguages = computed(() => this.languageStore.availableLanguages());
+  
+  // Disable language selector during analysis/translation
+  isDisabled = computed(() => 
+    this.contractStore.isAnalyzing() || 
+    this.contractStore.isLoading() ||
+    this.contractStore.isTranslating()
+  );
   
   /**
    * Toggle dropdown

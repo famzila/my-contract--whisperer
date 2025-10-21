@@ -8,8 +8,9 @@ import {
   import { LucideAngularModule } from 'lucide-angular';
   import { TranslatePipe } from '@ngx-translate/core';
   import { LanguageStore } from '../../../core/stores/language.store';
+  import { LoadingSpinner } from '../loading-spinner/loading-spinner';
   
-  export type NoticeType = 'default' | 'info' | 'success' | 'warning' | 'primary' | 'error';
+  export type NoticeType = 'default' | 'info' | 'success' | 'warning' | 'primary' | 'error' | 'loading';
   
   /**
    * Notice Component - Reusable informational notice component
@@ -43,7 +44,7 @@ import {
   
   @Component({
     selector: 'app-notice',
-    imports: [LucideAngularModule, TranslatePipe],
+    imports: [LucideAngularModule, TranslatePipe, LoadingSpinner],
     templateUrl: './notice.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
   })
@@ -58,6 +59,7 @@ import {
     message = input<string | null>(null);
     messageKey = input<string | null>(null);
     showIcon = input<boolean>(true);
+    isLoading = input<boolean>(false);
   
     // Computed properties
     hasTitle = computed(() => !!(this.title() || this.titleKey()));
@@ -109,6 +111,9 @@ import {
         case 'error':
           classes.push('bg-red-50', 'dark:bg-red-900/20');
           break;
+        case 'loading':
+          classes.push('bg-amber-50', 'dark:bg-amber-900/20');
+          break;
       }
   
       // Border style
@@ -131,6 +136,9 @@ import {
           break;
         case 'error':
           classes.push('border-red-200', 'dark:border-red-800');
+          break;
+        case 'loading':
+          classes.push('border-amber-200', 'dark:border-amber-800');
           break;
       }
   
@@ -162,6 +170,9 @@ import {
         case 'error':
           classes.push('text-red-600', 'dark:text-red-400');
           break;
+        case 'loading':
+          classes.push('text-amber-600', 'dark:text-amber-400');
+          break;
       }
   
       return classes.join(' ');
@@ -192,6 +203,9 @@ import {
         case 'error':
           classes.push('text-red-800', 'dark:text-red-200');
           break;
+        case 'loading':
+          classes.push('text-amber-900', 'dark:text-amber-200');
+          break;
       }
   
       return classes.join(' ');
@@ -221,6 +235,9 @@ import {
           break;
         case 'error':
           classes.push('text-red-700', 'dark:text-red-300');
+          break;
+        case 'loading':
+          classes.push('text-amber-700', 'dark:text-amber-300');
           break;
       }
   

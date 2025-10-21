@@ -25,18 +25,26 @@
     <!-- Translation Banner -->
     @if (isTranslating()) {
       <div class="sticky top-0 z-40 mb-6">
-        <app-alert
+        <app-notice
           type="loading"
           [title]="'analysis.translating' | translate"
           [message]="'analysis.translatingTo' | translate: {language: targetLanguageName()}"
-        ></app-alert>
+        ></app-notice>
       </div>
     }
 
     <!-- Tab Navigation and Content -->
     @if (!isAnalyzing() && canShowDashboard()) {
-    <!-- Content with opacity during translation -->
-    <div [class.opacity-50]="isTranslating()" [class.pointer-events-none]="isTranslating()">
+    <!-- Content with overlay during translation -->
+    <div 
+      [class.opacity-50]="isTranslating()" 
+      [class.pointer-events-none]="isTranslating()"
+      [class.relative]="isTranslating()">
+      
+      <!-- Translation Overlay -->
+      @if (isTranslating()) {
+        <div class="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 rounded-lg"></div>
+      }
     <app-tabs [tabs]="tabConfigs()" [activeTab]="selectedTab()" (tabSelected)="selectTab($event)">
       @if (selectedTab() === 'summary') {
         <app-summary-tab

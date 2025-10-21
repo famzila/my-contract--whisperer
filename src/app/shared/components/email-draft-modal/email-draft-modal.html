@@ -6,7 +6,7 @@
       variant="link"
       size="sm"
       [text]="showRewriteOptionsState ? ('analysis.email.hideRewriteOptions' | translate) : ('analysis.email.showRewriteOptions' | translate)"
-      customClasses="text-indigo-600 hover:text-indigo-700"
+      customClasses="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
     >
       <!-- Custom SVG icon as content projection since it's not a Lucide icon -->
       <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,7 +23,7 @@
 
         <!-- Tone Selection -->
         <div class="my-4">
-          <label class="block text-sm font-medium uppercase text-indigo-800 mb-2 rtl:text-right">{{ 'analysis.email.tone' | translate }}</label>
+          <label class="block text-sm font-medium uppercase text-indigo-800 dark:text-indigo-200 mb-2 rtl:text-right">{{ 'analysis.email.tone' | translate }}</label>
           <div class="flex flex-wrap gap-2 rtl:justify-end">
             @for (tone of ['formal', 'neutral', 'casual']; track tone) {
               <button
@@ -33,7 +33,7 @@
                   'px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ' +
                   (currentRewriteOptions.tone === tone
                     ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-100')
+                    : 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900')
                 ">
                 {{ ('analysis.email.tones.' + tone) | translate }}
               </button>
@@ -43,7 +43,7 @@
 
         <!-- Length Selection -->
         <div class="my-4">
-          <label class="block text-sm font-medium uppercase text-indigo-800 mb-2 rtl:text-right">{{ 'analysis.email.length' | translate }}</label>
+          <label class="block text-sm font-medium uppercase text-indigo-800 dark:text-indigo-200 mb-2 rtl:text-right">{{ 'analysis.email.length' | translate }}</label>
           <div class="flex flex-wrap gap-2 rtl:justify-end">
             @for (length of ['short', 'medium', 'long']; track length) {
               <button
@@ -53,7 +53,7 @@
                   'px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ' +
                   (currentRewriteOptions.length === length
                     ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-100')
+                    : 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900')
                 ">
                 {{ ('analysis.email.lengths.' + length) | translate }}
               </button>
@@ -81,9 +81,9 @@
   </div>
 
   <!-- Email Content -->
-  <div class="bg-gray-50 rounded-lg p-6 font-mono text-sm whitespace-pre-wrap relative rtl:text-right">
+  <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-6 font-mono text-sm whitespace-pre-wrap relative rtl:text-right">
     @if (isCurrentlyRewriting) {
-      <div class="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
+        <div class="absolute inset-0 bg-white/80 dark:bg-slate-900/80 flex items-center justify-center rounded-lg">
         <app-loading-spinner size="md" />
       </div>
     }

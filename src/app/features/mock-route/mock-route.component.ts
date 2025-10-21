@@ -9,7 +9,7 @@ import { OnboardingStore } from '../../core/stores/onboarding.store';
     <div class="min-h-screen flex items-center justify-center bg-gray-50">
       <div class="text-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <h2 class="text-xl font-semibold text-gray-900 mb-2">Loading Cached Data...</h2>
+        <h2 class="mb-2">Loading Cached Data...</h2>
         <p class="text-gray-600">Setting up dashboard with cached contract analysis</p>
       </div>
     </div>

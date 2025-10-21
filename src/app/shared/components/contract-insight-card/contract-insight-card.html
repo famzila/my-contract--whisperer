@@ -1,0 +1,56 @@
+<cdk-accordion-item #accordionItem="cdkAccordionItem" [expanded]="expanded()">
+  <div class="insight-card">
+    <!-- Left border accent -->
+    <div class="insight-card-border-accent" [class]="borderAccentClass()"></div>
+
+    <!-- Accordion Header (always visible) -->
+    <button
+      class="insight-card-header"
+      (click)="accordionItem.toggle()"
+      [attr.aria-expanded]="accordionItem.expanded"
+      [attr.aria-controls]="'accordion-body-' + accordionItem.id"
+    >
+      <!-- Severity Badge -->
+      <app-severity-badge [label]="severityBadgeVariant() | translate" [variant]="severityBadgeVariant()" />
+
+      <!-- Title -->
+      <h4 class="flex-1 text-left rtl:text-right">
+        {{ title() }}
+      </h4>
+
+      <!-- Chevron Icon -->
+      <lucide-icon
+        [name]="ChevronDownIcon"
+        class="insight-card-chevron"
+        [class.insight-card-chevron-expanded]="accordionItem.expanded"
+      />
+    </button>
+
+    <!-- Accordion Content (expandable) -->
+    @if (accordionItem.expanded) {
+    <div
+      class="insight-card-content"
+      [attr.id]="'accordion-body-' + accordionItem.id"
+      role="region"
+      [attr.aria-labelledby]="'accordion-header-' + accordionItem.id"
+    >
+      <!-- Description (only if provided) -->
+      @if (description()) {
+      <p class="text-body leading-relaxed">{{ description() }}</p>
+      }
+
+      <!-- Impact Section (if provided) -->
+      @if (impactText()) {
+      <div class="pt-1">
+        <div class="insight-impact" [class.insight-impact-critical]="severity() === 'high'" [class.insight-impact-warning]="severity() === 'medium'" [class.insight-impact-info]="severity() === 'low'">
+          <lucide-icon [name]="AlertTriangleIcon" class="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <strong class="shrink-0">{{ impactLabel() }}</strong>
+          <p class="text-body-sm leading-relaxed m-0 flex-1 min-w-0">{{ impactText() }}</p>
+        </div>
+      </div>
+      }
+    </div>
+    }
+  </div>
+</cdk-accordion-item>
+

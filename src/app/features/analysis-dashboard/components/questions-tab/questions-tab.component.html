@@ -5,8 +5,8 @@
     [title]="'analysis.questions.questionsToAsk' | translate"
     [subtitle]="'analysis.questions.importantClarifications' | translate"
     [icon]="HelpCircleIcon"
-    iconBgClass="bg-purple-100"
-    iconColorClass="text-purple-600"
+    iconBgClass="bg-purple-100 dark:bg-purple-900"
+    iconColorClass="text-purple-600 dark:text-purple-400"
   >
   </app-tab-header>
   @if (hasQuestions) {
@@ -37,16 +37,16 @@
 </div>
 
 @if (isLoading()) { @if (isRetrying()) {
-  <app-alert 
+  <app-notice 
   type="loading"
   [title]="('analysis.retrying' | translate) + ' (' + ('analysis.attempt' | translate) + ' ' + retryCount() + '/3' + ')'"
   [message]="('analysis.retryMessage' | translate)"
-></app-alert>
+></app-notice>
 }
 <!-- Questions Loading Skeleton -->
 <app-skeleton-loader
   type="list"
-  [items]="3"
+  [items]="4"
   listItemPadding="p-6"
   loadingText="Loading questions..."
 >
@@ -55,52 +55,48 @@
 <!-- Questions List -->
 <div class="space-y-4">
   @for (question of questions() || []; track $index) {
-  <app-card [hoverable]="true">
-    <div class="bg-white border border-gray-200 p-6 rounded-xl">
-      <div class="flex items-start justify-between gap-4">
-        <div class="flex items-start gap-3 flex-1">
-          <div
-            class="flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full flex-shrink-0 mt-0.5"
-          >
-            <lucide-icon [name]="InfoIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
-          </div>
-          <div class="flex-1">
-            <p class="text-gray-700 font-medium leading-relaxed">
-              <span class="text-gray-500 font-normal">{{ $index + 1 }}.</span> {{ question }}
-            </p>
-          </div>
-        </div>
-        <app-button
-          (clicked)="copyQuestion.emit(question)"
-          variant="ghost"
-          [iconOnly]="true"
-          size="sm"
-          [icon]="CopyIcon"
-          customClasses="text-gray-400 hover:text-gray-600"
+  <div class="bg-white dark:bg-slate-800 border border-divider p-6 rounded-xl hover:shadow-md transition-shadow">
+    <div class="flex items-start justify-between gap-4">
+      <div class="flex items-start gap-3 flex-1">
+        <div
+          class="flex items-center justify-center w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex-shrink-0 mt-0.5"
         >
-        </app-button>
+          <lucide-icon [name]="InfoIcon" class="w-4 h-4 text-blue-600 dark:text-blue-400"></lucide-icon>
+        </div>
+        <div class="flex-1">
+          <p class="text-body font-medium leading-relaxed">
+            <span class="text-muted font-normal">{{ $index + 1 }}.</span> {{ question }}
+          </p>
+        </div>
       </div>
+      <app-button
+        (clicked)="copyQuestion.emit(question)"
+        variant="ghost"
+        [iconOnly]="true"
+        size="sm"
+        [icon]="CopyIcon"
+        customClasses="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+      >
+      </app-button>
     </div>
-  </app-card>
+  </div>
   }
 </div>
 
 <!-- Call to Action Section -->
 @if (!isContractProvider()) {
 <div class="mt-8">
-  <app-card>
-    <app-notice
-      type="info"
-      [icon]="MailIcon"
-      [titleKey]="'analysis.emailHelpTitle'"
-      messageKey="analysis.emailHelpText">
-    </app-notice>
-  </app-card>
+  <app-notice
+    type="info"
+    [icon]="MailIcon"
+    [titleKey]="'analysis.emailHelpTitle'"
+    messageKey="analysis.emailHelpText">
+  </app-notice>
 </div>
 } 
 } @else {
-<div class="p-8 text-center text-gray-500">
-  <lucide-icon [name]="SparklesIcon" class="w-16 h-16 mx-auto mb-4 text-gray-400"></lucide-icon>
+<div class="text-empty-state">
+  <lucide-icon [name]="SparklesIcon" class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-500"></lucide-icon>
   <p>{{ 'analysis.questions.noQuestions' | translate }}</p>
 </div>
 }

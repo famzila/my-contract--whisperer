@@ -62,7 +62,7 @@ export class BaseModal {
     const maxWidth = config.maxWidth || 'max-w-4xl';
     const maxHeight = config.maxHeight || 'max-h-[90vh]';
     
-    return `bg-white rounded-2xl shadow-2xl ${maxWidth} w-full ${maxHeight} flex flex-col`;
+    return `modal-container ${maxWidth} w-full ${maxHeight}`;
   });
 
   /**
@@ -70,8 +70,8 @@ export class BaseModal {
    */
   headerClasses = computed(() => {
     const isRTL = this.isRTL();
-    const baseClasses = 'flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-2xl';
-    return isRTL ? `${baseClasses} flex-row-reverse` : baseClasses;
+    const baseClasses = 'modal-header';
+    return isRTL ? `${baseClasses} modal-header-rtl` : baseClasses;
   });
 
   /**
@@ -79,8 +79,8 @@ export class BaseModal {
    */
   headerContentClasses = computed(() => {
     const isRTL = this.isRTL();
-    const baseClasses = 'flex items-center gap-3';
-    return isRTL ? `${baseClasses} flex-row-reverse` : baseClasses;
+    const baseClasses = 'modal-header-content';
+    return isRTL ? `${baseClasses} modal-header-content-rtl` : baseClasses;
   });
 
   /**
@@ -88,9 +88,9 @@ export class BaseModal {
    */
   footerClasses = computed(() => {
     const isRTL = this.isRTL();
-    const baseClasses = 'flex gap-3 p-6 border-t border-gray-200 flex-shrink-0 rounded-b-2xl';
+    const baseClasses = 'modal-footer';
     // In RTL, we want buttons on the left (which visually appears as right in RTL context)
-    const alignment = isRTL ? 'justify-start' : 'justify-end';
+    const alignment = isRTL ? 'modal-footer-rtl' : 'modal-footer-ltr';
     return `${baseClasses} ${alignment}`;
   });
 

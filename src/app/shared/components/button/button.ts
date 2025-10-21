@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output, computed } from '@an
 import { LucideAngularModule } from 'lucide-angular';
 import { LoadingSpinner } from '../loading-spinner/loading-spinner';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'link';
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'link' | 'neutral';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 export type ButtonRounded = 'sm' | 'md' | 'lg' | 'full';
 
@@ -54,7 +54,7 @@ export class Button {
    * Get icon classes based on size
    */
   getIconClasses(): string {
-    const baseClasses = 'flex-shrink-0 inline-block';
+    const baseClasses = 'flex-shrink-0';
     switch (this.size()) {
       case 'sm':
         return `${baseClasses} w-4 h-4`;
@@ -65,13 +65,6 @@ export class Button {
       default:
         return `${baseClasses} w-4 h-4`;
     }
-  }
-
-  /**
-   * Get text classes based on size
-   */
-  getTextClasses(): string {
-    return 'flex-shrink-0 inline-block leading-none';
   }
 
   /**
@@ -98,70 +91,99 @@ export class Button {
       case 'primary':
         return 'border-white';
       case 'secondary':
-        return 'border-primary';
+        return 'border-indigo-600 dark:border-indigo-400';
       case 'danger':
         return 'border-white';
       case 'ghost':
-        return 'border-primary';
+        return 'border-indigo-600 dark:border-indigo-400';
       case 'link':
-        return 'border-primary';
+        return 'border-indigo-600 dark:border-indigo-400';
       default:
         return 'border-white';
     }
   }
 
   /**
+   * Get text classes based on size
+   */
+  getTextClasses(): string {
+    return 'flex-shrink-0 leading-none';
+  }
+
+  /**
    * Get host CSS classes
    */
   hostClasses(): string {
-    const classes = ['transition-all', 'font-medium'];
-  
-    // Handle layout depending on fullWidth
-    if (this.fullWidth()) {
-      classes.push('block', 'w-full');
-    } else {
-      classes.push('inline-flex');
+    const classes = ['btn'];
+
+    // Size
+    switch (this.size()) {
+      case 'sm':
+        classes.push('btn-sm');
+        break;
+      case 'md':
+        classes.push('btn-md');
+        break;
+      case 'lg':
+        classes.push('btn-lg');
+        break;
     }
-  
+
+    // Layout
+    if (this.fullWidth()) {
+      classes.push('btn-full-width');
+    } else {
+      classes.push('btn-inline');
+    }
+
     // Variants
     switch (this.variant()) {
       case 'primary':
-        classes.push(
-          'bg-primary', 'text-white', 'hover:bg-primary-dark',
-          'border', 'border-primary', 'shadow-md', 'hover:shadow-lg',
-          'duration-200', 'focus:outline-none', 'focus:ring-2',
-          'focus:ring-primary', 'focus:ring-offset-2'
-        );
+        classes.push('btn-primary');
         break;
       case 'secondary':
-        classes.push('bg-primary-50', 'text-primary-900', 'hover:bg-primary-100', 'border', 'border-primary-200');
+        classes.push('btn-secondary');
         break;
       case 'danger':
-        classes.push('bg-red-600', 'text-white', 'hover:bg-red-700', 'border', 'border-red-600');
+        classes.push('btn-danger');
         break;
       case 'ghost':
-        classes.push('bg-transparent', 'text-primary-700', 'hover:bg-primary-50');
+        classes.push('btn-ghost');
         break;
       case 'link':
-        classes.push('bg-transparent', 'text-primary', 'hover:text-primary-dark', 'hover:bg-primary-50', 'hover:border-primary-200');
+        classes.push('btn-link');
+        break;
+      case 'neutral':
+        classes.push('btn-neutral');
         break;
     }
-  
+
     // Rounded
     switch (this.rounded()) {
-      case 'sm': classes.push('rounded'); break;
-      case 'md': classes.push('rounded-md'); break;
-      case 'lg': classes.push('rounded-lg'); break;
-      case 'full': classes.push('rounded-full'); break;
+      case 'sm':
+        classes.push('btn-rounded-sm');
+        break;
+      case 'md':
+        classes.push('btn-rounded-md');
+        break;
+      case 'lg':
+        classes.push('btn-rounded-lg');
+        break;
+      case 'full':
+        classes.push('btn-rounded-full');
+        break;
     }
-  
-    if (this.disabled() || this.loading()) classes.push('opacity-50', 'cursor-not-allowed');
-    else classes.push('cursor-pointer');
-  
-    if (this.selected()) classes.push('ring-2', 'ring-primary', 'ring-offset-2');
+
+    // State
+    if (this.disabled() || this.loading()) {
+      classes.push('btn-disabled');
+    } else {
+      classes.push('btn-enabled');
+    }
+
+    if (this.selected()) classes.push('btn-selected');
     if (this.customClasses()) classes.push(this.customClasses());
-  
+
     return classes.join(' ');
   }
-    
 }

@@ -1,0 +1,7 @@
+<span [class]="badgeClasses()">
+  @if (icon()) {
+    <lucide-icon [name]="icon()!" class="w-3.5 h-3.5 flex-shrink-0" />
+  }
+  <span>{{ label() }}</span>
+</span>
+

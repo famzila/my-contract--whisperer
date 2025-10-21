@@ -30,7 +30,7 @@
     "preferredLanguage": "Show in My Language (translated for easier understanding)",
     "tipTitle": "Note:",
     "tipMessage": "The contract will be analyzed in its original language to preserve legal accuracy. We'll translate the results to your chosen language.",
-    "appWillSwitch": "App will switch to this language",
+    "appWillSwitch": "The interface will now switch to your selected language.",
     "appWillStayInCurrent": "App will stay in current language (UI not available)",
     "noAppSwitch": "No app language switch",
     "limitedSupport": "Limited Language Support",
@@ -38,7 +38,8 @@
     "appWillSwitchWithTranslation": "App will switch to this language (with translation)",
     "uiNotAvailable": "{{language}} interface not available, will use {{fallback}}",
     "availableTranslations": "Available Translations",
-    "cached": "Cached"
+    "cached": "Cached",
+    "disabledDuringAnalysis": "Please wait until analysis completes to change language"
   },
   "navbar": {
     "title": "Contract Whisperer",
@@ -175,10 +176,15 @@
       "highPriority": "High Priority Risks",
       "mediumPriority": "Medium Priority Risks",
       "lowPriority": "Low Priority Risks",
-      "impact": "Impact",
+      "impact": "Impact: ",
       "riskLevel": "Risk level",
       "noRisks": "No significant risks identified in this contract.",
       "extractionError": "We're sorry, we couldn't extract risks information. Please try again!"
+    },
+    "severityBadge": {
+      "critical": "Critical",
+      "warning": "Warning",
+      "info": "Info"
     },
     "obligations": {
       "title": "Obligations",
@@ -199,7 +205,7 @@
       "highPriority": "High Priority Omissions",
       "mediumPriority": "Medium Priority Omissions",
       "lowPriority": "Low Priority Omissions",
-      "whyMatters": "Why this matters",
+      "whyMatters": "Impact:",
       "noOmissions": "All important details appear to be covered in this contract.",
       "extractionError": "We're sorry, we couldn't extract omissions information. Please try again!"
     },
@@ -279,6 +285,10 @@
     "theme": "Theme",
     "notifications": "Notifications",
     "privacy": "Privacy"
+  },
+  "theme": {
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
   },
   "partySelector": {
     "title": "Who Are You in This Contract?",

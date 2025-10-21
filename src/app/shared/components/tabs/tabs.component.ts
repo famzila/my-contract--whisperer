@@ -25,13 +25,16 @@ export class TabsComponent {
   // Modern output signals
   tabSelected = output<string>();
 
-  // Computed for better performance
-  private readonly baseClasses = 'inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg transition-colors duration-200';
-  private readonly activeClasses = 'text-purple-600 border-purple-600 hover:text-purple-600';
-  private readonly inactiveClasses = 'text-gray-500 border-gray-100 hover:text-gray-600 hover:border-gray-300';
-  private readonly disabledClasses = 'text-gray-400 border-gray-100 cursor-not-allowed';
+  // Computed for better performance - using component classes
+  private readonly baseClasses = 'tabs-button';
+  private readonly activeClasses = 'tabs-button-active';
+  private readonly inactiveClasses = 'tabs-button-inactive';
+  private readonly disabledClasses = 'tabs-button-disabled';
 
-  selectTab(tabId: string): void {
+  selectTab(tabId: string, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+    }
     this.tabSelected.emit(tabId);
   }
 
@@ -44,16 +47,31 @@ export class TabsComponent {
     return `${this.baseClasses} ${stateClasses}`;
   }
 
-  getBadgeClasses(tab: TabConfig): string {
+  getIconClasses(tab: TabConfig): string {
+    const baseClasses = 'w-4 h-4 mr-2';
+    
     if (tab.disabled) {
-      return 'ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-400 rounded-full';
+      return `${baseClasses} text-gray-400 dark:text-gray-500`;
     }
     
     const isActive = tab.id === this.activeTab();
     if (isActive) {
-      return 'ml-2 px-2 py-0.5 text-xs bg-purple-100 text-purple-600 rounded-full';
+      return `${baseClasses} text-purple-600 dark:text-purple-400`;
     }
     
-    return 'ml-2 px-2 py-0.5 text-xs bg-gray-200 text-gray-700 rounded-full';
+    return `${baseClasses} text-gray-400 dark:text-gray-500`;
+  }
+
+  getBadgeClasses(tab: TabConfig): string {
+    if (tab.disabled) {
+      return 'tabs-badge tabs-badge-disabled';
+    }
+    
+    const isActive = tab.id === this.activeTab();
+    if (isActive) {
+      return 'tabs-badge tabs-badge-active';
+    }
+    
+    return 'tabs-badge tabs-badge-inactive';
   }
 }

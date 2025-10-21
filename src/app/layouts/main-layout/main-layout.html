@@ -1,6 +1,6 @@
-<div class="min-h-screen bg-gray-50 flex flex-col">
+<div class="flex flex-col">
   <!-- Header -->
-  <header class="bg-white shadow-sm border-b border-gray-200">
+  <header>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div class="flex items-center justify-between">
         <!-- Logo & Title -->
@@ -9,17 +9,29 @@
             <lucide-icon [name]="FileTextIcon" class="w-8 h-8 text-white"></lucide-icon>
           </div>
           <div>
-            <h1 class="text-xl font-bold text-gray-900">{{ 'navbar.title' | translate }}</h1>
-            <p class="text-xs text-gray-500">{{ 'navbar.subtitle' | translate }}</p>
+            <h1 class="text-xl font-bold">{{ 'navbar.title' | translate }}</h1>
+            <p class="text-body-xs">{{ 'navbar.subtitle' | translate }}</p>
           </div>
         </div>
-        <!-- Language Selector -->
+        <!-- Language Selector & Theme Toggle -->
         <div class="flex items-center gap-4">
+          
           <app-language-selector></app-language-selector>
+          <!-- Theme Toggle Button -->
+          <app-button
+            [icon]="isDarkMode() ? SunIcon : MoonIcon"
+            variant="neutral"
+            size="md"
+            [iconOnly]="true"
+            rounded="lg"
+            (clicked)="toggleTheme()"
+            [attr.aria-label]="isDarkMode() ? ('theme.switchToLight' | translate) : ('theme.switchToDark' | translate)"
+            [title]="isDarkMode() ? ('theme.switchToLight' | translate) : ('theme.switchToDark' | translate)"
+          ></app-button>
         </div>
 
         <!-- Mobile Menu Button -->
-        <button class="md:hidden p-2 text-gray-600">
+        <button class="md:hidden p-2 text-gray-600 dark:text-gray-300">
           <lucide-icon [img]="MenuIcon" class="w-6 h-6"></lucide-icon>
         </button>
       </div>
@@ -32,45 +44,45 @@
   </main>
 
   <!-- Footer -->
-  <footer class="bg-white border-t border-gray-200 mt-auto">
+  <footer>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <!-- About -->
         <div>
-          <h3 class="font-semibold text-gray-900 mb-3">{{ 'footer.about' | translate }}</h3>
-          <p class="text-sm text-gray-600">
+          <h4 class="mb-3">{{ 'footer.about' | translate }}</h4>
+          <p class="text-body-sm">
             {{ 'footer.aboutText' | translate }}
           </p>
-          <p class="text-sm text-gray-600 mt-2">
+          <p class="text-body-sm mt-2">
             {{ 'footer.disclaimer' | translate }}
           </p>
         </div>
 
         <!-- Links -->
         <div>
-          <h3 class="font-semibold text-gray-900 mb-3">{{ 'footer.quickLinks' | translate }}</h3>
-          <ul class="space-y-2 text-sm text-gray-600">
-            <li><button (click)="showPrivacyPolicy()" class="text-left hover:text-primary transition-colors">{{ 'footer.privacyPolicy' | translate }}</button></li>
-            <li><button (click)="showTermsOfService()" class="text-left hover:text-primary transition-colors">{{ 'footer.termsOfService' | translate }}</button></li>
-            <li><a href="mailto:famzil.contact@gmail.com?subject=Contract Whisperer Support&body=Hi, I have a question about Contract Whisperer:" class="hover:text-primary transition-colors">{{ 'footer.contactUs' | translate }}</a></li>
+          <h4 class="mb-3">{{ 'footer.quickLinks' | translate }}</h4>
+          <ul class="space-y-2 text-body-sm">
+            <li><button (click)="showPrivacyPolicy()" class="text-left hover:text-indigo-600 transition-colors">{{ 'footer.privacyPolicy' | translate }}</button></li>
+            <li><button (click)="showTermsOfService()" class="text-left hover:text-indigo-600 transition-colors">{{ 'footer.termsOfService' | translate }}</button></li>
+            <li><a href="mailto:famzil.contact@gmail.com?subject=Contract Whisperer Support&body=Hi, I have a question about Contract Whisperer:" class="hover:text-indigo-600 transition-colors">{{ 'footer.contactUs' | translate }}</a></li>
           </ul>
         </div>
 
         <!-- Tech -->
         <div>
-          <h3 class="font-semibold text-gray-900 mb-3">{{ 'footer.poweredBy' | translate }}</h3>
-          <p class="text-sm text-gray-600 mb-2 flex items-center gap-2">
+          <h4 class="mb-3">{{ 'footer.poweredBy' | translate }}</h4>
+          <p class="text-body-sm mb-2 flex items-center gap-2">
             <lucide-icon [img]="BotIcon" class="w-4 h-4 text-blue-600"></lucide-icon>
             {{ 'footer.chromeAI' | translate }}
           </p>
-          <p class="text-sm text-gray-600 flex items-center gap-2">
+          <p class="text-body-sm flex items-center gap-2">
             <lucide-icon [img]="ShieldIcon" class="w-4 h-4 text-green-600"></lucide-icon>
             {{ 'footer.clientSide' | translate }}
           </p>
         </div>
       </div>
 
-      <div class="mt-8 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
+      <div class="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800 text-center text-muted">
         © {{ currentYear }} {{ 'footer.copyright' | translate }}
       </div>
     </div>

@@ -9,43 +9,43 @@
 
           <div class="space-y-4 text-sm">
             <div>
-              <h4 class="font-semibold text-gray-900 mb-2 rtl:text-right">{{ 'sampleContract.section1' | translate }}</h4>
-              <p class="text-gray-700 rtl:text-right">
+              <h4 class="mb-2 rtl:text-right">{{ 'sampleContract.section1' | translate }}</h4>
+              <p class="text-body-sm rtl:text-right">
                 {{ 'sampleContract.section1Content' | translate }}
               </p>
             </div>
 
             <div>
-              <h4 class="font-semibold text-gray-900 mb-2 rtl:text-right">{{ 'sampleContract.section2' | translate }}</h4>
-              <p class="text-gray-700 rtl:text-right">
+              <h4 class="mb-2 rtl:text-right">{{ 'sampleContract.section2' | translate }}</h4>
+              <p class="text-body-sm rtl:text-right">
                 {{ 'sampleContract.section2Content' | translate }}
               </p>
             </div>
 
             <div>
-              <h4 class="font-semibold text-gray-900 mb-2 rtl:text-right">{{ 'sampleContract.section3' | translate }}</h4>
-              <p class="text-gray-700 rtl:text-right">
+              <h4 class="mb-2 rtl:text-right">{{ 'sampleContract.section3' | translate }}</h4>
+              <p class="text-body-sm rtl:text-right">
                 {{ 'sampleContract.section3Content' | translate }}
               </p>
             </div>
 
             <div>
-              <h4 class="font-semibold text-gray-900 mb-2 rtl:text-right">{{ 'sampleContract.section4' | translate }}</h4>
-              <p class="text-gray-700 rtl:text-right">
+              <h4 class="mb-2 rtl:text-right">{{ 'sampleContract.section4' | translate }}</h4>
+              <p class="text-body-sm rtl:text-right">
                 {{ 'sampleContract.section4Content' | translate }}
               </p>
             </div>
 
             <div>
-              <h4 class="font-semibold text-gray-900 mb-2 rtl:text-right">{{ 'sampleContract.section5' | translate }}</h4>
-              <p class="text-gray-700 rtl:text-right">
+              <h4 class="mb-2 rtl:text-right">{{ 'sampleContract.section5' | translate }}</h4>
+              <p class="text-body-sm rtl:text-right">
                 {{ 'sampleContract.section5Content' | translate }}
               </p>
             </div>
 
             <div>
-              <h4 class="font-semibold text-gray-900 mb-2 rtl:text-right">{{ 'sampleContract.section6' | translate }}</h4>
-              <p class="text-gray-700 rtl:text-right">
+              <h4 class="mb-2 rtl:text-right">{{ 'sampleContract.section6' | translate }}</h4>
+              <p class="text-body-sm rtl:text-right">
                 {{ 'sampleContract.section6Content' | translate }}
               </p>
             </div>
@@ -57,7 +57,7 @@
             [icon]="DownloadIcon"
             titleKey="sampleContract.downloadExamples"
             messageKey="sampleContract.downloadDescription"
-            customClasses="mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">
+            customClasses="mt-6 bg-gradient-to-r from-indigo-50 to-sky-50 dark:from-indigo-900 dark:to-sky-900 border-indigo-200 dark:border-indigo-700">
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
               @for (contract of sampleContracts(); track contract.id) {
@@ -80,16 +80,16 @@
   <a
     [href]="contract.href"
     [download]="contract.download"
-    class="flex items-center gap-3 p-3 bg-white border border-indigo-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all duration-200 group rtl:flex-row-reverse">
+    class="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md transition-all duration-200 group rtl:flex-row-reverse">
     <div [class]="'flex-shrink-0 w-10 h-10 ' + contract.bgColor + ' rounded-lg flex items-center justify-center group-hover:' + contract.hoverBgColor + ' transition-colors'">
       <lucide-icon [img]="FileTextIcon" [class]="'w-5 h-5 ' + contract.iconColor"></lucide-icon>
     </div>
     <div class="flex-1 min-w-0 rtl:text-right">
-      <p class="text-sm font-medium text-gray-900 group-hover:text-indigo-700 transition-colors">
+      <p class="text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition-colors">
         {{ contract.titleKey | translate }}
       </p>
-      <p class="text-xs text-gray-500">{{ contract.fileType }} • {{ contract.descriptionKey | translate }}</p>
+      <p class="text-body-xs">{{ contract.fileType }} • {{ contract.descriptionKey | translate }}</p>
     </div>
-    <lucide-icon [img]="DownloadIcon" class="w-4 h-4 text-gray-400 group-hover:text-indigo-600 transition-colors flex-shrink-0"></lucide-icon>
+    <lucide-icon [img]="DownloadIcon" class="w-4 h-4 text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors flex-shrink-0"></lucide-icon>
   </a>
 </ng-template>

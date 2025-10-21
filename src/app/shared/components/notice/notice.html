@@ -3,20 +3,25 @@
       <div 
         [class]="headerClasses()"
         [class.mb-2]="hasMessage()">
-        @if (hasIcon()) {
+        @if (type() === 'loading') {
+          <app-loading-spinner 
+            size="sm" 
+            [class]="iconClasses()">
+          </app-loading-spinner>
+        } @else if (hasIcon()) {
           <lucide-icon 
             [img]="icon()" 
             [class]="iconClasses()">
           </lucide-icon>
         }
         @if (hasTitle()) {
-          <h3 [class]="titleClasses()">
+          <h4 [class]="titleClasses()">
             @if (titleKey()) {
               {{ titleKey() | translate }}
             } @else {
               {{ title() }}
             }
-          </h3>
+          </h4>
         }
       </div>
     }

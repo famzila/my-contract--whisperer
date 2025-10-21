@@ -4,13 +4,13 @@
     [title]="'analysis.summary.title' | translate"
     [subtitle]="'analysis.summary.subtitle' | translate"
     [icon]="ClipboardIcon"
-    iconBgClass="bg-blue-100"
-    iconColorClass="text-blue-600"
+    iconBgClass="bg-blue-100 dark:bg-blue-900"
+    iconColorClass="text-blue-600 dark:text-blue-400"
   >
   </app-tab-header>
 
   @if (isRetrying()) {
-  <app-alert
+  <app-notice
     type="loading"
     [title]="
       ('analysis.retrying' | translate) +
@@ -22,7 +22,7 @@
       ')'
     "
     [message]="'analysis.retryMessage' | translate"
-  ></app-alert>
+  ></app-notice>
   }
 
   <app-skeleton-loader
@@ -35,11 +35,11 @@
 </div>
 } @else if (summary() === null) {
 <div>
-  <app-alert
+  <app-notice
     type="error"
     [title]="'analysis.summary.title' | translate"
     [message]="'analysis.summary.extractionError' | translate"
-  ></app-alert>
+  ></app-notice>
 </div>
 } @else if (summary()) {
 
@@ -47,8 +47,8 @@
   [title]="'analysis.summary.title' | translate"
   [subtitle]="'analysis.summary.subtitle' | translate"
   [icon]="ClipboardIcon"
-  iconBgClass="bg-blue-100"
-  iconColorClass="text-blue-600"
+  iconBgClass="bg-blue-100 dark:bg-blue-900"
+  iconColorClass="text-blue-600 dark:text-blue-400"
 >
 </app-tab-header>
 
@@ -63,31 +63,31 @@
 
 <div class="space-y-6">
   <!-- Parties -->
-  <div class="pb-6 border-b border-slate-200">
-    <h3 class="font-semibold text-lg text-gray-700 mb-3 flex items-center gap-2">
-      <lucide-icon [name]="UsersIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
+  <div class="pb-6 border-b border-divider">
+    <h3 class="mb-3 flex items-center gap-2">
+      <lucide-icon [name]="UsersIcon" class="w-5 h-5 text-blue-600 dark:text-blue-400"></lucide-icon>
       {{ 'analysis.summary.parties' | translate }}
     </h3>
-    <p class="text-gray-700">{{ summary()?.parties || 'N/A' }}</p>
+    <p class="text-body">{{ summary()?.parties || 'N/A' }}</p>
   </div>
 
   <!-- Role -->
-  <div class="pb-6 border-b border-slate-200">
-    <h3 class="font-semibold text-lg text-gray-700 mb-3 flex items-center gap-2">
-      <lucide-icon [name]="BriefcaseIcon" class="w-5 h-5 text-green-600"></lucide-icon>
+  <div class="pb-6 border-b border-divider">
+    <h3 class="mb-3 flex items-center gap-2">
+      <lucide-icon [name]="BriefcaseIcon" class="w-5 h-5 text-green-600 dark:text-green-400"></lucide-icon>
       {{ 'analysis.summary.roleRelationship' | translate }}
     </h3>
-    <p class="text-gray-700">{{ summary()?.role || 'N/A' }}</p>
+    <p class="text-body">{{ summary()?.role || 'N/A' }}</p>
   </div>
 
   <!-- Responsibilities -->
   @if (summary()?.responsibilities && summary()!.responsibilities!.length > 0) {
-  <div class="pb-6 border-b border-slate-200">
-    <h3 class="font-semibold text-lg text-gray-700 mb-3 flex items-center gap-2">
-      <lucide-icon [name]="ClipboardIcon" class="w-5 h-5 text-blue-600"></lucide-icon>
+  <div class="pb-6 border-b border-divider">
+    <h3 class="mb-3 flex items-center gap-2">
+      <lucide-icon [name]="ClipboardIcon" class="w-5 h-5 text-blue-600 dark:text-blue-400"></lucide-icon>
       {{ 'analysis.summary.keyResponsibilities' | translate }}
     </h3>
-    <ul class="list-disc list-inside space-y-1 text-gray-700">
+    <ul class="list-disc list-inside space-y-1 text-body">
       @for (resp of summary()?.responsibilities || []; track $index) {
       <li>{{ resp }}</li>
       }
@@ -96,12 +96,12 @@
   }
 
   <!-- Compensation -->
-  <div class="pb-6 border-b border-slate-200">
-    <h3 class="font-semibold text-lg text-gray-700 mb-3 flex items-center gap-2">
-      <lucide-icon [name]="DollarSignIcon" class="w-5 h-5 text-green-600"></lucide-icon>
+  <div class="pb-6 border-b border-divider">
+    <h3 class="mb-3 flex items-center gap-2">
+      <lucide-icon [name]="DollarSignIcon" class="w-5 h-5 text-green-600 dark:text-green-400"></lucide-icon>
       {{ 'analysis.summary.compensationBenefits' | translate }}
     </h3>
-    <div class="space-y-2 text-gray-700">
+    <div class="space-y-2 text-body">
       @if (summary()?.compensation?.baseSalary) {
       <p>
         <strong>{{ 'analysis.summary.baseSalary' | translate }}:</strong> ${{
@@ -126,7 +126,7 @@
       }
     </div>
     @if (summary()?.benefits && summary()?.benefits!.length > 0) {
-    <ul class="list-disc list-inside space-y-1 text-gray-700 mt-3">
+    <ul class="list-disc list-inside space-y-1 text-body mt-3">
       @for (benefit of summary()?.benefits || []; track $index) {
       <li>{{ benefit }}</li>
       }
@@ -134,12 +134,12 @@
     }
   </div>
   <!-- Termination -->
-  <div class="pb-6 border-b border-slate-200">
-    <h3 class="font-semibold text-lg text-gray-700 mb-3 flex items-center gap-2">
-      <lucide-icon [name]="DoorOpenIcon" class="w-5 h-5 text-red-600"></lucide-icon>
+  <div class="pb-6 border-b border-divider">
+    <h3 class="mb-3 flex items-center gap-2">
+      <lucide-icon [name]="DoorOpenIcon" class="w-5 h-5 text-red-600 dark:text-red-400"></lucide-icon>
       {{ 'analysis.summary.terminationConditions' | translate }}
     </h3>
-    <div class="space-y-2 text-gray-700">
+    <div class="space-y-2 text-body">
       @if (summary()?.termination?.atWill) {
       <p>
         <strong>{{ 'analysis.summary.atWill' | translate }}:</strong>
@@ -161,11 +161,11 @@
 
   <!-- Restrictions -->
   <div class="pb-6">
-    <h3 class="font-semibold text-lg text-gray-700 mb-3 flex items-center gap-2">
-      <lucide-icon [name]="ShieldIcon" class="w-5 h-5 text-red-600"></lucide-icon>
+    <h3 class="mb-3 flex items-center gap-2">
+      <lucide-icon [name]="ShieldIcon" class="w-5 h-5 text-red-600 dark:text-red-400"></lucide-icon>
       {{ 'analysis.summary.restrictions' | translate }}
     </h3>
-    <div class="space-y-2 text-gray-700">
+    <div class="space-y-2 text-body">
       @if (summary()?.restrictions?.confidentiality) {
       <p>
         <strong>{{ 'analysis.summary.confidentiality' | translate }}:</strong>
@@ -192,8 +192,8 @@
 </div>
 } @else {
 
-<div class="p-8 text-center text-gray-500">
-  <lucide-icon [name]="FileXIcon" class="w-16 h-16 mx-auto mb-4 text-gray-400"></lucide-icon>
+<div class="text-empty-state">
+  <lucide-icon [name]="FileXIcon" class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-500"></lucide-icon>
   <p>{{ 'analysis.summary.noData' | translate }}</p>
 </div>
 }

@@ -4,12 +4,11 @@ import { LucideAngularModule } from 'lucide-angular';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader';
 import { 
   AlertTriangle, 
-  Info, 
-  Lightbulb,
   FileX
 } from '../../../../shared/icons/lucide-icons';
-import { Alert } from "../../../../shared/components/alert/alert";
+import { Notice } from "../../../../shared/components/notice/notice";
 import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
+import { ContractInsightCard } from "../../../../shared/components/contract-insight-card/contract-insight-card";
 
 export interface RiskFlag {
   title: string;
@@ -21,7 +20,7 @@ export interface RiskFlag {
 
 @Component({
   selector: 'app-risks-tab',
-  imports: [TranslatePipe, LucideAngularModule, SkeletonLoader, Alert, TabHeader],
+  imports: [TranslatePipe, LucideAngularModule, SkeletonLoader, Notice, TabHeader, ContractInsightCard],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './risks-tab.component.html'
 })
@@ -37,8 +36,6 @@ export class RisksTabComponent {
 
   // Icons
   AlertTriangleIcon = AlertTriangle;
-  InfoIcon = Info;
-  LightbulbIcon = Lightbulb;
   FileXIcon = FileX;
 }
 

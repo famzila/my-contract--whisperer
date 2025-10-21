@@ -20,7 +20,8 @@ import {
   Lightbulb, 
   Eye,
   X,
-  Search
+  Search,
+  ChevronRight
 } from '../../../shared/icons/lucide-icons';
 import { Notice } from '../notice/notice';
 import type { PartyDetectionResult, UserRole } from '../../../core/stores/onboarding.store';
@@ -67,6 +68,7 @@ export class PartySelectorModal {
   readonly EyeIcon = Eye;
   readonly XIcon = X;
   readonly SearchIcon = Search;
+  readonly ChevronRightIcon = ChevronRight;
 
   // Computed properties for state management
   isLoading = computed(() => {

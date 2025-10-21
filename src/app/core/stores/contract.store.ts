@@ -674,8 +674,8 @@ export const ContractStore = signalStore(
         if (cached) {
           console.log(`⚡ [Store] Using cached ${targetLanguage} translation`);
           
-          // Small delay for smooth UX (optional, but nice)
-          await new Promise(resolve => setTimeout(resolve, 300));
+          // Ensure UI has time to show loading state (increased from 300ms)
+          await new Promise(resolve => setTimeout(resolve, 600));
           
           patchState(store, {
             sectionsMetadata: { data: cached.metadata, loading: false, error: null },
