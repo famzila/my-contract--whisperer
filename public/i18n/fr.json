@@ -130,6 +130,32 @@
       "title": "Obligations",
       "noEmployerObligations": "Aucune obligation d'employeur trouvée.",
       "noEmployeeObligations": "Aucune obligation d'employé trouvée."
+    },
+    "email": {
+      "modalTitle": "Brouillon d'e-mail professionnel",
+      "modalSubtitle": "Prêt à copier et envoyer",
+      "languageNotice": {
+        "title": "Langue de l'e-mail",
+        "message": "Cet e-mail est rédigé en {{language}} car c'est la langue du contrat que vous discutez avec l'autre partie. Cela garantit une communication claire dans leur langue attendue."
+      },
+      "showRewriteOptions": "Afficher les options de réécriture",
+      "hideRewriteOptions": "Masquer les options de réécriture",
+      "customizeStyle": "Personnaliser le style de l'e-mail",
+      "tone": "Ton",
+      "tones": {
+        "formal": "Formel",
+        "neutral": "Neutre",
+        "casual": "Décontracté"
+      },
+      "length": "Longueur",
+      "lengths": {
+        "short": "Court",
+        "medium": "Moyen",
+        "long": "Long"
+      },
+      "applyChanges": "Appliquer les modifications",
+      "rewriting": "Réécriture...",
+      "copyToClipboard": "Copier"
     }
   },
   "settings": {

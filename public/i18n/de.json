@@ -107,7 +107,33 @@
     "redFlags": "Warnsignale",
     "compare": "Vergleichen",
     "noContract": "Noch kein Vertrag hochgeladen",
-    "uploadFirst": "Bitte laden Sie einen Vertrag hoch, um mit der Analyse zu beginnen"
+    "uploadFirst": "Bitte laden Sie einen Vertrag hoch, um mit der Analyse zu beginnen",
+    "email": {
+      "modalTitle": "Professioneller E-Mail-Entwurf",
+      "modalSubtitle": "Bereit zum Kopieren und Senden",
+      "languageNotice": {
+        "title": "E-Mail-Sprache",
+        "message": "Diese E-Mail ist in {{language}} verfasst, da dies die Sprache des Vertrags ist, den Sie mit der anderen Partei besprechen. Dies gewährleistet eine klare Kommunikation in deren erwarteter Sprache."
+      },
+      "showRewriteOptions": "Neuschreiboptionen anzeigen",
+      "hideRewriteOptions": "Neuschreiboptionen ausblenden",
+      "customizeStyle": "E-Mail-Stil anpassen",
+      "tone": "Ton",
+      "tones": {
+        "formal": "Formell",
+        "neutral": "Neutral",
+        "casual": "Locker"
+      },
+      "length": "Länge",
+      "lengths": {
+        "short": "Kurz",
+        "medium": "Mittel",
+        "long": "Lang"
+      },
+      "applyChanges": "Änderungen übernehmen",
+      "rewriting": "Neuschreiben...",
+      "copyToClipboard": "Kopieren"
+    }
   },
   "settings": {
     "title": "Einstellungen",

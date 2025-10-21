@@ -132,7 +132,33 @@
     "mockMode": "모의 모드",
     "contractSummary": "계약서 요약",
     "noContract": "아직 업로드된 계약서가 없습니다",
-    "uploadFirst": "분석을 시작하려면 계약서를 업로드하세요"
+    "uploadFirst": "분석을 시작하려면 계약서를 업로드하세요",
+    "email": {
+      "modalTitle": "전문 이메일 초안",
+      "modalSubtitle": "복사 및 전송 준비 완료",
+      "languageNotice": {
+        "title": "이메일 언어",
+        "message": "이 이메일은 {{language}}로 작성되었습니다. 상대방과 논의하고 있는 계약서의 언어이기 때문입니다. 이를 통해 상대방이 기대하는 언어로 명확한 소통이 보장됩니다."
+      },
+      "showRewriteOptions": "재작성 옵션 표시",
+      "hideRewriteOptions": "재작성 옵션 숨기기",
+      "customizeStyle": "이메일 스타일 사용자 지정",
+      "tone": "어조",
+      "tones": {
+        "formal": "공식",
+        "neutral": "중립",
+        "casual": "캐주얼"
+      },
+      "length": "길이",
+      "lengths": {
+        "short": "짧게",
+        "medium": "보통",
+        "long": "길게"
+      },
+      "applyChanges": "변경사항 적용",
+      "rewriting": "재작성 중...",
+      "copyToClipboard": "복사"
+    }
   },
   "settings": {
     "title": "설정",

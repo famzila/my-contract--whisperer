@@ -7,6 +7,8 @@ import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals
 import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { WriterService } from '../services/ai/writer.service';
+import { LanguageDetectorService } from '../services/ai/language-detector.service';
+import { TranslatorService } from '../services/ai/translator.service';
 import { AppConfig } from '../config/app.config';
 
 /**
@@ -15,6 +17,7 @@ import { AppConfig } from '../config/app.config';
 interface EmailDraftState {
   // Email content
   draftedEmail: string | null;
+  emailLanguage: string | null;  // Track the email's language (contract language)
   
   // Loading states
   isDrafting: boolean;
@@ -37,6 +40,7 @@ interface EmailDraftState {
  */
 const initialState: EmailDraftState = {
   draftedEmail: null,
+  emailLanguage: null,
   isDrafting: false,
   isRewriting: false,
   showRewriteOptions: false,
@@ -63,7 +67,7 @@ export const EmailDraftStore = signalStore(
   })),
   
   // Methods to update state
-  withMethods((store, writerService = inject(WriterService)) => ({
+  withMethods((store, writerService = inject(WriterService), languageDetectorService = inject(LanguageDetectorService), translatorService = inject(TranslatorService)) => ({
     /**
      * Draft a professional email using Writer API
      * @param questions - Array of questions to include in the email
@@ -71,13 +75,15 @@ export const EmailDraftStore = signalStore(
      * @param senderName - Name of the party sending the email (e.g., your name, employee)
      * @param senderRole - Role of the sender (e.g., 'Landlord', 'Tenant', 'Employer')
      * @param recipientRole - Role of the recipient (e.g., 'Tenant', 'Landlord', 'Employee')
+     * @param contractLanguage - The language of the contract (email will be written in this language)
      */
     async draftEmail(
       questions: string[],
       recipientName: string,
       senderName: string,
       senderRole: string = '',
-      recipientRole: string = ''
+      recipientRole: string = '',
+      contractLanguage: string = 'en'
     ): Promise<void> {
       if (questions.length === 0) {
         console.warn('No questions to draft email');
@@ -97,26 +103,27 @@ export const EmailDraftStore = signalStore(
         if (!isAvailable || AppConfig.useMockAI) {
           // Use mock email if Writer API not available or in mock mode
           console.log('📧 Using mock email template (Writer API not available or mock mode enabled)');
-          const mockEmail = generateMockEmail(recipientName, senderName, senderRole, recipientRole, questions);
+          const mockEmail = generateMockEmail(recipientName, senderName, senderRole, recipientRole, questions, contractLanguage);
           
           // Simulate delay for realistic UX
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           patchState(store, { 
-            draftedEmail: mockEmail, 
+            draftedEmail: mockEmail,
+            emailLanguage: contractLanguage,
             isDrafting: false 
           });
           return;
         }
         
         // Use Writer API to generate professional email with streaming
-        console.log('✍️ Drafting email with Writer API (streaming)...');
+        console.log(`✍️ Drafting email in ${contractLanguage} with Writer API (streaming)...`);
         
-        const prompt = buildEmailPrompt(recipientName, senderName, senderRole, recipientRole, questions);
+        const prompt = buildEmailPrompt(recipientName, senderName, senderRole, recipientRole, questions, contractLanguage);
         const stream = await writerService.writeStreaming(prompt, {
           tone: 'formal',
           length: 'medium',
-          sharedContext: `This is a professional email from ${senderName} to ${recipientName} regarding a contract agreement.`,
+          sharedContext: `This is a professional email in ${getLanguageName(contractLanguage)} from ${senderName} to ${recipientName} regarding a contract agreement.`,
         });
         
         // Process the stream - Writer API returns an async iterable of text chunks
@@ -130,15 +137,19 @@ export const EmailDraftStore = signalStore(
         }
         
         console.log('✅ Email drafted successfully');
-        patchState(store, { isDrafting: false });
+        patchState(store, { 
+          isDrafting: false,
+          emailLanguage: contractLanguage 
+        });
       } catch (error) {
         console.error('❌ Error drafting email:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to draft email';
         
         // Fallback to mock email on error
-        const mockEmail = generateMockEmail(recipientName, senderName, senderRole, recipientRole, questions);
+        const mockEmail = generateMockEmail(recipientName, senderName, senderRole, recipientRole, questions, contractLanguage);
         patchState(store, { 
           draftedEmail: mockEmail,
+          emailLanguage: contractLanguage,
           draftError: errorMessage,
           isDrafting: false,
         });
@@ -150,10 +161,18 @@ export const EmailDraftStore = signalStore(
      */
     async rewriteEmail(): Promise<void> {
       const currentEmail = store.draftedEmail();
+      const emailLanguage = store.emailLanguage();
+      
       if (!currentEmail) {
         console.warn('No email to rewrite');
         return;
       }
+      
+      if (!emailLanguage) {
+        console.warn('No email language found, defaulting to English');
+      }
+      
+      const languageName = getLanguageName(emailLanguage || 'en');
       
       patchState(store, { 
         isRewriting: true, 
@@ -166,12 +185,18 @@ export const EmailDraftStore = signalStore(
         
         if (!isAvailable || AppConfig.useMockAI) {
           // Fallback to Writer API in mock mode
-          console.log('🔄 Using Writer API for rewriting (mock mode or Rewriter unavailable)');
+          console.log(`🔄 Using Writer API for rewriting in ${languageName} (mock mode or Rewriter unavailable)`);
           
-          const prompt = `Rewrite this email with a ${store.rewriteTone()} tone and make it ${store.rewriteLength()} length:\n\n${currentEmail}`;
+          const prompt = `Rewrite this professional email IN ${languageName.toUpperCase()} with a ${store.rewriteTone()} tone and make it ${store.rewriteLength()} length:
+
+${currentEmail}
+
+IMPORTANT: Maintain the SAME LANGUAGE (${languageName}). Keep all key information and questions.`;
+          
           const rewritten = await writerService.write(prompt, {
             tone: store.rewriteTone(),
             length: store.rewriteLength(),
+            sharedContext: `Rewriting email in ${languageName} language`,
           });
           
           patchState(store, { 
@@ -181,20 +206,23 @@ export const EmailDraftStore = signalStore(
           return;
         }
         
-        // Use Rewriter API with streaming
-        console.log('🔄 Rewriting email with Rewriter API (streaming)...');
+        // Use Rewriter API with language-specific context in prompt
+        console.log(`🔄 Rewriting email in ${languageName} with Rewriter API (streaming)...`);
+        
+        // Create a language-aware rewrite prompt
+        const languageContext = `LANGUAGE CONTEXT: This email is in ${languageName}. Maintain this language throughout the rewrite.`;
+        const enhancedEmail = `${languageContext}\n\n${currentEmail}`;
         
         // Map user-friendly options to Rewriter API values
         const rewriterTone = mapToneToRewriterAPI(store.rewriteTone());
         const rewriterLength = mapLengthToRewriterAPI(store.rewriteLength());
         
-        const stream = await writerService.rewriteStreaming(currentEmail, {
+        const stream = await writerService.rewriteStreaming(enhancedEmail, {
           tone: rewriterTone,
           length: rewriterLength,
         });
         
         // Process the stream
-        // The Rewriter API returns an async iterable of text chunks
         let rewrittenText = '';
         
         for await (const chunk of stream as any) {
@@ -204,8 +232,14 @@ export const EmailDraftStore = signalStore(
           patchState(store, { draftedEmail: rewrittenText });
         }
         
+        // Check if language changed and translate if needed
+        const finalEmail = await this.ensureCorrectLanguage(rewrittenText, emailLanguage || 'en', languageName);
+        
         console.log('✅ Email rewritten successfully');
-        patchState(store, { isRewriting: false });
+        patchState(store, { 
+          draftedEmail: finalEmail,
+          isRewriting: false 
+        });
       } catch (error) {
         console.error('❌ Error rewriting email:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to rewrite email';
@@ -269,6 +303,55 @@ export const EmailDraftStore = signalStore(
     },
     
     /**
+     * Ensure the rewritten email is in the correct language
+     * Uses translation as fallback if Rewriter API changed the language
+     */
+    async ensureCorrectLanguage(
+      rewrittenEmail: string, 
+      targetLanguage: string, 
+      languageName: string
+    ): Promise<string> {
+      try {
+        // Skip language check for English (most common case)
+        if (targetLanguage === 'en') {
+          console.log(`🔍 [Language Check] Skipping check for English`);
+          return rewrittenEmail;
+        }
+        
+        // Detect the language of the rewritten email
+        const detectedLanguage = await languageDetectorService.detect(rewrittenEmail);
+        
+        if (!detectedLanguage) {
+          console.warn('⚠️ [Language Check] Could not detect language, keeping original');
+          return rewrittenEmail;
+        }
+        
+        // If language matches target, we're good
+        if (detectedLanguage === targetLanguage) {
+          console.log(`✅ [Language Check] Email is correctly in ${languageName} (${targetLanguage})`);
+          return rewrittenEmail;
+        }
+        
+        // Language changed! Translate back to target language
+        console.log(`🔄 [Language Check] Language changed from ${targetLanguage} to ${detectedLanguage}, translating back...`);
+        
+        const translatedEmail = await translatorService.translate(
+          rewrittenEmail,
+          detectedLanguage,
+          targetLanguage
+        );
+        
+        console.log(`✅ [Language Check] Successfully translated back to ${languageName}`);
+        return translatedEmail;
+        
+      } catch (error) {
+        console.error('❌ [Language Check] Error in language correction:', error);
+        // Return original rewritten email if translation fails
+        return rewrittenEmail;
+      }
+    },
+    
+    /**
      * Reset store to initial state
      */
     reset: () => {
@@ -285,25 +368,30 @@ function buildEmailPrompt(
   senderName: string, 
   senderRole: string, 
   recipientRole: string, 
-  questions: string[]
+  questions: string[],
+  contractLanguage: string = 'en'
 ): string {
   const questionsList = questions.map((q, i) => `${i + 1}. ${q}`).join('\n\n');
+  const languageName = getLanguageName(contractLanguage);
   
   // Context-aware greeting based on roles
   const contextIntro = getContextualIntro(senderRole, recipientRole);
   
-  return `Write a professional, polite email from ${senderName} (${senderRole}) to ${recipientName} (${recipientRole}) asking for clarification on the following points from a contract agreement:
+  return `Write a professional, polite email IN ${languageName.toUpperCase()} from ${senderName} (${senderRole}) to ${recipientName} (${recipientRole}) asking for clarification on the following points from a contract agreement:
 
 ${questionsList}
 
+IMPORTANT: The email MUST be written in ${languageName} because that is the language of the contract being discussed.
+
 The email should:
-- Start with "Subject: Clarification on Contract Agreement Terms"
+- Start with "Subject: Clarification on Contract Agreement Terms" (translated to ${languageName} if not English)
 - Address the recipient as "Dear ${recipientName},"
 ${contextIntro}
 - List the questions in a numbered format
 - Mention that clarity will help ensure alignment and a successful relationship
 - End with "Best regards," followed by ${senderName}
 - Be professional, courteous, concise but complete
+- Use proper ${languageName} grammar, vocabulary, and business email conventions
 
 Format the email with proper structure including Subject, Greeting, Body, and Closing.`;
 }
@@ -334,7 +422,8 @@ function generateMockEmail(
   senderName: string,
   senderRole: string,
   recipientRole: string,
-  questions: string[]
+  questions: string[],
+  contractLanguage: string = 'en'
 ): string {
   const questionsList = questions
     .slice(0, 5) // Limit to first 5 questions for readability
@@ -406,5 +495,22 @@ function mapLengthToRewriterAPI(length: 'short' | 'medium' | 'long'): 'shorter' 
     case 'long':
       return 'longer';
   }
+}
+
+/**
+ * Helper: Get human-readable language name from code
+ */
+function getLanguageName(code: string): string {
+  const languageNames: Record<string, string> = {
+    'en': 'English',
+    'fr': 'French',
+    'ar': 'Arabic',
+    'de': 'German',
+    'es': 'Spanish',
+    'ja': 'Japanese',
+    'ko': 'Korean',
+    'zh': 'Chinese',
+  };
+  return languageNames[code] || 'English';
 }
 

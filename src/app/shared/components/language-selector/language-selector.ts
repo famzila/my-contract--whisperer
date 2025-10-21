@@ -37,7 +37,7 @@ export class LanguageSelector {
   
   // Disable language selector during analysis/translation
   isDisabled = computed(() => 
-    this.contractStore.isAnalyzing() || 
+    !this.contractStore.isDone() || 
     this.contractStore.isLoading() ||
     this.contractStore.isTranslating()
   );

@@ -132,7 +132,33 @@
     "mockMode": "模拟模式",
     "contractSummary": "合同摘要",
     "noContract": "尚未上传合同",
-    "uploadFirst": "请先上传合同以开始分析"
+    "uploadFirst": "请先上传合同以开始分析",
+    "email": {
+      "modalTitle": "专业电子邮件草稿",
+      "modalSubtitle": "已准备好复制和发送",
+      "languageNotice": {
+        "title": "电子邮件语言",
+        "message": "此电子邮件以{{language}}撰写，因为这是您与对方讨论的合同语言。这确保了以对方期望的语言进行清晰的沟通。"
+      },
+      "showRewriteOptions": "显示重写选项",
+      "hideRewriteOptions": "隐藏重写选项",
+      "customizeStyle": "自定义电子邮件样式",
+      "tone": "语气",
+      "tones": {
+        "formal": "正式",
+        "neutral": "中性",
+        "casual": "随意"
+      },
+      "length": "长度",
+      "lengths": {
+        "short": "简短",
+        "medium": "中等",
+        "long": "详细"
+      },
+      "applyChanges": "应用更改",
+      "rewriting": "重写中...",
+      "copyToClipboard": "复制"
+    }
   },
   "settings": {
     "title": "设置",

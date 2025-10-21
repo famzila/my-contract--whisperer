@@ -49,6 +49,7 @@ interface ContractState {
   // Loading states
   isUploading: boolean;
   isAnalyzing: boolean;
+  isDone: boolean;  // True when analysis is complete and cached in localStorage
   
   // Error handling
   uploadError: string | null;
@@ -82,6 +83,7 @@ function createInitialState(): ContractState {
       contract: mockContract,
       isUploading: false,
       isAnalyzing: false,
+      isDone: true,  // Mock data is always "done"
       uploadError: null,
       analysisError: null,
       analysisProgress: 100, // Complete
@@ -101,6 +103,7 @@ function createInitialState(): ContractState {
   contract: null,
   isUploading: false,
   isAnalyzing: false,
+  isDone: false,  // Analysis not done initially
   uploadError: null,
   analysisError: null,
     analysisProgress: 0,
@@ -418,6 +421,7 @@ export const ContractStore = signalStore(
         // Initialize progressive loading state
         patchState(store, { 
           isAnalyzing: true, 
+          isDone: false,
           analysisError: null,
           analysisProgress: 0,
           sectionsMetadata: { data: null, loading: true, error: null },
@@ -561,6 +565,7 @@ export const ContractStore = signalStore(
               analysisError: errorMessage,
           isUploading: false,
           isAnalyzing: false,
+          isDone: false,
               analysisProgress: 0,
             });
             // Don't throw - let the UI handle the error gracefully
@@ -629,7 +634,10 @@ export const ContractStore = signalStore(
             // Clean up destroy subject
             destroySubject.next();
             destroySubject.complete();
-            patchState(store, { destroySubject: null });
+            patchState(store, { 
+              destroySubject: null,
+              isDone: true  // Analysis is complete and cached in localStorage
+            });
           }
         });
         

@@ -192,6 +192,16 @@ export const LanguageStore = signalStore(
     },
     
     /**
+     * Check if a given language code is RTL (Right-to-Left)
+     * This is a scalable method that can check any language, not just the current UI language
+     * @param languageCode - The language code to check (e.g., 'ar', 'en', 'fr')
+     * @returns true if the language is RTL, false otherwise
+     */
+    isRTLLanguage: (languageCode: string): boolean => {
+      return isRTL(languageCode);
+    },
+    
+    /**
      * Set user's preferred language
      */
     setPreferredLanguage: (languageCode: string) => {

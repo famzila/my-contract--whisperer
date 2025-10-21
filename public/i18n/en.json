@@ -249,6 +249,10 @@
     "email": {
       "modalTitle": "Professional Email Draft",
       "modalSubtitle": "Ready to copy and send",
+      "languageNotice": {
+        "title": "Email Language",
+        "message": "This email is written in {{language}} because that is the language of the contract you're discussing with the other party. This ensures clear communication in their expected language."
+      },
       "showRewriteOptions": "Show Rewrite Options",
       "hideRewriteOptions": "Hide Rewrite Options",
       "customizeStyle": "Customize Email Style",

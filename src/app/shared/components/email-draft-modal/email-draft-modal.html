@@ -1,17 +1,27 @@
 <app-base-modal [config]="modalConfig">
+  <!-- Language Notice -->
+  @if (emailLanguageInfo()) {
+    <app-notice
+      type="info"
+      [icon]="InfoIcon"
+      titleKey="analysis.email.languageNotice.title"
+      [message]="'analysis.email.languageNotice.message' | translate:{
+        language: emailLanguageInfo()?.name || ('languages.unknown' | translate)
+      }"
+      class="mb-4">
+    </app-notice>
+  }
+
   <!-- Rewrite Options Toggle -->
   <div class="mb-4">
     <app-button
       (clicked)="onToggleRewriteOptions()"
       variant="link"
       size="sm"
+      [icon]="SlidersVerticalIcon"
       [text]="showRewriteOptionsState ? ('analysis.email.hideRewriteOptions' | translate) : ('analysis.email.showRewriteOptions' | translate)"
       customClasses="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
     >
-      <!-- Custom SVG icon as content projection since it's not a Lucide icon -->
-      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-      </svg>
     </app-button>
 
     @if (showRewriteOptionsState) {
@@ -80,8 +90,11 @@
     }
   </div>
 
-  <!-- Email Content -->
-  <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-6 font-mono text-sm whitespace-pre-wrap relative rtl:text-right">
+  <!-- Email Content with dynamic RTL/LTR -->
+  <div 
+    class="bg-slate-50 dark:bg-slate-800 rounded-lg p-6 font-mono text-sm whitespace-pre-wrap relative"
+    [attr.dir]="emailDirection()"
+    [class.font-arabic]="emailDirection() === 'rtl'">
     @if (isCurrentlyRewriting) {
         <div class="absolute inset-0 bg-white/80 dark:bg-slate-900/80 flex items-center justify-center rounded-lg">
         <app-loading-spinner size="md" />

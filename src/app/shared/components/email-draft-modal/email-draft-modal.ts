@@ -1,12 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
-import { LucideAngularModule, Sparkles } from 'lucide-angular';
+import { ChangeDetectionStrategy, Component, inject, input, signal, computed } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 import { TranslatePipe } from '@ngx-translate/core';
-import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
+import { DialogRef } from '@angular/cdk/dialog';
 import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
-import { Mail, Copy, RefreshCw, X, Check } from '../../icons/lucide-icons';
+import { Mail, Copy, RefreshCw, X, Check, Info, SlidersVertical, Sparkles } from '../../icons/lucide-icons';
 import { Button } from '../button/button';
 import { LoadingSpinner } from '../loading-spinner/loading-spinner';
 import { EmailDraftStore } from '../../../core/stores/email-draft.store';
+import { LanguageStore } from '../../../core/stores/language.store';
 import { Notice } from '../notice/notice';
 
 export interface EmailDraftData {
@@ -29,8 +30,8 @@ export interface EmailDraftData {
 })
 export class EmailDraftModal {
   private dialogRef = inject(DialogRef);
-  private dialogData = inject(DIALOG_DATA, { optional: true });
   private emailStore = inject(EmailDraftStore);
+  private languageStore = inject(LanguageStore);
 
   // Inputs (can be provided via DIALOG_DATA or inputs)
   emailContent = input<string>('');
@@ -38,6 +39,18 @@ export class EmailDraftModal {
   showRewriteOptions = input<boolean>(false);
   rewriteOptions = input<any>({});
 
+  // Computed signals for email language and RTL/LTR handling
+  protected emailDirection = computed(() => {
+    const emailLang = this.emailStore.emailLanguage();
+    if (!emailLang) return 'ltr';
+    return this.languageStore.isRTLLanguage(emailLang) ? 'rtl' : 'ltr';
+  });
+  
+  protected emailLanguageInfo = computed(() => {
+    const emailLang = this.emailStore.emailLanguage();
+    const languages = this.languageStore.availableLanguages();
+    return languages.find(l => l.code === emailLang) || null;
+  });
 
   // Icons
   readonly MailIcon = Mail;
@@ -46,6 +59,8 @@ export class EmailDraftModal {
   readonly XIcon = X;
   readonly CheckIcon = Check;
   readonly SparklesIcon = Sparkles;
+  readonly InfoIcon = Info;
+  readonly SlidersVerticalIcon = SlidersVertical;
 
   // Copy button state
   copyButtonState = signal<'copy' | 'copied'>('copy');

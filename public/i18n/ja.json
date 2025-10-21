@@ -132,7 +132,33 @@
     "mockMode": "モックモード",
     "contractSummary": "契約書の概要",
     "noContract": "まだ契約書がアップロードされていません",
-    "uploadFirst": "分析を開始するには契約書をアップロードしてください"
+    "uploadFirst": "分析を開始するには契約書をアップロードしてください",
+    "email": {
+      "modalTitle": "プロフェッショナルなメール下書き",
+      "modalSubtitle": "コピーして送信する準備ができました",
+      "languageNotice": {
+        "title": "メールの言語",
+        "message": "このメールは{{language}}で書かれています。これは、相手方と話し合っている契約書の言語だからです。これにより、相手が期待する言語で明確なコミュニケーションが確保されます。"
+      },
+      "showRewriteOptions": "書き換えオプションを表示",
+      "hideRewriteOptions": "書き換えオプションを非表示",
+      "customizeStyle": "メールスタイルをカスタマイズ",
+      "tone": "トーン",
+      "tones": {
+        "formal": "フォーマル",
+        "neutral": "ニュートラル",
+        "casual": "カジュアル"
+      },
+      "length": "長さ",
+      "lengths": {
+        "short": "短い",
+        "medium": "中",
+        "long": "長い"
+      },
+      "applyChanges": "変更を適用",
+      "rewriting": "書き換え中...",
+      "copyToClipboard": "コピー"
+    }
   },
   "settings": {
     "title": "設定",

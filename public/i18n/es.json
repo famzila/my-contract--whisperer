@@ -116,23 +116,49 @@
     }
   },
   "analysis": {
-    "title": "Vertragsanalyse",
-    "summary": "Zusammenfassung",
-    "obligations": "Verpflichtungen",
-    "redFlags": "Risikopunkte",
-    "compare": "Vergleichen",
-    "uploadNew": "Neuen Vertrag hochladen",
-    "analyzedOn": "Analysiert am",
-    "contractType": "Vertragstyp",
-    "effectiveDate": "Gültig ab",
-    "endDate": "Enddatum",
-    "expiringSoon": "Läuft bald ab",
-    "jurisdiction": "Gerichtsbarkeit",
-    "parties": "Parteien",
-    "mockMode": "Simulationsmodus",
-    "contractSummary": "Vertragszusammenfassung",
-    "noContract": "Noch kein Vertrag hochgeladen",
-    "uploadFirst": "Bitte lade einen Vertrag hoch, um die Analyse zu starten"
+    "title": "Análisis de contrato",
+    "summary": "Resumen",
+    "obligations": "Obligaciones",
+    "redFlags": "Puntos de riesgo",
+    "compare": "Comparar",
+    "uploadNew": "Subir nuevo contrato",
+    "analyzedOn": "Analizado el",
+    "contractType": "Tipo de contrato",
+    "effectiveDate": "Fecha de entrada en vigor",
+    "endDate": "Fecha de finalización",
+    "expiringSoon": "Expira pronto",
+    "jurisdiction": "Jurisdicción",
+    "parties": "Partes",
+    "mockMode": "Modo de simulación",
+    "contractSummary": "Resumen del contrato",
+    "noContract": "Aún no se ha subido ningún contrato",
+    "uploadFirst": "Por favor, sube un contrato para comenzar el análisis",
+    "email": {
+      "modalTitle": "Borrador de correo profesional",
+      "modalSubtitle": "Listo para copiar y enviar",
+      "languageNotice": {
+        "title": "Idioma del correo",
+        "message": "Este correo está escrito en {{language}} porque es el idioma del contrato que está discutiendo con la otra parte. Esto garantiza una comunicación clara en su idioma esperado."
+      },
+      "showRewriteOptions": "Mostrar opciones de reescritura",
+      "hideRewriteOptions": "Ocultar opciones de reescritura",
+      "customizeStyle": "Personalizar estilo del correo",
+      "tone": "Tono",
+      "tones": {
+        "formal": "Formal",
+        "neutral": "Neutral",
+        "casual": "Casual"
+      },
+      "length": "Longitud",
+      "lengths": {
+        "short": "Corto",
+        "medium": "Medio",
+        "long": "Largo"
+      },
+      "applyChanges": "Aplicar cambios",
+      "rewriting": "Reescribiendo...",
+      "copyToClipboard": "Copiar"
+    }
   },
   "settings": {
     "title": "Einstellungen",

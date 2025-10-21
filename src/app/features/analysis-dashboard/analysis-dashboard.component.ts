@@ -518,10 +518,13 @@ export class AnalysisDashboard implements OnInit {
       }
     }
     
-    console.log(`✉️ [Email] Drafting from ${senderName} (${senderRole}) TO ${recipientName} (${recipientRole})`);
+    // Get contract language from metadata or language store
+    const contractLanguage = metadata.detectedLanguage || this.languageStore.detectedContractLanguage() || 'en';
     
-    // Delegate to EmailDraftStore
-    await this.emailStore.draftEmail(questions, recipientName, senderName, senderRole, recipientRole);
+    console.log(`✉️ [Email] Drafting in ${contractLanguage} from ${senderName} (${senderRole}) TO ${recipientName} (${recipientRole})`);
+    
+    // Delegate to EmailDraftStore with contract language
+    await this.emailStore.draftEmail(questions, recipientName, senderName, senderRole, recipientRole, contractLanguage);
     
     // Open the email draft modal
     this.openEmailDraftModal();
