@@ -3,7 +3,7 @@
  * Manages contract data and progressive analysis loading with RxJS streaming
  * Reference: https://ngrx.io/guide/signals/signal-store
  */
-import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals';
+import { signalStore, withState, withComputed, withMethods, withHooks } from '@ngrx/signals';
 import { computed, inject, NgZone } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { Router } from '@angular/router';
@@ -72,51 +72,26 @@ interface ContractState {
 }
 
 /**
- * Create initial state based on mock mode
+ * Initial state - clean production state
+ * Mock data is loaded via onInit hook if needed
  */
-function createInitialState(): ContractState {
-  if (AppConfig.useMockAI) {
-    // Mock contract for development
-    const mockContract: Contract = MOCK_CONTRACT;
-
-    return {
-      contract: mockContract,
-      isUploading: false,
-      isAnalyzing: false,
-      isDone: true,  // Mock data is always "done"
-      uploadError: null,
-      analysisError: null,
-      analysisProgress: 100, // Complete
-      sectionsMetadata: { data: MOCK_LEASE_DATA.metadata, loading: false, error: null },
-      sectionsSummary: { data: MOCK_LEASE_DATA.summary, loading: false, error: null },
-      sectionsRisks: { data: MOCK_LEASE_DATA.risks, loading: false, error: null },
-      sectionsObligations: { data: MOCK_LEASE_DATA.obligations, loading: false, error: null },
-      sectionsOmissionsQuestions: { data: MOCK_LEASE_DATA.omissions, loading: false, error: null },
-      isTranslating: false,
-      translatingToLanguage: null,
-      destroySubject: null,
-    };
-  }
-
-  // Normal initial state for production
-  return {
+const initialState: ContractState = {
   contract: null,
   isUploading: false,
   isAnalyzing: false,
-  isDone: false,  // Analysis not done initially
+  isDone: false,
   uploadError: null,
   analysisError: null,
-    analysisProgress: 0,
-    sectionsMetadata: null,
-    sectionsSummary: null,
-    sectionsRisks: null,
-    sectionsObligations: null,
-    sectionsOmissionsQuestions: null,
-    isTranslating: false,
-    translatingToLanguage: null,
-    destroySubject: null,
-  };
-}
+  analysisProgress: 0,
+  sectionsMetadata: null,
+  sectionsSummary: null,
+  sectionsRisks: null,
+  sectionsObligations: null,
+  sectionsOmissionsQuestions: null,
+  isTranslating: false,
+  translatingToLanguage: null,
+  destroySubject: null,
+};
 
 /**
  * Contract Store
@@ -145,7 +120,7 @@ function selectBestSourceLanguage(availableLanguages: string[], targetLanguage: 
 
 export const ContractStore = signalStore(
   { providedIn: 'root' },
-  withState(createInitialState()),
+  withState(initialState),
   
   // Computed values derived from state
   withComputed(({ 
@@ -770,8 +745,61 @@ export const ContractStore = signalStore(
      * Reset store to initial state
      */
     reset: () => {
-      patchState(store, createInitialState());
+      patchState(store, initialState);
     },
-  }))
+  })),
+  
+  // Lifecycle hooks
+  withHooks({
+    onInit(store) {
+      console.log('🚀 [ContractStore] Initializing store...');
+      
+      // Initialize with mock data if in mock mode
+      if (AppConfig.useMockAI) {
+        console.log('🎨 [ContractStore] Mock mode enabled - loading mock data');
+        
+        const mockContract: Contract = MOCK_CONTRACT;
+        
+        patchState(store, {
+          contract: mockContract,
+          isUploading: false,
+          isAnalyzing: false,
+          isDone: true,  // Mock data is always "done"
+          uploadError: null,
+          analysisError: null,
+          analysisProgress: 100, // Complete
+          sectionsMetadata: { data: MOCK_LEASE_DATA.metadata, loading: false, error: null },
+          sectionsSummary: { data: MOCK_LEASE_DATA.summary, loading: false, error: null },
+          sectionsRisks: { data: MOCK_LEASE_DATA.risks, loading: false, error: null },
+          sectionsObligations: { data: MOCK_LEASE_DATA.obligations, loading: false, error: null },
+          sectionsOmissionsQuestions: { data: MOCK_LEASE_DATA.omissions, loading: false, error: null },
+          isTranslating: false,
+          translatingToLanguage: null,
+          destroySubject: null,
+        });
+        
+        console.log('✅ [ContractStore] Mock data loaded successfully');
+      } else {
+        console.log('🏭 [ContractStore] Production mode - clean state initialized');
+      }
+    },
+    
+    onDestroy(store) {
+      console.log('🧹 [ContractStore] Cleaning up on destroy...');
+      
+      // Clean up RxJS subscriptions
+      if (store.destroySubject()) {
+        store.destroySubject()!.next();
+        store.destroySubject()!.complete();
+      }
+      
+      // Reset isDone flag to prevent disabled language selector on other pages
+      // Keep other state for cache/navigation purposes
+      patchState(store, { 
+        isDone: false,
+        destroySubject: null 
+      });
+    }
+  })
 );
 

@@ -3,7 +3,7 @@
  * Manages the smart onboarding flow for contract analysis
  * Reference: https://ngrx.io/guide/signals/signal-store
  */
-import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals';
+import { signalStore, withState, withComputed, withMethods, withHooks } from '@ngrx/signals';
 import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { TranslatorService } from '../services/ai/translator.service';
@@ -88,31 +88,24 @@ interface OnboardingState {
 }
 
 /**
- * Create initial state based on mock mode
+ * Initial state - clean production state
+ * Mock data is loaded via onInit hook if needed
  */
-function createInitialState(): OnboardingState {
-  if (AppConfig.useMockAI) {
-    // Mock onboarding state for development
-    return MOCK_ONBOARDING_STATE as OnboardingState;
-  }
-
-  // Normal initial state for production
-  return {
-    currentStep: 'upload',
-    isValidContract: null,
-    validationError: null,
-    documentType: null,
-    detectedLanguage: null,
-    selectedOutputLanguage: null,
-    userPreferredLanguage: 'en',  // Default to English
-    detectedParties: null,
-    selectedRole: null,
-    pendingContractText: null,
-    canProceed: false,
-    isProcessing: false,
-    error: null,
-  };
-}
+const initialState: OnboardingState = {
+  currentStep: 'upload',
+  isValidContract: null,
+  validationError: null,
+  documentType: null,
+  detectedLanguage: null,
+  selectedOutputLanguage: null,
+  userPreferredLanguage: 'en',  // Default to English
+  detectedParties: null,
+  selectedRole: null,
+  pendingContractText: null,
+  canProceed: false,
+  isProcessing: false,
+  error: null,
+};
 
 /**
  * Onboarding Store
@@ -120,7 +113,7 @@ function createInitialState(): OnboardingState {
  */
 export const OnboardingStore = signalStore(
   { providedIn: 'root' },
-  withState(createInitialState()),
+  withState(initialState),
   
   // Computed values
   withComputed(({ currentStep, isValidContract, detectedLanguage, selectedOutputLanguage, userPreferredLanguage, selectedRole, detectedParties }) => ({
@@ -350,9 +343,39 @@ export const OnboardingStore = signalStore(
      * Reset to initial state
      */
     reset: () => {
-      patchState(store, createInitialState());
+      patchState(store, initialState);
     },
-  }))
+  })),
+  
+  // Lifecycle hooks
+  withHooks({
+    onInit(store) {
+      console.log('🚀 [OnboardingStore] Initializing store...');
+      
+      // Initialize with mock data if in mock mode
+      if (AppConfig.useMockAI) {
+        console.log('🎨 [OnboardingStore] Mock mode enabled - loading mock data');
+        
+        patchState(store, MOCK_ONBOARDING_STATE as OnboardingState);
+        
+        console.log('✅ [OnboardingStore] Mock data loaded successfully');
+      } else {
+        console.log('🏭 [OnboardingStore] Production mode - clean state initialized');
+      }
+    },
+    
+    onDestroy(store) {
+      console.log('🧹 [OnboardingStore] Cleaning up on destroy...');
+      
+      // Reset onboarding state to prepare for new contract upload
+      // Keep userPreferredLanguage for better UX
+      const userPrefLang = store.userPreferredLanguage();
+      patchState(store, {
+        ...initialState,
+        userPreferredLanguage: userPrefLang
+      });
+    }
+  })
 );
 
 /**

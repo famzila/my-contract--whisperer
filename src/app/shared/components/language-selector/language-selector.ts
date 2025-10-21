@@ -36,11 +36,36 @@ export class LanguageSelector {
   availableLanguages = computed(() => this.languageStore.availableLanguages());
   
   // Disable language selector during analysis/translation
-  isDisabled = computed(() => 
-    !this.contractStore.isDone() || 
-    this.contractStore.isLoading() ||
-    this.contractStore.isTranslating()
-  );
+
+  isDisabled = computed(() => {
+    const hasContract = this.contractStore.hasContract();
+    const isUploading = this.contractStore.isUploading();
+    const isAnalyzing = this.contractStore.isAnalyzing();
+    const isDone = this.contractStore.isDone();
+    const isTranslating = this.contractStore.isTranslating();
+    
+    // Check if any processing is happening (upload, analyze, translate)
+    const isProcessing = isUploading || isAnalyzing || isTranslating;
+    
+    // If no contract AND no processing, enable (clean upload page)
+    if (!hasContract && !isProcessing) {
+      return false;
+    }
+    
+    // If any processing is happening, disable
+    if (isProcessing) {
+      return true;
+    }
+    
+    // If contract exists but not processing, check if analysis is done
+    if (hasContract && !isProcessing) {
+      const shouldDisable = !isDone;
+      return shouldDisable;
+    }
+    
+    // Default: enable
+    return false;
+  });
   
   /**
    * Toggle dropdown

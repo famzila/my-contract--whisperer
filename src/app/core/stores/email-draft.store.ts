@@ -3,7 +3,7 @@
  * Manages email drafting, rewriting, and clipboard operations
  * Reference: https://ngrx.io/guide/signals/signal-store
  */
-import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals';
+import { signalStore, withState, withComputed, withMethods, withHooks } from '@ngrx/signals';
 import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { WriterService } from '../services/ai/writer.service';
@@ -357,7 +357,17 @@ IMPORTANT: Maintain the SAME LANGUAGE (${languageName}). Keep all key informatio
     reset: () => {
       patchState(store, initialState);
     },
-  }))
+  })),
+  
+  // Lifecycle hooks
+  withHooks({
+    onDestroy(store) {
+      console.log('🧹 [EmailDraftStore] Cleaning up on destroy...');
+      
+      // Reset email draft state when leaving analysis dashboard
+      patchState(store, initialState);
+    }
+  })
 );
 
 /**
