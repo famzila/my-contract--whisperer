@@ -6,6 +6,7 @@ import { PromptService } from './ai/prompt.service';
 import { TranslationOrchestratorService } from './translation-orchestrator.service';
 import { TranslatorService } from './ai/translator.service';
 import { TranslationCacheService } from './translation-cache.service';
+import { OfflineStorageService } from './storage/offline-storage.service';
 import { AppConfig } from '../config/app.config';
 import { Contract, ContractAnalysis } from '../models/contract.model';
 import { AnalysisContext, DEFAULT_ANALYSIS_CONTEXT } from '../models/analysis-context.model';
@@ -33,6 +34,7 @@ export class ContractAnalysisService {
   private translationOrchestrator = inject(TranslationOrchestratorService);
   private translator = inject(TranslatorService);
   private translationCache = inject(TranslationCacheService);
+  private offlineStorage = inject(OfflineStorageService);
 
   /**
    * Retry configuration for section extraction
@@ -831,6 +833,68 @@ Note: This is mock data. Enable Chrome Built-in AI for real analysis.`,
     } catch (error) {
       // Don't fail pipeline if caching fails
       console.warn(`⚠️ [Pre-translation Cache] Failed to cache English ${section}:`, error);
+    }
+  }
+
+  /**
+   * ========================================
+   * Offline Storage Integration
+   * ========================================
+   */
+
+  /**
+   * Save contract analysis to offline storage
+   */
+  async saveAnalysisToOfflineStorage(contract: Contract, analysis: ContractAnalysis): Promise<void> {
+    try {
+      await this.offlineStorage.saveContract(contract, analysis);
+      console.log(`💾 [Offline Storage] Saved analysis for contract: ${contract.id}`);
+    } catch (error) {
+      console.warn(`⚠️ [Offline Storage] Failed to save analysis:`, error);
+      // Don't fail the analysis pipeline if offline storage fails
+    }
+  }
+
+  /**
+   * Load cached analysis from offline storage
+   */
+  async loadCachedAnalysis(contractId: string): Promise<ContractAnalysis | null> {
+    try {
+      const cachedContract = await this.offlineStorage.getContract(contractId);
+      if (cachedContract) {
+        console.log(`📱 [Offline Storage] Loaded cached analysis for contract: ${contractId}`);
+        return cachedContract.analysis;
+      }
+      return null;
+    } catch (error) {
+      console.warn(`⚠️ [Offline Storage] Failed to load cached analysis:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if contract analysis is cached
+   */
+  async isAnalysisCached(contractId: string): Promise<boolean> {
+    try {
+      const cachedContract = await this.offlineStorage.getContract(contractId);
+      return cachedContract !== null;
+    } catch (error) {
+      console.warn(`⚠️ [Offline Storage] Failed to check cache status:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Get list of cached contracts
+   */
+  async getCachedContracts(): Promise<Contract[]> {
+    try {
+      const cachedContracts = await this.offlineStorage.listContracts();
+      return cachedContracts.map(cached => cached.contract);
+    } catch (error) {
+      console.warn(`⚠️ [Offline Storage] Failed to get cached contracts:`, error);
+      return [];
     }
   }
 

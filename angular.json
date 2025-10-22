@@ -42,7 +42,19 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "serviceWorker": "ngsw-config.json",
+              "allowedCommonJsDependencies": [
+                "mammoth",
+                "lop",
+                "bluebird/js/release/promise",
+                "base64-js",
+                "jszip",
+                "dingbat-to-unicode",
+                "xmlbuilder",
+                "@xmldom/xmldom",
+                "@xmldom/xmldom/lib/dom"
+              ]
             },
             "development": {
               "optimization": false,

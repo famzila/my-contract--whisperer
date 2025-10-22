@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import * as mammoth from 'mammoth';
 
 /**
  * Contract file types supported
@@ -190,13 +191,10 @@ export class ContractParserService {
    */
   private async extractTextFromDocx(file: File): Promise<string> {
     try {
-      // Dynamically import mammoth to avoid bundle bloat
-      const mammoth = await import('mammoth');
-      
       // Read file as ArrayBuffer
       const arrayBuffer = await file.arrayBuffer();
       
-      // Extract text from DOCX
+      // Extract text from DOCX using correct mammoth API
       const result = await mammoth.extractRawText({ arrayBuffer });
       
       if (!result.value || result.value.trim().length === 0) {
