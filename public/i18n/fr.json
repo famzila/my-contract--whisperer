@@ -156,6 +156,16 @@
       "applyChanges": "Appliquer les modifications",
       "rewriting": "Réécriture...",
       "copyToClipboard": "Copier"
+    },
+    "perspectiveContext": {
+      "employer": {
+        "title": "Perspective employeur",
+        "message": "Cette analyse se concentre sur les obligations, droits et risques potentiels de l'employeur du point de vue de l'employeur."
+      },
+      "employee": {
+        "title": "Perspective employé",
+        "message": "Cette analyse se concentre sur les obligations, droits et risques potentiels de l'employé du point de vue de l'employé."
+      }
     }
   },
   "settings": {

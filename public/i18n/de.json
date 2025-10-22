@@ -133,6 +133,16 @@
       "applyChanges": "Änderungen übernehmen",
       "rewriting": "Neuschreiben...",
       "copyToClipboard": "Kopieren"
+    },
+    "perspectiveContext": {
+      "employer": {
+        "title": "Arbeitgeber-Perspektive",
+        "message": "Diese Analyse konzentriert sich auf die Verpflichtungen, Rechte und potenziellen Risiken des Arbeitgebers aus der Sicht des Arbeitgebers."
+      },
+      "employee": {
+        "title": "Mitarbeiter-Perspektive",
+        "message": "Diese Analyse konzentriert sich auf die Verpflichtungen, Rechte und potenziellen Risiken des Mitarbeiters aus der Sicht des Mitarbeiters."
+      }
     }
   },
   "settings": {

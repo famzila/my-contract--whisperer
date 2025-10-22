@@ -74,14 +74,7 @@ import {
      * Get header classes with RTL support
      */
     headerClasses = computed(() => {
-      const isRTL = this.isRTL();
-      const classes = ['flex', 'items-center', 'gap-2'];
-      
-      if (isRTL) {
-        classes.push('flex-row-reverse');
-      }
-      
-      return classes.join(' ');
+      return 'flex items-center gap-2 rtl:flex-row-reverse';
     });
   
     /**
@@ -182,7 +175,7 @@ import {
      * Get title CSS classes
      */
     titleClasses = computed(() => {
-      const classes = ['font-semibold'];
+      const classes = ['font-semibold', 'text-left', 'rtl:text-right'];
   
       switch (this.type()) {
         case 'default':

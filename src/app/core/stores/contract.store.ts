@@ -590,6 +590,10 @@ export const ContractStore = signalStore(
                     obligations: obligations || null,
                     omissions: omissions || null
                   });
+                  
+                  // 💡 Note: English (intermediate) results already cached incrementally
+                  // by analyzeWithPreTranslation$ during analysis pipeline
+                  console.log(`✅ [Store] Both English (intermediate) and ${outputLang} (final) cached for future language switching`);
                 } else {
                   // Direct analysis: Store in SOURCE language (could be en, es, ja, etc.)
                   console.log(`💾 [Store] Direct analysis: Storing ${contractLang} results`);
@@ -698,13 +702,13 @@ export const ContractStore = signalStore(
         
         console.log(`🔄 [Store] Translating from ${sourceLanguage} to ${targetLanguage}...`);
         
-        // Translate from source to target
+        // Translate from source to target (with null checks)
         const [metadata, summary, risks, obligations, omissions] = await Promise.all([
-          analysisService.postTranslateMetadata(sourceAnalysis.metadata, targetLanguage),
-          analysisService.postTranslateSummary(sourceAnalysis.summary, targetLanguage),
-          analysisService.postTranslateRisks(sourceAnalysis.risks, targetLanguage),
-          analysisService.postTranslateObligations(sourceAnalysis.obligations, targetLanguage),
-          analysisService.postTranslateOmissionsAndQuestions(sourceAnalysis.omissions, targetLanguage),
+          sourceAnalysis.metadata ? analysisService.postTranslateMetadata(sourceAnalysis.metadata, targetLanguage) : null,
+          sourceAnalysis.summary ? analysisService.postTranslateSummary(sourceAnalysis.summary, targetLanguage) : null,
+          sourceAnalysis.risks ? analysisService.postTranslateRisks(sourceAnalysis.risks, targetLanguage) : null,
+          sourceAnalysis.obligations ? analysisService.postTranslateObligations(sourceAnalysis.obligations, targetLanguage) : null,
+          sourceAnalysis.omissions ? analysisService.postTranslateOmissionsAndQuestions(sourceAnalysis.omissions, targetLanguage) : null,
         ]);
         
         // Store in cache

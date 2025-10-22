@@ -5,6 +5,7 @@ import { AiOrchestratorService } from './ai/ai-orchestrator.service';
 import { PromptService } from './ai/prompt.service';
 import { TranslationOrchestratorService } from './translation-orchestrator.service';
 import { TranslatorService } from './ai/translator.service';
+import { TranslationCacheService } from './translation-cache.service';
 import { AppConfig } from '../config/app.config';
 import { Contract, ContractAnalysis } from '../models/contract.model';
 import { AnalysisContext, DEFAULT_ANALYSIS_CONTEXT } from '../models/analysis-context.model';
@@ -31,6 +32,7 @@ export class ContractAnalysisService {
   private parser = inject(ContractParserService);
   private translationOrchestrator = inject(TranslationOrchestratorService);
   private translator = inject(TranslatorService);
+  private translationCache = inject(TranslationCacheService);
 
   /**
    * Retry configuration for section extraction
@@ -379,6 +381,12 @@ export class ContractAnalysisService {
           ))
         );
       }),
+      // 🔑 NEW: Cache English metadata BEFORE post-translation
+      tap(englishMetadata => {
+        if (needsPostTranslation) {
+          this.cacheIntermediateEnglishSection(contract.id, 'metadata', englishMetadata);
+        }
+      }),
       // Step 4: Post-translate metadata if target language is not supported by Gemini
       switchMap(metadata => needsPostTranslation
         ? defer(() => from(this.postTranslateMetadata(metadata, finalTargetLanguage)))
@@ -402,6 +410,12 @@ export class ContractAnalysisService {
         switchMap(() => this.withRetryAndNotify$(
           'summary',
           this.promptService.extractSummary$(translatedText, geminiOutputLanguage).pipe(
+            // 🔑 NEW: Cache English summary BEFORE post-translation
+            tap(englishSummary => {
+              if (needsPostTranslation) {
+                this.cacheIntermediateEnglishSection(contract.id, 'summary', englishSummary);
+              }
+            }),
             switchMap(summary => needsPostTranslation
               ? defer(() => from(this.postTranslateSummary(summary, finalTargetLanguage)))
               : of(summary)
@@ -426,6 +440,12 @@ export class ContractAnalysisService {
         switchMap(() => this.withRetryAndNotify$(
           'risks',
           this.promptService.extractRisks$(translatedText, geminiOutputLanguage).pipe(
+            // 🔑 NEW: Cache English risks BEFORE post-translation
+            tap(englishRisks => {
+              if (needsPostTranslation) {
+                this.cacheIntermediateEnglishSection(contract.id, 'risks', englishRisks);
+              }
+            }),
             switchMap(risks => needsPostTranslation
               ? defer(() => from(this.postTranslateRisks(risks, finalTargetLanguage)))
               : of(risks)
@@ -450,6 +470,12 @@ export class ContractAnalysisService {
         switchMap(() => this.withRetryAndNotify$(
           'obligations',
           this.promptService.extractObligations$(translatedText, geminiOutputLanguage).pipe(
+            // 🔑 NEW: Cache English obligations BEFORE post-translation
+            tap(englishObligations => {
+              if (needsPostTranslation) {
+                this.cacheIntermediateEnglishSection(contract.id, 'obligations', englishObligations);
+              }
+            }),
             switchMap(obligations => needsPostTranslation
               ? defer(() => from(this.postTranslateObligations(obligations, finalTargetLanguage)))
               : of(obligations)
@@ -474,6 +500,12 @@ export class ContractAnalysisService {
         switchMap(() => this.withRetryAndNotify$(
           'omissionsAndQuestions',
           this.promptService.extractOmissionsAndQuestions$(translatedText, geminiOutputLanguage).pipe(
+            // 🔑 NEW: Cache English omissions/questions BEFORE post-translation
+            tap(englishOmissions => {
+              if (needsPostTranslation) {
+                this.cacheIntermediateEnglishSection(contract.id, 'omissionsAndQuestions', englishOmissions);
+              }
+            }),
             switchMap(omissionsAndQuestions => needsPostTranslation
               ? defer(() => from(this.postTranslateOmissionsAndQuestions(omissionsAndQuestions, finalTargetLanguage)))
               : of(omissionsAndQuestions)
@@ -752,6 +784,54 @@ Note: This is mock data. Enable Chrome Built-in AI for real analysis.`,
       disclaimer: 'I am an AI assistant, not a lawyer. This information is for educational purposes only. Consult a qualified attorney for legal advice.',
       analyzedAt: new Date(),
     };
+  }
+
+  /**
+   * Cache intermediate English section during pre-translation
+   * Stores English results BEFORE they're post-translated
+   * This enables future language switching without re-analysis
+   */
+  private cacheIntermediateEnglishSection(
+    contractId: string,
+    section: 'metadata' | 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions',
+    data: any
+  ): void {
+    try {
+      // Get existing English cache or create structure
+      const existingCache = this.translationCache.getAnalysis(contractId, 'en') || {
+        metadata: null,
+        summary: null,
+        risks: null,
+        obligations: null,
+        omissions: null
+      };
+      
+      // Update specific section
+      switch (section) {
+        case 'metadata':
+          existingCache.metadata = data;
+          break;
+        case 'summary':
+          existingCache.summary = data;
+          break;
+        case 'risks':
+          existingCache.risks = data;
+          break;
+        case 'obligations':
+          existingCache.obligations = data;
+          break;
+        case 'omissionsAndQuestions':
+          existingCache.omissions = data;
+          break;
+      }
+      
+      // Store incremental English results
+      this.translationCache.storeAnalysis(contractId, 'en', existingCache);
+      console.log(`💾 [Pre-translation Cache] Stored English ${section} (before post-translation)`);
+    } catch (error) {
+      // Don't fail pipeline if caching fails
+      console.warn(`⚠️ [Pre-translation Cache] Failed to cache English ${section}:`, error);
+    }
   }
 
 }

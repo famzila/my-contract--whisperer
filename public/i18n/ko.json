@@ -158,6 +158,16 @@
       "applyChanges": "변경사항 적용",
       "rewriting": "재작성 중...",
       "copyToClipboard": "복사"
+    },
+    "perspectiveContext": {
+      "employer": {
+        "title": "고용주 관점",
+        "message": "이 분석은 고용주의 관점에서 고용주의 의무, 권리 및 잠재적 위험에 초점을 맞춥니다."
+      },
+      "employee": {
+        "title": "직원 관점",
+        "message": "이 분석은 직원의 관점에서 직원의 의무, 권리 및 잠재적 위험에 초점을 맞춥니다."
+      }
     }
   },
   "settings": {

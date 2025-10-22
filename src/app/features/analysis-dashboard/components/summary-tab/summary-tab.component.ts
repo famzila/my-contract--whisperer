@@ -44,8 +44,8 @@ export interface SummaryData {
 
 export interface PerspectiveContext {
   icon: any;
-  title: string;
-  message: string;
+  titleKey: string;
+  messageKey: string;
 }
 
 @Component({

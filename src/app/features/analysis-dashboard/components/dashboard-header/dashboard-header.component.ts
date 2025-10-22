@@ -12,7 +12,8 @@ import {
   FileText, 
   AlertTriangle, 
   Calendar,
-  Users
+  Users,
+  Info
 } from '../../../../shared/icons/lucide-icons';
 import type { ContractMetadata } from '../../../../core/schemas/analysis-schemas';
 
@@ -52,6 +53,7 @@ export class DashboardHeaderComponent {
   AlertTriangleIcon = AlertTriangle;
   CalendarIcon = Calendar;
   UsersIcon = Users;
+  InfoIcon = Info;
   UploadIcon = Upload;
 
   // Computed signals

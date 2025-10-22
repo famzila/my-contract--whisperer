@@ -390,19 +390,16 @@ export class AnalysisDashboard implements OnInit {
       return null;
     }
 
-    // todo translate
-    const contextMap: Record<string, { icon: any; title: string; message: string }> = {
+    const contextMap: Record<string, { icon: any; titleKey: string; messageKey: string }> = {
       employer: {
         icon: this.ClipboardIcon,
-        title: 'Employer Perspective',
-        message:
-          "This analysis focuses on the employer's obligations, rights, and potential risks from the employer's point of view.",
+        titleKey: 'analysis.perspectiveContext.employer.title',
+        messageKey: 'analysis.perspectiveContext.employer.message',
       },
       employee: {
         icon: this.InfoIcon,
-        title: 'Employee Perspective',
-        message:
-          "This analysis focuses on the employee's obligations, rights, and potential risks from the employee's point of view.",
+        titleKey: 'analysis.perspectiveContext.employee.title',
+        messageKey: 'analysis.perspectiveContext.employee.message',
       },
     };
 

@@ -158,6 +158,16 @@
       "applyChanges": "应用更改",
       "rewriting": "重写中...",
       "copyToClipboard": "复制"
+    },
+    "perspectiveContext": {
+      "employer": {
+        "title": "雇主视角",
+        "message": "此分析从雇主的角度关注雇主的义务、权利和潜在风险。"
+      },
+      "employee": {
+        "title": "员工视角",
+        "message": "此分析从员工的角度关注员工的义务、权利和潜在风险。"
+      }
     }
   },
   "settings": {

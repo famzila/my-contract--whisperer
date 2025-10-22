@@ -143,6 +143,16 @@
     "translationComplete": "Translation complete!",
     "translationFailed": "Translation failed. Please try again.",
     "viewingInDifferentLanguage": "Viewing analysis in different language",
+    "perspectiveContext": {
+      "employer": {
+        "title": "Employer Perspective",
+        "message": "This analysis focuses on the employer's obligations, rights, and potential risks from the employer's point of view."
+      },
+      "employee": {
+        "title": "Employee Perspective", 
+        "message": "This analysis focuses on the employee's obligations, rights, and potential risks from the employee's point of view."
+      }
+    },
     "analysisLanguage": "Analysis Language",
     "uiLanguage": "Interface Language",
     "switchUITo": "Switch language to",

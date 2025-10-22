@@ -158,6 +158,16 @@
       "applyChanges": "変更を適用",
       "rewriting": "書き換え中...",
       "copyToClipboard": "コピー"
+    },
+    "perspectiveContext": {
+      "employer": {
+        "title": "雇用者視点",
+        "message": "この分析は、雇用者の視点から雇用者の義務、権利、潜在的なリスクに焦点を当てています。"
+      },
+      "employee": {
+        "title": "従業員視点",
+        "message": "この分析は、従業員の視点から従業員の義務、権利、潜在的なリスクに焦点を当てています。"
+      }
     }
   },
   "settings": {

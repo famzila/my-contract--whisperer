@@ -158,6 +158,16 @@
       "applyChanges": "Aplicar cambios",
       "rewriting": "Reescribiendo...",
       "copyToClipboard": "Copiar"
+    },
+    "perspectiveContext": {
+      "employer": {
+        "title": "Perspectiva del empleador",
+        "message": "Este análisis se enfoca en las obligaciones, derechos y riesgos potenciales del empleador desde el punto de vista del empleador."
+      },
+      "employee": {
+        "title": "Perspectiva del empleado",
+        "message": "Este análisis se enfoca en las obligaciones, derechos y riesgos potenciales del empleado desde el punto de vista del empleado."
+      }
     }
   },
   "settings": {
