@@ -33,6 +33,17 @@
       </div>
     }
 
+    <!-- Translation Error Notice -->
+    @if (translationError()) {
+      <div class="mb-6">
+        <app-notice
+          type="error"
+          [title]="'analysis.translationFailed' | translate"
+          [message]="translationError()"
+        ></app-notice>
+      </div>
+    }
+
     <!-- Tab Navigation and Content -->
     @if (!isAnalyzing() && canShowDashboard()) {
     <!-- Content with overlay during translation -->

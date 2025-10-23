@@ -137,6 +137,8 @@
     "translatingTo": "الترجمة إلى {{language}}...",
     "translationComplete": "اكتملت الترجمة!",
     "translationFailed": "فشلت الترجمة. يرجى المحاولة مرة أخرى.",
+    "chromeAiNotAvailable": "ميزات الذكاء الاصطناعي في Chrome غير متاحة",
+    "chromeAiNotAvailableMessage": "للحصول على أفضل تجربة مع اكتشاف الأطراف الدقيق وتحليل الذكاء الاصطناعي، يرجى تفعيل ميزات الذكاء الاصطناعي المدمجة في Chrome. اذهب إلى chrome://flags/#optimization-guide-on-device-model وقم بتفعيل 'Optimization Guide On Device Model'.",
     "loading": {
       "summary": "جارٍ تحميل الملخص...",
       "risks": "جارٍ تحميل المخاطر...",
@@ -284,7 +286,9 @@
       "bothDescription": "هذا التحليل يظهر المخاطر والالتزامات من منظور الطرفين لمساعدتك على فهم الصورة الكاملة."
     },
     "badge": {
-      "fromPerspective": "من وجهة نظر {{name}}"
+      "fromPerspective": "من وجهة نظر {{name}}",
+      "bothParties": "كلا الطرفين",
+      "yourPerspective": "وجهة نظرك"
     }
   },
   "settings": {

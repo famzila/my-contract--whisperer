@@ -112,9 +112,9 @@ Rules:
   private ruleBasedExtraction(contractText: string): PartyDetectionResult {
     const lowerText = contractText.toLowerCase();
     
-    // Common patterns for parties
+    // Enhanced patterns for parties
     const patterns = {
-      // "Between X and Y"
+      // "Between X and Y" - most common pattern
       betweenPattern: /between\s+([^,]+?)\s*(?:,\s*(?:a|an)\s+[^,]+?)?\s+\(['""]?(?:hereinafter|hereafter)?\s*(?:referred to as)?\s*['""]?([^'"")]+)['""]?\)?\s+and\s+([^,]+?)\s*(?:,\s*(?:a|an)\s+[^,]+?)?\s+\(['""]?(?:hereinafter|hereafter)?\s*(?:referred to as)?\s*['""]?([^'"")]+)['""]?\)?/i,
       
       // "This Agreement is made between X and Y"
@@ -125,6 +125,15 @@ Rules:
       
       // Landlord/Tenant pattern
       rentalPattern: /(?:landlord|lessor)[\s:]+([^,\n]+).*?(?:tenant|lessee)[\s:]+([^,\n]+)/is,
+      
+      // Client/Contractor pattern
+      servicePattern: /(?:client|customer)[\s:]+([^,\n]+).*?(?:contractor|service provider|freelancer)[\s:]+([^,\n]+)/is,
+      
+      // Simple "X and Y" pattern
+      simplePattern: /([A-Z][^,\n]+?)\s+(?:and|&)\s+([A-Z][^,\n]+?)(?:\s+on|\s+as\s+of|\s+effective|\s+hereby)/i,
+      
+      // Party definitions
+      partyDefinitionPattern: /(?:party|parties)[\s:]+([^,\n]+).*?(?:party|parties)[\s:]+([^,\n]+)/is,
     };
     
     // Try each pattern
@@ -200,6 +209,60 @@ Rules:
       };
     }
     
+    match = patterns.servicePattern.exec(contractText);
+    if (match) {
+      return {
+        confidence: 'high',
+        parties: {
+          party1: {
+            name: match[1].trim(),
+            role: 'Client',
+          },
+          party2: {
+            name: match[2].trim(),
+            role: 'Contractor',
+          },
+        },
+        contractType: 'bilateral',
+      };
+    }
+    
+    match = patterns.simplePattern.exec(contractText);
+    if (match) {
+      return {
+        confidence: 'medium',
+        parties: {
+          party1: {
+            name: match[1].trim(),
+            role: this.inferRole(match[1], lowerText, 'first'),
+          },
+          party2: {
+            name: match[2].trim(),
+            role: this.inferRole(match[2], lowerText, 'second'),
+          },
+        },
+        contractType: 'bilateral',
+      };
+    }
+    
+    match = patterns.partyDefinitionPattern.exec(contractText);
+    if (match) {
+      return {
+        confidence: 'medium',
+        parties: {
+          party1: {
+            name: match[1].trim(),
+            role: this.inferRole(match[1], lowerText, 'first'),
+          },
+          party2: {
+            name: match[2].trim(),
+            role: this.inferRole(match[2], lowerText, 'second'),
+          },
+        },
+        contractType: 'bilateral',
+      };
+    }
+    
     // No clear parties found
     return {
       confidence: 'low',
@@ -215,40 +278,67 @@ Rules:
     const lowerParty = partyText.toLowerCase();
     const lowerFull = fullText.toLowerCase();
     
+    // Check for explicit role indicators in the party text itself
+    if (this.containsKeywords(lowerParty, ['employer', 'company', 'corporation'])) {
+      return 'Employer';
+    }
+    if (this.containsKeywords(lowerParty, ['employee', 'worker', 'staff'])) {
+      return 'Employee';
+    }
+    if (this.containsKeywords(lowerParty, ['landlord', 'lessor', 'owner'])) {
+      return 'Landlord';
+    }
+    if (this.containsKeywords(lowerParty, ['tenant', 'lessee', 'renter'])) {
+      return 'Tenant';
+    }
+    if (this.containsKeywords(lowerParty, ['client', 'customer', 'buyer'])) {
+      return 'Client';
+    }
+    if (this.containsKeywords(lowerParty, ['contractor', 'freelancer', 'service provider'])) {
+      return 'Contractor';
+    }
+    
+    // Fall back to context-based inference
     if (this.isCompany(lowerParty)) {
       return this.getCompanyRole(lowerFull, position);
     } else {
-      return this.getPersonRole(lowerFull);
+      return this.getPersonRole(lowerFull, position);
     }
   }
 
   private isCompany(partyText: string): boolean {
-    const companyKeywords = ['inc', 'corp', 'llc', 'ltd'];
+    const companyKeywords = ['inc', 'corp', 'llc', 'ltd', 'company', 'corporation', 'enterprises', 'group', 'holdings'];
     return companyKeywords.some(keyword => partyText.includes(keyword));
   }
 
   private getCompanyRole(fullText: string, position: 'first' | 'second'): string {
-    if (this.containsKeywords(fullText, ['employment', 'employee'])) {
+    if (this.containsKeywords(fullText, ['employment', 'employee', 'hire', 'work', 'job'])) {
       return 'Employer';
     }
-    if (this.containsKeywords(fullText, ['rental', 'lease'])) {
+    if (this.containsKeywords(fullText, ['rental', 'lease', 'rent', 'property', 'apartment', 'house'])) {
       return position === 'first' ? 'Landlord' : 'Tenant';
     }
-    if (this.containsKeywords(fullText, ['service', 'contractor'])) {
+    if (this.containsKeywords(fullText, ['service', 'contractor', 'freelance', 'consulting', 'project'])) {
       return 'Client';
+    }
+    if (this.containsKeywords(fullText, ['partnership', 'partner', 'joint venture'])) {
+      return 'Partner';
     }
     return position === 'first' ? 'Party 1' : 'Party 2';
   }
 
-  private getPersonRole(fullText: string): string {
-    if (this.containsKeywords(fullText, ['employment', 'employee'])) {
+  private getPersonRole(fullText: string, position: 'first' | 'second'): string {
+    if (this.containsKeywords(fullText, ['employment', 'employee', 'hire', 'work', 'job'])) {
       return 'Employee';
     }
-    if (this.containsKeywords(fullText, ['rental', 'lease'])) {
+    if (this.containsKeywords(fullText, ['rental', 'lease', 'rent', 'property', 'apartment', 'house'])) {
       return 'Tenant';
     }
-    if (this.containsKeywords(fullText, ['service', 'contractor'])) {
+    if (this.containsKeywords(fullText, ['service', 'contractor', 'freelance', 'consulting', 'project'])) {
       return 'Contractor';
+    }
+    if (this.containsKeywords(fullText, ['partnership', 'partner', 'joint venture'])) {
+      return 'Partner';
     }
     return 'Unknown';
   }

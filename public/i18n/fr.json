@@ -166,6 +166,11 @@
         "title": "Perspective employé",
         "message": "Cette analyse se concentre sur les obligations, droits et risques potentiels de l'employé du point de vue de l'employé."
       }
+    },
+    "badge": {
+      "fromPerspective": "Du point de vue de {{name}}",
+      "bothParties": "Les deux parties",
+      "yourPerspective": "Votre perspective"
     }
   },
   "settings": {

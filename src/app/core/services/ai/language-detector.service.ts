@@ -22,7 +22,11 @@ export class LanguageDetectorService {
    * Per official docs: https://developer.chrome.com/docs/ai/language-detection
    */
   async isAvailable(): Promise<boolean> {
-    return 'LanguageDetector' in window;
+    if (!('LanguageDetector' in window)) {
+      console.warn('⚠️ [LanguageDetector] Chrome Built-in AI not available. Please enable Chrome AI features.');
+      return false;
+    }
+    return true;
   }
 
   /**

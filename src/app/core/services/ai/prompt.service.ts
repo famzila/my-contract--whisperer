@@ -24,10 +24,11 @@ export class PromptService {
    * Check if Prompt API is available
    */
   async isAvailable(): Promise<boolean> {
-    if ('LanguageModel' in window) {
-      return true;
+    if (!('LanguageModel' in window)) {
+      console.warn('⚠️ [PromptService] Chrome Built-in AI not available. Please enable Chrome AI features.');
+      return false;
     }
-    return false;
+    return true;
   }
 
   /**

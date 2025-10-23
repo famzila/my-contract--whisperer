@@ -18,28 +18,24 @@
       }
     },
     {
+      "name": "i18n-files",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/i18n/**"
+        ]
+      }
+    },
+    {
       "name": "public-resources",
       "installMode": "lazy",
       "updateMode": "prefetch",
       "resources": {
         "files": [
-          "/i18n/**",
           "/samples/**",
           "/**/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
         ]
-      }
-    }
-  ],
-  "dataGroups": [
-    {
-      "name": "translation-cache",
-      "urls": [
-        "/i18n/**"
-      ],
-      "cacheConfig": {
-        "strategy": "performance",
-        "maxSize": 50,
-        "maxAge": "30d"
       }
     }
   ]

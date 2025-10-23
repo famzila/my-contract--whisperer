@@ -27,25 +27,46 @@ export class TranslatorService {
 
   /**
    * Check if translation between two languages is available
-   * Uses Translator.availability() per official docs
+   * NOTE: This is for UI display only. Do NOT use to block translation attempts.
+   * Returns best-effort status; may not be accurate for all language pairs.
    */
   async canTranslate(
     sourceLanguage: string,
     targetLanguage: string
   ): Promise<AICapabilities> {
+    // This is a best-effort check for UI purposes only
+    // Do not rely on this to block translation attempts
+    
     if (!window.Translator) {
       return { available: 'no' };
     }
-
-    return await window.Translator.availability({
-      sourceLanguage,
-      targetLanguage,
-    });
+    
+    try {
+      // Try to check availability if the method exists
+      // Note: The availability() method may return inconsistent results
+      if (window.Translator.availability && typeof window.Translator.availability === 'function') {
+        const capabilities = await window.Translator.availability({
+          sourceLanguage,
+          targetLanguage,
+        });
+        return {
+          available: capabilities?.available || 'readily'
+        };
+      }
+      
+      // Fallback: optimistically assume readily available
+      return { available: 'readily' };
+    } catch (error) {
+      console.warn('canTranslate check failed, assuming readily available:', error);
+      // Optimistically return 'readily' to allow translation attempts
+      return { available: 'readily' };
+    }
   }
 
   /**
    * Create a translator for a language pair
    * Uses Translator.create() per official docs
+   * Handles user gesture requirement for downloading language packs
    */
   async createTranslator(
     options: TranslatorCreateOptions
@@ -61,21 +82,56 @@ export class TranslatorService {
       return this.translators.get(key)!;
     }
 
-    // Check if translation is possible
-    const capabilities = await this.canTranslate(
-      options.sourceLanguage,
-      options.targetLanguage
-    );
-
-    if (capabilities.available === 'no') {
-      throw new Error(this.translateService.instant('errors.translatorApiUnavailable'));
+    try {
+      // First attempt with 10-second timeout
+      return await this.createTranslatorWithTimeout(options, 10000);
+    } catch (firstError) {
+      console.warn(`⚠️ [Translator] First attempt failed:`, firstError);
+      
+      // Check if it's a user gesture error - these often resolve on retry
+      if (firstError instanceof Error && firstError.message.includes('user gesture')) {
+        console.log(`🔄 [Translator] User gesture error detected, retrying...`);
+      }
+      
+      // Automatic retry once
+      try {
+        console.log(`🔄 [Translator] Retrying translation creation...`);
+        return await this.createTranslatorWithTimeout(options, 10000);
+      } catch (retryError) {
+        console.error(`❌ [Translator] Retry failed:`, retryError);
+        
+        // If it's still a user gesture error, check if we have an existing translator
+        if (retryError instanceof Error && retryError.message.includes('user gesture')) {
+          const key = `${options.sourceLanguage}-${options.targetLanguage}`;
+          const existingTranslator = this.translators.get(key);
+          if (existingTranslator) {
+            console.log(`🔄 [Translator] Using existing translator despite user gesture error`);
+            return existingTranslator;
+          }
+          
+          throw new Error(
+            `Language pack download requires user interaction. ` +
+            `Please try switching languages again to trigger the download.`
+          );
+        }
+        
+        throw new Error(
+          `Failed to download language pack for ${options.sourceLanguage}→${options.targetLanguage}. ` +
+          `Please try switching languages again.`
+        );
+      }
     }
+  }
 
-    // Log download status
-    if (capabilities.available === 'downloadable') {
-      console.log(`📥 [Translator] Language pack ${options.sourceLanguage}→${options.targetLanguage} needs download...`);
-    }
-
+  /**
+   * Create translator with timeout wrapper
+   */
+  private async createTranslatorWithTimeout(
+    options: TranslatorCreateOptions,
+    timeoutMs: number = 10000
+  ): Promise<Translator> {
+    const key = `${options.sourceLanguage}-${options.targetLanguage}`;
+    
     // Create translator with monitor for download progress
     const createOptions: TranslatorCreateOptions = {
       ...options,
@@ -90,12 +146,42 @@ export class TranslatorService {
       },
     };
 
-    // Create and cache translator
-    const translator = await window.Translator.create(createOptions);
-    this.translators.set(key, translator);
-    console.log(`✅ [Translator] Created ${options.sourceLanguage}→${options.targetLanguage}`);
-    return translator;
+    return Promise.race([
+      this.createTranslatorInternal(createOptions),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Language pack download timeout')), timeoutMs)
+      )
+    ]);
   }
+
+  /**
+   * Internal method to create translator without timeout
+   */
+  private async createTranslatorInternal(
+    options: TranslatorCreateOptions
+  ): Promise<Translator> {
+    const key = `${options.sourceLanguage}-${options.targetLanguage}`;
+    
+    try {
+      // Create and cache translator
+      const translator = await window.Translator!.create(options);
+      this.translators.set(key, translator);
+      console.log(`✅ [Translator] Created ${options.sourceLanguage}→${options.targetLanguage}`);
+      return translator;
+    } catch (error) {
+      // Handle user gesture requirement error - this is often a temporary issue
+      if (error instanceof Error && error.message.includes('user gesture')) {
+        console.warn(`⚠️ [Translator] User gesture error during creation, but translator may still work`);
+        // Don't throw immediately - the translator might still be created successfully
+        // Let the calling code handle this gracefully
+        throw new Error(
+          `Language pack download requires user interaction. Please try switching languages again.`
+        );
+      }
+      throw error;
+    }
+  }
+
 
   /**
    * Translate text
@@ -105,27 +191,48 @@ export class TranslatorService {
     sourceLanguage: string,
     targetLanguage: string
   ): Promise<string> {
-    const translator = await this.createTranslator({
-      sourceLanguage,
-      targetLanguage,
-    });
+    try {
+      const translator = await this.createTranslator({
+        sourceLanguage,
+        targetLanguage,
+      });
 
-    const preview = text.length > 100 ? text.substring(0, 100) + '...' : text;
-    console.log(`  🔄 [Translator] Translating: "${preview}" (${sourceLanguage} → ${targetLanguage})`);
-    
-    const result = await translator.translate(text);
-    
-    const resultPreview = result.length > 100 ? result.substring(0, 100) + '...' : result;
-    console.log(`  ✅ [Translator] Result: "${resultPreview}"`);
-    
-    // Validate translation: check if result is actually different from source (basic sanity check)
-    if (result === text && sourceLanguage !== targetLanguage) {
-      console.warn(`⚠️ [Translator] Translation returned identical text! This might indicate a translation failure.`);
-      console.warn(`  Source (${sourceLanguage}): "${preview}"`);
-      console.warn(`  Result (${targetLanguage}): "${resultPreview}"`);
+      const preview = text.length > 100 ? text.substring(0, 100) + '...' : text;
+      console.log(`  🔄 [Translator] Translating: "${preview}" (${sourceLanguage} → ${targetLanguage})`);
+      
+      const result = await translator.translate(text);
+      
+      const resultPreview = result.length > 100 ? result.substring(0, 100) + '...' : result;
+      console.log(`  ✅ [Translator] Result: "${resultPreview}"`);
+      
+      // Validate translation: check if result is actually different from source (basic sanity check)
+      if (result === text && sourceLanguage !== targetLanguage) {
+        console.warn(`⚠️ [Translator] Translation returned identical text! This might indicate a translation failure.`);
+        console.warn(`  Source (${sourceLanguage}): "${preview}"`);
+        console.warn(`  Result (${targetLanguage}): "${resultPreview}"`);
+      }
+      
+      return result;
+    } catch (error) {
+      // If it's a user gesture error, try to use existing translator if available
+      if (error instanceof Error && error.message.includes('user gesture')) {
+        const key = `${sourceLanguage}-${targetLanguage}`;
+        const existingTranslator = this.translators.get(key);
+        if (existingTranslator) {
+          console.log(`🔄 [Translator] Using existing translator despite user gesture error`);
+          const preview = text.length > 100 ? text.substring(0, 100) + '...' : text;
+          console.log(`  🔄 [Translator] Translating: "${preview}" (${sourceLanguage} → ${targetLanguage})`);
+          
+          const result = await existingTranslator.translate(text);
+          
+          const resultPreview = result.length > 100 ? result.substring(0, 100) + '...' : result;
+          console.log(`  ✅ [Translator] Result: "${resultPreview}"`);
+          
+          return result;
+        }
+      }
+      throw error;
     }
-    
-    return result;
   }
 
   /**

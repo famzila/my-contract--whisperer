@@ -27,6 +27,7 @@ import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { LanguageStore } from '../../core/stores/language.store';
 import { ContractParserService } from '../../core/services/contract-parser.service';
 import { TranslatorService } from '../../core/services/ai/translator.service';
+import { AiOrchestratorService } from '../../core/services/ai/ai-orchestrator.service';
 import {
   isAppLanguageSupported,
   isGeminiNanoSupported,
@@ -51,6 +52,7 @@ export class ContractUpload {
   languageStore = inject(LanguageStore);
   translate = inject(TranslateService);
   uiStore = inject(UiStore);
+  private aiOrchestrator = inject(AiOrchestratorService);
 
   // Lucide icons
   readonly FileTextIcon = FileText;
@@ -76,9 +78,13 @@ export class ContractUpload {
   contractText = signal('');
   isDragging = signal(false);
   private partySelectorDialogRef: any = null;
+  private chromeAiAvailable = signal<boolean | null>(null);
   
   
   constructor() {
+    // Check Chrome AI availability on component init
+    this.checkChromeAiAvailability();
+
     effect(() => {
       if (!this.shouldProcessOnboarding()) return;
 
@@ -91,6 +97,27 @@ export class ContractUpload {
         this.openPartySelector();
       }
     });
+  }
+
+  /**
+   * Check if Chrome AI features are available
+   */
+  private async checkChromeAiAvailability(): Promise<void> {
+    try {
+      const status = await this.aiOrchestrator.checkAvailability();
+      this.chromeAiAvailable.set(status.allAvailable);
+    } catch (error) {
+      console.warn('Failed to check AI availability:', error);
+      this.chromeAiAvailable.set(false);
+    }
+  }
+
+  /**
+   * Show Chrome AI notice if AI features are not available
+   */
+  showChromeAiNotice(): boolean {
+    const available = this.chromeAiAvailable();
+    return available === false; // Show notice only when we know AI is not available
   }
 
   /**

@@ -11,7 +11,7 @@
           [attr.tabindex]="tab.disabled ? -1 : 0"
           [attr.aria-disabled]="tab.disabled">
           <lucide-icon [name]="tab.icon" [class]="getIconClasses(tab)"></lucide-icon>
-          <span>{{ tab.label }}</span>
+          <span>{{ tab.labelKey ? (tab.labelKey | translate) : tab.label }}</span>
           @if (tab.isLoading) {
             <app-loading-spinner size="sm" class="ms-2"></app-loading-spinner>
           }

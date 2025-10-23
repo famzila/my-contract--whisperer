@@ -143,6 +143,8 @@
     "translationComplete": "Translation complete!",
     "translationFailed": "Translation failed. Please try again.",
     "viewingInDifferentLanguage": "Viewing analysis in different language",
+    "chromeAiNotAvailable": "Chrome AI Features Not Available",
+    "chromeAiNotAvailableMessage": "For the best experience with accurate party detection and AI analysis, please enable Chrome's built-in AI features. Go to chrome://flags/#optimization-guide-on-device-model and enable 'Optimization Guide On Device Model'.",
     "perspectiveContext": {
       "employer": {
         "title": "Employer Perspective",
@@ -304,7 +306,9 @@
       "bothDescription": "This analysis shows risks and obligations from both parties' viewpoints to help you understand the full picture."
     },
     "badge": {
-      "fromPerspective": "From {{name}} perspective"
+      "fromPerspective": "From {{name}} perspective",
+      "bothParties": "Both Parties",
+      "yourPerspective": "Your Perspective"
     }
   },
   "settings": {

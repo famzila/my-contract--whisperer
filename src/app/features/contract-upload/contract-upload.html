@@ -57,6 +57,18 @@
 
     }
 
+    <!-- Chrome AI Availability Notice -->
+    @if (showChromeAiNotice()) {
+    <app-notice
+      type="warning"
+      [icon]="LightbulbIcon"
+      titleKey="analysis.chromeAiNotAvailable"
+      messageKey="analysis.chromeAiNotAvailableMessage"
+      class="mb-6"
+    >
+    </app-notice>
+    }
+
     <!-- File Upload Mode -->
     @if (mode() === 'file') {
 

@@ -1,10 +1,12 @@
 import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
+import { TranslateModule } from '@ngx-translate/core';
 import { LoadingSpinner } from '../loading-spinner/loading-spinner';
 
 export interface TabConfig {
   id: string;
-  label: string;
+  label?: string;
+  labelKey?: string; // Translation key for reactive translation
   icon: any;
   isLoading?: boolean;
   badge?: string | number;
@@ -13,7 +15,7 @@ export interface TabConfig {
 
 @Component({
   selector: 'app-tabs',
-  imports: [LucideAngularModule, LoadingSpinner],
+  imports: [LucideAngularModule, TranslateModule, LoadingSpinner],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tabs.component.html'
 })

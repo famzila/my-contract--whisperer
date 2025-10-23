@@ -636,7 +636,7 @@ export const ContractStore = signalStore(
     /**
      * Switch analysis language (re-translate results)
      */
-    async switchAnalysisLanguage(targetLanguage: string): Promise<void> {
+    async switchAnalysisLanguage(targetLanguage: string, previousLanguage?: string): Promise<void> {
       // check if we are in analysis route otherwise we don't have analysis to translate
       if (!router.url.includes('/analysis')) {
         return;
@@ -646,8 +646,10 @@ export const ContractStore = signalStore(
         console.warn('⚠️ [Store] No contract found for language switch');
         return;
       }
-      
-      console.log(`🌍 [Store] Switching analysis language to ${targetLanguage}`);
+
+      // Use provided previous language or get current language
+      const prevLang = previousLanguage || languageStore.preferredLanguage();
+      console.log(`🌍 [Store] Switching analysis language: ${prevLang} → ${targetLanguage}`);
       
       // Set loading state IMMEDIATELY
       patchState(store, {
@@ -736,12 +738,18 @@ export const ContractStore = signalStore(
       } catch (error) {
         console.error(`❌ [Store] Translation to ${targetLanguage} failed:`, error);
         
-        // Clear loading state and show user-friendly error
+        // CRITICAL: Revert to previous language to keep UI and results consistent
+        console.log(`🔄 [Store] Reverting to previous language: ${prevLang}`);
+        languageStore.setPreferredLanguage(prevLang);
+        
+        // Clear translation state
         patchState(store, {
           isTranslating: false,
           translatingToLanguage: null,
-          analysisError: translate.instant('errors.translationFailed')
+          analysisError: `Failed to translate to ${targetLanguage}. Please try again.`
         });
+        
+        throw error; // Re-throw for language-selector to handle
       }
     },
     

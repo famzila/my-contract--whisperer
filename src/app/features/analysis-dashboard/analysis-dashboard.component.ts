@@ -129,48 +129,51 @@ export class AnalysisDashboard implements OnInit {
     
     return languageNames[lang] || lang;
   });
+
+  // Translation error state
+  translationError = computed(() => this.contractStore.analysisError());
   
   // Email drafting state
   isDrafting = computed(() => this.emailStore.isDrafting());
 
-  // Tab configuration using modern signals
+  // Tab configuration using modern signals - reactive to language changes
   tabConfigs = computed<TabConfig[]>(() => [
     {
       id: 'summary',
-      label: this.translate.instant('analysis.tabs.summary'),
+      labelKey: 'analysis.tabs.summary',
       icon: this.ClipboardIcon,
       isLoading: this.isSummaryLoading(),
     },
     {
       id: 'risks',
-      label: this.translate.instant('analysis.tabs.risks'),
+      labelKey: 'analysis.tabs.risks',
       icon: this.AlertTriangleIcon,
       isLoading: this.isRisksLoading(),
       badge: this.getRisks()?.length || 0,
     },
     {
       id: 'obligations',
-      label: this.translate.instant('analysis.tabs.obligations'),
+      labelKey: 'analysis.tabs.obligations',
       icon: this.ClockIcon,
       isLoading: this.isObligationsLoading(),
     },
     {
       id: 'omissions',
-      label: this.translate.instant('analysis.tabs.omissions'),
+      labelKey: 'analysis.tabs.omissions',
       icon: this.FileXIcon,
       isLoading: this.isOmissionsLoading(),
       badge: this.getOmissions()?.length || 0,
     },
     {
       id: 'questions',
-      label: this.translate.instant('analysis.tabs.questions'),
+      labelKey: 'analysis.tabs.questions',
       icon: this.InfoIcon,
       isLoading: this.isOmissionsLoading(),
       badge: this.getQuestions()?.length || 0,
     },
     {
       id: 'disclaimer',
-      label: this.translate.instant('analysis.tabs.disclaimer'),
+      labelKey: 'analysis.tabs.disclaimer',
       icon: this.ScaleIcon,
     },
   ]);
@@ -258,24 +261,6 @@ export class AnalysisDashboard implements OnInit {
     return [];
   }
 
-  // Helper method to map clause types to risk icons
-  private getRiskIcon(clauseType: string): string {
-    const iconMap: Record<string, string> = {
-      termination: 'AlertTriangle',
-      payment: 'DollarSign',
-      renewal: 'RefreshCw',
-      liability: 'Shield',
-      'governing-law': 'Scale',
-      confidentiality: 'Lock',
-      indemnity: 'Shield',
-      warranty: 'CheckCircle',
-      'dispute-resolution': 'Scale',
-      'intellectual-property': 'Brain',
-      other: 'Info',
-    };
-    return iconMap[clauseType] || 'Info';
-  }
-
   getDisclaimer() {
     return this.translate.instant('analysis.disclaimer.text');
   }
@@ -315,13 +300,13 @@ export class AnalysisDashboard implements OnInit {
       return role === 'both_views'
         ? {
             icon: this.ScaleIcon,
-            text: 'Both Parties',
+            text: this.translate.instant('analysis.badge.bothParties'),
             className:
               'px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full border border-green-200',
           }
         : {
             icon: this.InfoIcon,
-            text: 'Your Perspective',
+            text: this.translate.instant('analysis.badge.yourPerspective'),
             className:
               'px-3 py-1 text-sm font-medium bg-gray-100 text-gray-800 rounded-full border border-gray-200',
           };
@@ -332,7 +317,7 @@ export class AnalysisDashboard implements OnInit {
       const party = metadata.parties.party1;
       return {
         icon: this.ClipboardIcon,
-        text: `From ${party.name} perspective`,
+        text: this.translate.instant('analysis.badge.fromPerspective', { name: party.name }),
         className:
           'px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200',
       };
@@ -342,7 +327,7 @@ export class AnalysisDashboard implements OnInit {
       const party = metadata.parties.party2;
       return {
         icon: this.InfoIcon,
-        text: `From ${party.name} perspective`,
+        text: this.translate.instant('analysis.badge.fromPerspective', { name: party.name }),
         className:
           'px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full border border-purple-200',
       };
@@ -356,7 +341,7 @@ export class AnalysisDashboard implements OnInit {
       if (party1?.role && party1.role.toLowerCase() === role.toLowerCase()) {
         return {
           icon: this.ClipboardIcon,
-          text: `From ${party1.name} perspective`,
+          text: this.translate.instant('analysis.badge.fromPerspective', { name: party1.name }),
           className:
             'px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200',
         };
@@ -366,7 +351,7 @@ export class AnalysisDashboard implements OnInit {
       if (party2?.role && party2.role.toLowerCase() === role.toLowerCase()) {
         return {
           icon: this.InfoIcon,
-          text: `From ${party2.name} perspective`,
+          text: this.translate.instant('analysis.badge.fromPerspective', { name: party2.name }),
           className:
             'px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full border border-purple-200',
         };
@@ -376,7 +361,7 @@ export class AnalysisDashboard implements OnInit {
     // Final fallback: show the role name
     return {
       icon: this.InfoIcon,
-      text: `From ${role} perspective`,
+      text: this.translate.instant('analysis.badge.fromPerspective', { name: role }),
       className:
         'px-3 py-1 text-sm font-medium bg-gray-100 text-gray-800 rounded-full border border-gray-200',
     };

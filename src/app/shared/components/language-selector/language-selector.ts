@@ -35,6 +35,9 @@ export class LanguageSelector {
   selectedLanguage = computed(() => this.languageStore.preferredLanguageInfo());
   availableLanguages = computed(() => this.languageStore.availableLanguages());
   
+  // Current language code for display
+  currentLanguage = computed(() => this.languageStore.preferredLanguage());
+  
   // Disable language selector during analysis/translation
 
   isDisabled = computed(() => {
@@ -95,13 +98,36 @@ export class LanguageSelector {
         if (capabilities.available === 'downloadable') {
           console.log(`📥 [LanguageSelector] Pre-downloading language pack: ${previousLanguage}→${languageCode}...`);
           
-          // Pre-download while user gesture is active
-          await this.translatorService.createTranslator({
-            sourceLanguage: previousLanguage,
-            targetLanguage: languageCode
-          });
-          
-          console.log(`✅ [LanguageSelector] Language pack downloaded and cached`);
+          try {
+            // Pre-download while user gesture is active
+            await this.translatorService.createTranslator({
+              sourceLanguage: previousLanguage,
+              targetLanguage: languageCode
+            });
+            
+            console.log(`✅ [LanguageSelector] Language pack downloaded and cached`);
+          } catch (downloadError) {
+            console.warn(`⚠️ [LanguageSelector] Language pack download failed:`, downloadError);
+            
+            // Show user-friendly message and ask to retry
+            const retry = confirm(
+              `Language pack for ${languageCode} needs to be downloaded. ` +
+              `This may take a moment. Click OK to retry, or Cancel to continue without translation.`
+            );
+            
+            if (retry) {
+              try {
+                await this.translatorService.createTranslator({
+                  sourceLanguage: previousLanguage,
+                  targetLanguage: languageCode
+                });
+                console.log(`✅ [LanguageSelector] Language pack downloaded on retry`);
+              } catch (retryError) {
+                console.error(`❌ [LanguageSelector] Retry failed:`, retryError);
+                alert(`Failed to download language pack for ${languageCode}. Some features may not work.`);
+              }
+            }
+          }
         } else if (capabilities.available === 'readily') {
           console.log(`⚡ [LanguageSelector] Language pack already cached: ${previousLanguage}→${languageCode}`);
         } else {
@@ -113,20 +139,38 @@ export class LanguageSelector {
       }
     }
     
-    // Update app UI language
-    this.languageStore.setPreferredLanguage(languageCode);
-    this.isDropdownOpen.set(false);
-    
     // If there's an active contract analysis, re-translate it to the new language
     if (hasContract && hasAnalysis && previousLanguage !== languageCode) {
       console.log(`🔄 [LanguageSelector] Re-translating analysis results...`);
       
       try {
-        await this.contractStore.switchAnalysisLanguage(languageCode);
+        // Pass the previous language to the store so it can revert properly
+        await this.contractStore.switchAnalysisLanguage(languageCode, previousLanguage);
         console.log(`✅ [LanguageSelector] Analysis re-translated successfully`);
+        
+        // Only update UI language after successful translation
+        this.languageStore.setPreferredLanguage(languageCode);
+        this.isDropdownOpen.set(false);
       } catch (error) {
         console.error(`❌ [LanguageSelector] Failed to re-translate analysis:`, error);
+        
+        // Store has already reverted to previous language
+        // The language selector should automatically reflect the current language via computed signals
+        const currentLanguage = this.languageStore.preferredLanguage();
+        console.log(`🔄 [LanguageSelector] Store reverted to: ${currentLanguage}`);
+        console.log(`🔄 [LanguageSelector] Language selector should now show: ${currentLanguage}`);
+        
+        // Show user-friendly error message
+        alert(
+          `Failed to translate to ${languageCode}. ` +
+          `The app has been reverted to ${currentLanguage}. ` +
+          `Please try again or check your internet connection if this is the first time using this language.`
+        );
       }
+    } else {
+      // No analysis to translate, just update UI language
+      this.languageStore.setPreferredLanguage(languageCode);
+      this.isDropdownOpen.set(false);
     }
   }
   
