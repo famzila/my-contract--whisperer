@@ -313,6 +313,17 @@
     "switchToLight": "ライトモードに切り替え",
     "switchToDark": "ダークモードに切り替え"
   },
+  "roles": {
+    "employer": "雇用主",
+    "employee": "従業員", 
+    "client": "クライアント",
+    "contractor": "請負業者",
+    "landlord": "家主",
+    "tenant": "テナント",
+    "partner": "パートナー",
+    "bothViews": "両方の視点",
+    "unknown": "不明な役割"
+  },
   "languages": {
     "english": "英語",
     "french": "フランス語",

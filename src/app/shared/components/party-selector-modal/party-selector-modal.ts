@@ -204,13 +204,13 @@ export class PartySelectorModal {
    */
   private translateRoleName(role: string): string {
     const roleMap: Record<string, string> = {
-      'Employer': this.translate.instant('partySelector.employer'),
-      'Employee': this.translate.instant('partySelector.employee'),
-      'Client': this.translate.instant('partySelector.client'),
-      'Contractor': this.translate.instant('partySelector.contractorFreelancer'),
-      'Landlord': this.translate.instant('partySelector.landlord'),
-      'Tenant': this.translate.instant('partySelector.tenantRenter'),
-      'Partner': this.translate.instant('partySelector.partner'),
+      'Employer': this.translate.instant('roles.employer'),
+      'Employee': this.translate.instant('roles.employee'),
+      'Client': this.translate.instant('roles.client'),
+      'Contractor': this.translate.instant('roles.contractor'),
+      'Landlord': this.translate.instant('roles.landlord'),
+      'Tenant': this.translate.instant('roles.tenant'),
+      'Partner': this.translate.instant('roles.partner'),
     };
     
     return roleMap[role] || role; // Return original if not found

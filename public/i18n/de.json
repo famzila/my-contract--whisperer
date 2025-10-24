@@ -301,6 +301,17 @@
   },
   "dateFormat": {
     "analyzedOn": "Analysiert am {{date}}"
+  },
+  "roles": {
+    "employer": "Arbeitgeber",
+    "employee": "Arbeitnehmer", 
+    "client": "Kunde",
+    "contractor": "Auftragnehmer",
+    "landlord": "Vermieter",
+    "tenant": "Mieter",
+    "partner": "Partner",
+    "bothViews": "Beide Perspektiven",
+    "unknown": "Unbekannte Rolle"
   }
 }
 

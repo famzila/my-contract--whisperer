@@ -313,6 +313,17 @@
     "switchToLight": "切换到浅色模式",
     "switchToDark": "切换到深色模式"
   },
+  "roles": {
+    "employer": "雇主",
+    "employee": "雇员", 
+    "client": "客户",
+    "contractor": "承包商",
+    "landlord": "房东",
+    "tenant": "租户",
+    "partner": "合作伙伴",
+    "bothViews": "双方观点",
+    "unknown": "未知角色"
+  },
   "languages": {
     "english": "英语",
     "french": "法语",

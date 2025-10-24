@@ -313,6 +313,17 @@
     "switchToLight": "라이트 모드로 전환",
     "switchToDark": "다크 모드로 전환"
   },
+  "roles": {
+    "employer": "고용주",
+    "employee": "직원", 
+    "client": "클라이언트",
+    "contractor": "계약자",
+    "landlord": "집주인",
+    "tenant": "세입자",
+    "partner": "파트너",
+    "bothViews": "양쪽 관점",
+    "unknown": "알 수 없는 역할"
+  },
   "languages": {
     "english": "영어",
     "french": "프랑스어",

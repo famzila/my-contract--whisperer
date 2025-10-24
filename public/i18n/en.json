@@ -322,6 +322,17 @@
     "switchToLight": "Switch to light mode",
     "switchToDark": "Switch to dark mode"
   },
+  "roles": {
+    "employer": "Employer",
+    "employee": "Employee", 
+    "client": "Client",
+    "contractor": "Contractor",
+    "landlord": "Landlord",
+    "tenant": "Tenant",
+    "partner": "Partner",
+    "bothViews": "Both Perspectives",
+    "unknown": "Unknown Role"
+  },
   "partySelector": {
     "title": "Who Are You in This Contract?",
     "subtitle": "This helps us tailor the analysis to your perspective",

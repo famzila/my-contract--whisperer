@@ -173,7 +173,7 @@
                     {{ metadata()?.parties?.party1?.name }}
                     @if (metadata()?.parties?.party1?.role) {
                     <span class="text-muted font-normal ml-1"
-                      >({{ metadata()?.parties?.party1?.role }})</span
+                      >({{ translateRole(metadata()?.parties?.party1?.role!) }})</span
                     >
                     }
                   </p>
@@ -185,7 +185,7 @@
                     {{ metadata()?.parties?.party2?.name }}
                     @if (metadata()?.parties?.party2?.role) {
                     <span class="text-muted font-normal ml-1"
-                      >({{ metadata()?.parties?.party2?.role }})</span
+                      >({{ translateRole(metadata()?.parties?.party2?.role!) }})</span
                     >
                     }
                   </p>

@@ -313,6 +313,17 @@
     "switchToLight": "Cambiar a modo claro",
     "switchToDark": "Cambiar a modo oscuro"
   },
+  "roles": {
+    "employer": "Empleador",
+    "employee": "Empleado", 
+    "client": "Cliente",
+    "contractor": "Contratista",
+    "landlord": "Propietario",
+    "tenant": "Inquilino",
+    "partner": "Socio",
+    "bothViews": "Ambas perspectivas",
+    "unknown": "Rol desconocido"
+  },
   "languages": {
     "english": "Inglés",
     "french": "Francés",

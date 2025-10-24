@@ -302,6 +302,17 @@
     "switchToLight": "التبديل إلى الوضع الفاتح",
     "switchToDark": "التبديل إلى الوضع الداكن"
   },
+  "roles": {
+    "employer": "صاحب العمل",
+    "employee": "الموظف", 
+    "client": "العميل",
+    "contractor": "المقاول",
+    "landlord": "المؤجر",
+    "tenant": "المستأجر",
+    "partner": "الشريك",
+    "bothViews": "وجهتي النظر",
+    "unknown": "دور غير معروف"
+  },
   "partySelector": {
     "title": "من أنت في هذا العقد؟",
     "subtitle": "يساعدنا هذا على تخصيص التحليل وفقًا لوجهة نظرك",

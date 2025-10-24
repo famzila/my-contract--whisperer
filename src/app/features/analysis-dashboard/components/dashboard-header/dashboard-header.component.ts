@@ -1,6 +1,6 @@
 import { Component, input, output, computed, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Upload } from 'lucide-angular';
 import { Button } from '../../../../shared/components/button/button';
 import { SeverityBadge } from '../../../../shared/components/severity-badge/severity-badge';
@@ -31,6 +31,7 @@ export interface PerspectiveBadge {
 })
 export class DashboardHeaderComponent {
   private languageStore = inject(LanguageStore);
+  private translate = inject(TranslateService);
 
   // Modern input signals
   metadata = input<ContractMetadata | null>(null);
@@ -94,6 +95,23 @@ export class DashboardHeaderComponent {
     const daysUntilExpiry = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     
     return daysUntilExpiry <= 30 && daysUntilExpiry > 0;
+  }
+
+  /**
+   * Translate role name to current language
+   */
+  translateRole(role: string): string {
+    const roleMap: Record<string, string> = {
+      'Employer': this.translate.instant('roles.employer'),
+      'Employee': this.translate.instant('roles.employee'),
+      'Client': this.translate.instant('roles.client'),
+      'Contractor': this.translate.instant('roles.contractor'),
+      'Landlord': this.translate.instant('roles.landlord'),
+      'Tenant': this.translate.instant('roles.tenant'),
+      'Partner': this.translate.instant('roles.partner'),
+    };
+    
+    return roleMap[role] || role; // Return original if not found
   }
 
 }
