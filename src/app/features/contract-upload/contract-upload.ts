@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { LoggerService } from '../../core/services/logger.service';
 import { LucideAngularModule, Sparkles } from 'lucide-angular';
 import { Button } from '../../shared/components/button/button';
 import {
@@ -25,9 +26,6 @@ import { ContractStore } from '../../core/stores/contract.store';
 import { UiStore } from '../../core/stores/ui.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { LanguageStore } from '../../core/stores/language.store';
-import { ContractParserService } from '../../core/services/contract-parser.service';
-import { TranslatorService } from '../../core/services/ai/translator.service';
-import { AiOrchestratorService } from '../../core/services/ai/ai-orchestrator.service';
 import {
   isAppLanguageSupported,
   isGeminiNanoSupported,
@@ -52,7 +50,7 @@ export class ContractUpload {
   languageStore = inject(LanguageStore);
   translate = inject(TranslateService);
   uiStore = inject(UiStore);
-  private aiOrchestrator = inject(AiOrchestratorService);
+  logger = inject(LoggerService);
 
   // Lucide icons
   readonly FileTextIcon = FileText;
@@ -70,8 +68,6 @@ export class ContractUpload {
   readonly SearchIcon = Search;
   readonly LockIcon = Lock;
   SparklesIcon = Sparkles;
-  private parserService = inject(ContractParserService);
-  private translatorService = inject(TranslatorService);
 
   // Local UI state
   mode = signal<UploadMode>('file');
@@ -104,10 +100,10 @@ export class ContractUpload {
    */
   private async checkChromeAiAvailability(): Promise<void> {
     try {
-      const status = await this.aiOrchestrator.checkAvailability();
+      const status = await this.uiStore.checkAiAvailability();
       this.chromeAiAvailable.set(status.allAvailable);
     } catch (error) {
-      console.warn('Failed to check AI availability:', error);
+      this.logger.warn('Failed to check AI availability:', error);
       this.chromeAiAvailable.set(false);
     }
   }
@@ -272,17 +268,17 @@ export class ContractUpload {
     if (role === 'party1' && detectedParties?.parties?.party1) {
       // Map party1 to its actual role (e.g., 'landlord', 'employer')
       actualRole = this.mapPartyRoleToUserRole(detectedParties.parties.party1.role);
-      console.log(
+      this.logger.info(
         `👤 [Selection] User selected Party 1 (${detectedParties.parties.party1.name}) → Role: ${actualRole}`
       );
     } else if (role === 'party2' && detectedParties?.parties?.party2) {
       // Map party2 to its actual role (e.g., 'tenant', 'employee')
       actualRole = this.mapPartyRoleToUserRole(detectedParties.parties.party2.role);
-      console.log(
+      this.logger.info(
         `👤 [Selection] User selected Party 2 (${detectedParties.parties.party2.name}) → Role: ${actualRole}`
       );
     } else {
-      console.log(`👤 [Selection] User selected generic role: ${actualRole}`);
+      this.logger.info(`👤 [Selection] User selected generic role: ${actualRole}`);
     }
 
     // Set role in onboarding store
@@ -300,12 +296,12 @@ export class ContractUpload {
 
     try {
       // Re-parse and analyze with selected role (progressive loading)
-      const parsedContract = this.parserService.parseText(pendingText, 'pending-analysis');
+      const parsedContract = this.contractStore.parseTextToContract(pendingText, 'pending-analysis');
 
       // Start analysis - navigation happens automatically when metadata is ready!
       // Don't await - let it run in background while we navigate
       this.contractStore.analyzeContract(parsedContract).catch((error) => {
-        console.error('❌ Analysis error:', error);
+        this.logger.error('❌ Analysis error:', error);
         // Don't navigate back to upload - user is already on analysis page
         // Just show toast - they can see what sections loaded successfully
         this.uiStore.showToast('Some sections failed to load. Please try refreshing.', 'warning');
@@ -344,30 +340,24 @@ export class ContractUpload {
   async selectContractLanguage(): Promise<void> {
     const detectedLang = this.onboardingStore.detectedLanguage();
 
-    console.log(`🌍 User chose contract language: ${detectedLang}`);
+    this.logger.info(`🌍 User chose contract language: ${detectedLang}`);
 
     if (!detectedLang) return;
 
     // Pre-initialize translator if needed (requires user gesture!)
     if (!isGeminiNanoSupported(detectedLang)) {
-      console.log(
+      this.logger.info(
         `🌍 Pre-initializing translator for ${detectedLang} → en (user gesture available)`
       );
       try {
-        await this.translatorService.createTranslator({
-          sourceLanguage: detectedLang,
-          targetLanguage: LANGUAGES.ENGLISH,
-        });
+        await this.languageStore.createTranslator(detectedLang, LANGUAGES.ENGLISH);
 
         // Also pre-initialize reverse translator for post-translation
-        await this.translatorService.createTranslator({
-          sourceLanguage: LANGUAGES.ENGLISH,
-          targetLanguage: detectedLang,
-        });
+        await this.languageStore.createTranslator(LANGUAGES.ENGLISH, detectedLang);
 
-        console.log(`✅ Translators pre-initialized successfully`);
+        this.logger.info(`✅ Translators pre-initialized successfully`);
       } catch (error) {
-        console.error(`❌ Failed to pre-initialize translators:`, error);
+        this.logger.error(`❌ Failed to pre-initialize translators:`, error);
         // Continue anyway - we'll try again during analysis
       }
     }
@@ -379,14 +369,14 @@ export class ContractUpload {
     if (isAppLanguageSupported(detectedLang)) {
       const currentAppLang = this.languageStore.preferredLanguage();
       if (detectedLang !== currentAppLang) {
-        console.log(`✅ Switching app to ${detectedLang} (supported)`);
+        this.logger.info(`✅ Switching app to ${detectedLang} (supported)`);
         this.languageStore.setPreferredLanguage(detectedLang);
 
         // Optional: Show toast
         // this.uiStore.showToast(`App switched to ${this.getLanguageName(detectedLang)}`, 'info');
       }
     } else {
-      console.warn(
+      this.logger.warn(
         `⚠️ ${detectedLang} not supported for app UI, keeping ${this.languageStore.preferredLanguage()}`
       );
       // App stays in current language, analysis will be in contract language
@@ -399,7 +389,7 @@ export class ContractUpload {
   selectUserLanguage(): void {
     const preferredLang = this.languageStore.preferredLanguage();
 
-    console.log(`✅ Keeping app in ${preferredLang}, results will be translated`);
+    this.logger.info(`✅ Keeping app in ${preferredLang}, results will be translated`);
 
     // Set selected output language to current app language
     this.onboardingStore.setSelectedLanguage(preferredLang);

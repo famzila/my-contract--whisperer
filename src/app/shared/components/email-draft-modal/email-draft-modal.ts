@@ -23,7 +23,6 @@ export interface EmailDraftData {
 
 @Component({
   selector: 'app-email-draft-modal',
-  standalone: true,
   imports: [LucideAngularModule, TranslatePipe, BaseModal, Button, LoadingSpinner, Notice],
   templateUrl: './email-draft-modal.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

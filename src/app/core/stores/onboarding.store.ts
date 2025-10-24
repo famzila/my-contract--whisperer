@@ -8,6 +8,7 @@ import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { TranslatorService } from '../services/ai/translator.service';
 import { TranslateService } from '@ngx-translate/core';
+import { LoggerService } from '../services/logger.service';
 import { AppConfig } from '../config/app.config';
 import { MOCK_ONBOARDING_STATE } from '../mocks/mock-analysis.data';
 
@@ -143,11 +144,13 @@ export const OnboardingStore = signalStore(
       
       // CRITICAL: Only show modal if detected language is DIFFERENT from user's preferred language
       if (detected === preferred) {
-        console.log(`✅ Language match: detected "${detected}" === preferred "${preferred}" - No modal needed`);
+        const logger = inject(LoggerService);
+        logger.info(`✅ Language match: detected "${detected}" === preferred "${preferred}" - No modal needed`);
         return false;
       }
       
-      console.log(`🌍 Language mismatch: detected "${detected}" !== preferred "${preferred}" - Show modal`);
+      const logger = inject(LoggerService);
+      logger.info(`🌍 Language mismatch: detected "${detected}" !== preferred "${preferred}" - Show modal`);
       return true;
     }),
     
@@ -207,7 +210,7 @@ export const OnboardingStore = signalStore(
   })),
   
   // Methods
-  withMethods((store, translatorService = inject(TranslatorService), translate = inject(TranslateService)) => ({
+  withMethods((store, translatorService = inject(TranslatorService), translate = inject(TranslateService), logger = inject(LoggerService)) => ({
     /**
      * Move to next step
      */
@@ -264,8 +267,8 @@ export const OnboardingStore = signalStore(
      * Set selected language and pre-create translator (requires user gesture)
      */
     setSelectedLanguage: async (language: string) => {
-      console.log(`\n🌍 [Onboarding] User selected output language: "${language}"`);
-      console.log(`📋 [Onboarding] Context:`, {
+      logger.info(`\n🌍 [Onboarding] User selected output language: "${language}"`);
+      logger.info(`📋 [Onboarding] Context:`, {
         detectedContractLanguage: store.detectedLanguage(),
         userPreferredLanguage: store.userPreferredLanguage(),
         selectedOutputLanguage: language,
@@ -274,15 +277,15 @@ export const OnboardingStore = signalStore(
       // 🔑 KEY FIX: Pre-create translator during user gesture to download language pack
       const contractLang = store.detectedLanguage();
       if (contractLang && contractLang !== language) {
-        console.log(`📥 [Onboarding] Pre-creating translator: ${contractLang} → ${language}`);
+        logger.info(`📥 [Onboarding] Pre-creating translator: ${contractLang} → ${language}`);
         try {
           await translatorService.createTranslator({
             sourceLanguage: contractLang,
             targetLanguage: language,
           });
-          console.log(`✅ [Onboarding] Translator pre-created successfully`);
+          logger.info(`✅ [Onboarding] Translator pre-created successfully`);
         } catch (error) {
-          console.error(`❌ [Onboarding] Failed to pre-create translator:`, error);
+          logger.error(`❌ [Onboarding] Failed to pre-create translator:`, error);
         }
       }
       
@@ -291,7 +294,7 @@ export const OnboardingStore = signalStore(
         currentStep: 'partySelect',
       });
       
-      console.log(`✅ [Onboarding] Language selection saved, moving to party selection\n`);
+      logger.info(`✅ [Onboarding] Language selection saved, moving to party selection\n`);
     },
     
     /**
@@ -350,22 +353,24 @@ export const OnboardingStore = signalStore(
   // Lifecycle hooks
   withHooks({
     onInit(store) {
-      console.log('🚀 [OnboardingStore] Initializing store...');
+      const logger = inject(LoggerService);
+      logger.info('🚀 [OnboardingStore] Initializing store...');
       
       // Initialize with mock data if in mock mode
       if (AppConfig.useMockAI) {
-        console.log('🎨 [OnboardingStore] Mock mode enabled - loading mock data');
+        logger.info('🎨 [OnboardingStore] Mock mode enabled - loading mock data');
         
         patchState(store, MOCK_ONBOARDING_STATE as OnboardingState);
         
-        console.log('✅ [OnboardingStore] Mock data loaded successfully');
+        logger.info('✅ [OnboardingStore] Mock data loaded successfully');
       } else {
-        console.log('🏭 [OnboardingStore] Production mode - clean state initialized');
+        logger.info('🏭 [OnboardingStore] Production mode - clean state initialized');
       }
     },
     
     onDestroy(store) {
-      console.log('🧹 [OnboardingStore] Cleaning up on destroy...');
+      const logger = inject(LoggerService);
+      logger.info('🧹 [OnboardingStore] Cleaning up on destroy...');
       
       // Reset onboarding state to prepare for new contract upload
       // Keep userPreferredLanguage for better UX

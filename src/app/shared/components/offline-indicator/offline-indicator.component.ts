@@ -5,7 +5,6 @@ import { LucideAngularModule, Wifi, WifiOff, Brain, AlertTriangle } from 'lucide
 
 @Component({
   selector: 'app-offline-indicator',
-  standalone: true,
   imports: [CommonModule, LucideAngularModule],
   template: `
     @if (showBanner()) {

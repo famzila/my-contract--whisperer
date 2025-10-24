@@ -4,7 +4,6 @@ export type SpinnerSize = 'sm' | 'md' | 'lg' | 'xl';
 
 @Component({
   selector: 'app-loading-spinner',
-  standalone: true,
   templateUrl: './loading-spinner.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

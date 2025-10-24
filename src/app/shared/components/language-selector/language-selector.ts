@@ -7,7 +7,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Languages, LucideAngularModule } from 'lucide-angular';
 import { LanguageStore } from '../../../core/stores/language.store';
 import { ContractStore } from '../../../core/stores/contract.store';
-import { TranslatorService } from '../../../core/services/ai/translator.service';
+import { LoggerService } from '../../../core/services/logger.service';
 import { Globe, ChevronDown, Check } from '../../icons/lucide-icons';
 
 @Component({
@@ -20,7 +20,7 @@ export class LanguageSelector {
   languageStore = inject(LanguageStore);
   contractStore = inject(ContractStore);
   translateService = inject(TranslateService);
-  translatorService = inject(TranslatorService);
+  logger = inject(LoggerService);
   
   // Lucide icons
   readonly GlobeIcon = Globe;
@@ -89,76 +89,40 @@ export class LanguageSelector {
     const hasAnalysis = this.contractStore.canShowDashboard();
     
     if (hasContract && hasAnalysis && previousLanguage !== languageCode) {
-      console.log(`🌍 [LanguageSelector] Language changed: ${previousLanguage} → ${languageCode}`);
+      this.logger.info(`🌍 [LanguageSelector] Language changed: ${previousLanguage} → ${languageCode}`);
       
       // Check if language pack needs download (only once per language, per browser)
       try {
-        const capabilities = await this.translatorService.canTranslate(previousLanguage, languageCode);
+        const capabilities = await this.languageStore.canTranslate(previousLanguage, languageCode);
         
         if (capabilities.available === 'downloadable') {
-          console.log(`📥 [LanguageSelector] Pre-downloading language pack: ${previousLanguage}→${languageCode}...`);
-          
-          try {
-            // Pre-download while user gesture is active
-            await this.translatorService.createTranslator({
-              sourceLanguage: previousLanguage,
-              targetLanguage: languageCode
-            });
-            
-            console.log(`✅ [LanguageSelector] Language pack downloaded and cached`);
-          } catch (downloadError) {
-            console.warn(`⚠️ [LanguageSelector] Language pack download failed:`, downloadError);
-            
-            // Show user-friendly message and ask to retry
-            const retry = confirm(
-              `Language pack for ${languageCode} needs to be downloaded. ` +
-              `This may take a moment. Click OK to retry, or Cancel to continue without translation.`
-            );
-            
-            if (retry) {
-              try {
-                await this.translatorService.createTranslator({
-                  sourceLanguage: previousLanguage,
-                  targetLanguage: languageCode
-                });
-                console.log(`✅ [LanguageSelector] Language pack downloaded on retry`);
-              } catch (retryError) {
-                console.error(`❌ [LanguageSelector] Retry failed:`, retryError);
-                alert(`Failed to download language pack for ${languageCode}. Some features may not work.`);
-              }
-            }
-          }
-        } else if (capabilities.available === 'readily') {
-          console.log(`⚡ [LanguageSelector] Language pack already cached: ${previousLanguage}→${languageCode}`);
-        } else {
-          console.log(`ℹ️ [LanguageSelector] Language pack status: ${capabilities.available}`);
+          await this.languageStore.downloadLanguagePack(previousLanguage, languageCode);
         }
       } catch (error) {
-        console.warn(`⚠️ [LanguageSelector] Failed to check/download language pack:`, error);
         // Continue anyway - translation will attempt to download if needed
       }
     }
     
     // If there's an active contract analysis, re-translate it to the new language
     if (hasContract && hasAnalysis && previousLanguage !== languageCode) {
-      console.log(`🔄 [LanguageSelector] Re-translating analysis results...`);
+      this.logger.info(`🔄 [LanguageSelector] Re-translating analysis results...`);
       
       try {
         // Pass the previous language to the store so it can revert properly
         await this.contractStore.switchAnalysisLanguage(languageCode, previousLanguage);
-        console.log(`✅ [LanguageSelector] Analysis re-translated successfully`);
+        this.logger.info(`✅ [LanguageSelector] Analysis re-translated successfully`);
         
         // Only update UI language after successful translation
         this.languageStore.setPreferredLanguage(languageCode);
         this.isDropdownOpen.set(false);
       } catch (error) {
-        console.error(`❌ [LanguageSelector] Failed to re-translate analysis:`, error);
+        this.logger.error(`❌ [LanguageSelector] Failed to re-translate analysis:`, error);
         
         // Store has already reverted to previous language
         // The language selector should automatically reflect the current language via computed signals
         const currentLanguage = this.languageStore.preferredLanguage();
-        console.log(`🔄 [LanguageSelector] Store reverted to: ${currentLanguage}`);
-        console.log(`🔄 [LanguageSelector] Language selector should now show: ${currentLanguage}`);
+        this.logger.info(`🔄 [LanguageSelector] Store reverted to: ${currentLanguage}`);
+        this.logger.info(`🔄 [LanguageSelector] Language selector should now show: ${currentLanguage}`);
         
         // Show user-friendly error message
         alert(

@@ -7,6 +7,7 @@ import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { routes } from './app.routes';
 import { DEFAULT_LANGUAGE } from './core/constants/languages';
 import { provideServiceWorker } from '@angular/service-worker';
+import { LOG_LEVEL, LogLevel } from './core/services/logger.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -25,6 +26,7 @@ export const appConfig: ApplicationConfig = {
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000'
-    })
+    }),
+    { provide: LOG_LEVEL, useValue: isDevMode() ? LogLevel.DEBUG : LogLevel.NONE }
   ]
 };

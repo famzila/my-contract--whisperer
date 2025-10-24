@@ -5,7 +5,6 @@ import { LucideAngularModule, Download, X, RefreshCw } from 'lucide-angular';
 
 @Component({
   selector: 'app-update-notification',
-  standalone: true,
   imports: [CommonModule, LucideAngularModule],
   template: `
     @if (showNotification()) {

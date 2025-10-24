@@ -14,7 +14,6 @@ import { OnboardingStore } from '../../core/stores/onboarding.store';
       </div>
     </div>
   `,
-  standalone: true,
 })
 export class MockRouteComponent implements OnInit {
   private router = inject(Router);

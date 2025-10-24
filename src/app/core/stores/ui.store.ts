@@ -7,6 +7,8 @@ import { signalStore, withState, withComputed, withMethods, withHooks } from '@n
 import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { ModalConfig, ModalService } from '../services/modal.service';
+import { AiOrchestratorService } from '../services/ai/ai-orchestrator.service';
+import { LoggerService } from '../services/logger.service';
 
 /**
  * Toast notification
@@ -75,7 +77,7 @@ export const UiStore = signalStore(
   })),
   
   // Methods
-  withMethods((store, modalService = inject(ModalService)) => ({
+  withMethods((store, modalService = inject(ModalService), aiOrchestrator = inject(AiOrchestratorService), logger = inject(LoggerService)) => ({
     /**
      * Set theme
      */
@@ -255,6 +257,22 @@ export const UiStore = signalStore(
      */
     closeAllModals: () => {
       modalService.closeAll();
+    },
+
+    /**
+     * Check Chrome AI services availability
+     */
+    async checkAiAvailability() {
+      try {
+        patchState(store, { aiServicesChecked: false });
+        const status = await aiOrchestrator.checkAvailability();
+        patchState(store, { aiServicesChecked: true });
+        return status;
+      } catch (error) {
+        logger.error('Failed to check AI availability', error);
+        patchState(store, { aiServicesChecked: true });
+        throw error;
+      }
     },
   })),
   

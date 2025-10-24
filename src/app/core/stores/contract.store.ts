@@ -9,6 +9,7 @@ import { patchState } from '@ngrx/signals';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
+import { LoggerService } from '../services/logger.service';
 import type { Contract } from '../models/contract.model';
 import type { 
   ContractMetadata, 
@@ -173,8 +174,21 @@ export const ContractStore = signalStore(
     translationCache = inject(TranslationCacheService),
     translate = inject(TranslateService),
     router = inject(Router),
-    ngZone = inject(NgZone)
+    ngZone = inject(NgZone),
+    logger = inject(LoggerService)
   ) => ({
+    /**
+     * Parse text into contract format
+     */
+    parseTextToContract: (text: string, source: string = 'manual-input') => {
+      try {
+        return parserService.parseText(text, source);
+      } catch (error) {
+        logger.error('Failed to parse contract text', error);
+        throw error;
+      }
+    },
+
     /**
      * Set contract
      */
@@ -229,11 +243,11 @@ export const ContractStore = signalStore(
 
       try {
                 // Step 1: Parse the file
-                console.log('\n📄 [Upload] Parsing file...');
+                logger.info('\n📄 [Upload] Parsing file...');
                 const parsedContract = await parserService.parseFile(file);
                 
                 // Step 2: Validate contract
-                console.log('✅ [Validation] Checking if document is a contract...');
+                logger.info('✅ [Validation] Checking if document is a contract...');
                 onboardingStore.setProcessing(true);
                 const validationResult = await validationService.validateContract(parsedContract.text);
         
@@ -255,7 +269,7 @@ export const ContractStore = signalStore(
         onboardingStore.setValidationResult(true, validationResult.documentType || 'Contract');
         
         // Step 3 & 4: Run language detection and party extraction IN PARALLEL for speed
-        console.log('🚀 [Onboarding] Running language detection and party extraction in parallel...');
+        logger.info('🚀 [Onboarding] Running language detection and party extraction in parallel...');
         
         // Set user's preferred language in onboarding store BEFORE detecting contract language
         onboardingStore.setUserPreferredLanguage(languageStore.preferredLanguage());
@@ -265,7 +279,7 @@ export const ContractStore = signalStore(
           partyExtractionService.extractParties(parsedContract.text)
         ]);
         
-        console.log('✅ [Onboarding] Parallel tasks completed:', { detectedLang, partyResult });
+        logger.info('✅ [Onboarding] Parallel tasks completed:', { detectedLang, partyResult });
         
         // Update stores with results
         onboardingStore.setDetectedLanguage(detectedLang);
@@ -274,18 +288,18 @@ export const ContractStore = signalStore(
         
         // CRITICAL: If language matches, auto-select to skip modal
         if (detectedLang === languageStore.preferredLanguage()) {
-          console.log(`✅ [Onboarding] Language auto-match: ${detectedLang} - Auto-selecting`);
+          logger.info(`✅ [Onboarding] Language auto-match: ${detectedLang} - Auto-selecting`);
           onboardingStore.setSelectedLanguage(detectedLang);
         }
         
         // Step 5: Store parsed contract and wait for user to select language/role
         onboardingStore.setPendingContract(parsedContract.text);
         patchState(store, { isUploading: false });
-        console.log('✅ Contract validated, language detected, and parties extracted.');
+        logger.info('✅ Contract validated, language detected, and parties extracted.');
         
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : translate.instant('errors.analysisFailed');
-        console.error('File parsing failed:', error); // Log technical details for debugging
+        logger.error('File parsing failed:', error); // Log technical details for debugging
         onboardingStore.setProcessing(false);
         patchState(store, { 
           uploadError: errorMessage,
@@ -303,11 +317,11 @@ export const ContractStore = signalStore(
 
       try {
         // Step 1: Parse the text
-        console.log('\n📄 [Upload] Parsing text...');
+        logger.info('\n📄 [Upload] Parsing text...');
         const parsedContract = parserService.parseText(text, source);
         
         // Step 2: Validate contract
-        console.log('✅ [Validation] Checking if document is a contract...');
+        logger.info('✅ [Validation] Checking if document is a contract...');
         onboardingStore.setProcessing(true);
         const validationResult = await validationService.validateContract(parsedContract.text);
         
@@ -329,7 +343,7 @@ export const ContractStore = signalStore(
         onboardingStore.setValidationResult(true, validationResult.documentType || 'Contract');
         
         // Step 3 & 4: Run language detection and party extraction IN PARALLEL for speed
-        console.log('🚀 [Onboarding] Running language detection and party extraction in parallel...');
+        logger.info('🚀 [Onboarding] Running language detection and party extraction in parallel...');
         
         // Set user's preferred language in onboarding store BEFORE detecting contract language
         onboardingStore.setUserPreferredLanguage(languageStore.preferredLanguage());
@@ -339,7 +353,7 @@ export const ContractStore = signalStore(
           partyExtractionService.extractParties(parsedContract.text)
         ]);
         
-        console.log('✅ [Onboarding] Parallel tasks completed:', { detectedLang, partyResult });
+        logger.info('✅ [Onboarding] Parallel tasks completed:', { detectedLang, partyResult });
         
         // Update stores with results
         onboardingStore.setDetectedLanguage(detectedLang);
@@ -348,18 +362,18 @@ export const ContractStore = signalStore(
         
         // CRITICAL: If language matches, auto-select to skip modal
         if (detectedLang === languageStore.preferredLanguage()) {
-          console.log(`✅ [Onboarding] Language auto-match: ${detectedLang} - Auto-selecting`);
+          logger.info(`✅ [Onboarding] Language auto-match: ${detectedLang} - Auto-selecting`);
           onboardingStore.setSelectedLanguage(detectedLang);
         }
         
         // Step 5: Store parsed contract and wait for user to select language/role
         onboardingStore.setPendingContract(parsedContract.text);
         patchState(store, { isUploading: false });
-        console.log('✅ Contract validated, language detected, and parties extracted.');
+        logger.info('✅ Contract validated, language detected, and parties extracted.');
         
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : translate.instant('errors.analysisFailed');
-        console.error('Text parsing failed:', error); // Log technical details for debugging
+        logger.error('Text parsing failed:', error); // Log technical details for debugging
         onboardingStore.setProcessing(false);
         patchState(store, { 
           uploadError: errorMessage,
@@ -407,16 +421,16 @@ export const ContractStore = signalStore(
         });
         
         // Step 1: Detect contract language
-        console.log('🌍 Detecting contract language...');
+        logger.info('🌍 Detecting contract language...');
         languageStore.detectContractLanguage(parsedContract.text);
         
         // Step 2: Build analysis context
         const detectedParties = onboardingStore.detectedParties();
         const contractLang = languageStore.detectedContractLanguage() || 'en';
         
-        console.log('\n📋 [Analysis Context] Building context...');
-        console.log('  📄 Contract language:', contractLang);
-        console.log('  🎯 User selected output language:', onboardingStore.selectedOutputLanguage());
+        logger.info('\n📋 [Analysis Context] Building context...');
+        logger.info('  📄 Contract language:', contractLang);
+        logger.info('  🎯 User selected output language:', onboardingStore.selectedOutputLanguage());
         
         const analysisContext = {
           contractLanguage: contractLang,
@@ -444,7 +458,7 @@ export const ContractStore = signalStore(
         };
         
         // Step 3: Start RxJS streaming analysis
-        console.log('🚀 Starting RxJS streaming analysis...');
+        logger.info('🚀 Starting RxJS streaming analysis...');
         
         analysisService.analyzeContractStreaming$(
           parsedContract,
@@ -454,7 +468,7 @@ export const ContractStore = signalStore(
           takeUntil(destroySubject)
         ).subscribe({
           next: (result) => {
-            console.log(`📦 [Stream] ${result.section} ${result.isRetrying ? 'retrying' : 'completed'}:`, result);
+            logger.info(`📦 [Stream] ${result.section} ${result.isRetrying ? 'retrying' : 'completed'}:`, result);
             
             // Update specific section as it completes or retries
             switch (result.section) {
@@ -534,7 +548,7 @@ export const ContractStore = signalStore(
             }
           },
           error: (error) => {
-            console.error('❌ RxJS streaming analysis failed:', error);
+            logger.error('❌ RxJS streaming analysis failed:', error);
             const errorMessage = error instanceof Error ? error.message : translate.instant('errors.analysisFailed');
         patchState(store, { 
               analysisError: errorMessage,
@@ -546,7 +560,7 @@ export const ContractStore = signalStore(
             // Don't throw - let the UI handle the error gracefully
           },
           complete: () => {
-            console.log('✅ RxJS streaming analysis completed');
+            logger.info('✅ RxJS streaming analysis completed');
             
             // Store results in cache for future translations
             const contract = store.contract();
@@ -572,8 +586,8 @@ export const ContractStore = signalStore(
                   omissions ? 'omissions' : null
                 ].filter(Boolean);
                 
-                console.log(`💾 [Store] Caching strategy - Contract: ${contractLang}, Output: ${outputLang}, Pre-translation: ${isPreTranslationFlow}`);
-                console.log(`💾 [Store] Caching ${successfulSections.length}/5 sections: ${successfulSections.join(', ')}`);
+                logger.info(`💾 [Store] Caching strategy - Contract: ${contractLang}, Output: ${outputLang}, Pre-translation: ${isPreTranslationFlow}`);
+                logger.info(`💾 [Store] Caching ${successfulSections.length}/5 sections: ${successfulSections.join(', ')}`);
                 
                 // Cache strategy:
                 // - For direct analysis (e.g., ES contract → ES output): Store as "original" in source language (es, ja, or en)
@@ -582,7 +596,7 @@ export const ContractStore = signalStore(
                 
                 if (isPreTranslationFlow) {
                   // Pre-translation flow: Store the post-translated results
-                  console.log(`💾 [Store] Pre-translation flow: Storing ${outputLang} results`);
+                  logger.info(`💾 [Store] Pre-translation flow: Storing ${outputLang} results`);
                   translationCache.storeAnalysis(contract.id, outputLang, {
                     metadata,
                     summary: summary || null,
@@ -593,10 +607,10 @@ export const ContractStore = signalStore(
                   
                   // 💡 Note: English (intermediate) results already cached incrementally
                   // by analyzeWithPreTranslation$ during analysis pipeline
-                  console.log(`✅ [Store] Both English (intermediate) and ${outputLang} (final) cached for future language switching`);
+                  logger.info(`✅ [Store] Both English (intermediate) and ${outputLang} (final) cached for future language switching`);
                 } else {
                   // Direct analysis: Store in SOURCE language (could be en, es, ja, etc.)
-                  console.log(`💾 [Store] Direct analysis: Storing ${contractLang} results`);
+                  logger.info(`💾 [Store] Direct analysis: Storing ${contractLang} results`);
                   translationCache.storeAnalysis(contract.id, contractLang, {
                     metadata,
                     summary: summary || null,
@@ -606,7 +620,7 @@ export const ContractStore = signalStore(
                   });
                 }
               } else {
-                console.warn('⚠️ [Store] No metadata available - skipping cache');
+                logger.warn('⚠️ [Store] No metadata available - skipping cache');
               }
             }
             
@@ -643,13 +657,13 @@ export const ContractStore = signalStore(
       }
       const contract = store.contract();
       if (!contract) {
-        console.warn('⚠️ [Store] No contract found for language switch');
+        logger.warn('⚠️ [Store] No contract found for language switch');
         return;
       }
 
       // Use provided previous language or get current language
       const prevLang = previousLanguage || languageStore.preferredLanguage();
-      console.log(`🌍 [Store] Switching analysis language: ${prevLang} → ${targetLanguage}`);
+      logger.info(`🌍 [Store] Switching analysis language: ${prevLang} → ${targetLanguage}`);
       
       // Set loading state IMMEDIATELY
       patchState(store, {
@@ -663,7 +677,7 @@ export const ContractStore = signalStore(
         const cached = translationCache.getAnalysis(contract.id, targetLanguage);
         
         if (cached) {
-          console.log(`⚡ [Store] Using cached ${targetLanguage} translation`);
+          logger.info(`⚡ [Store] Using cached ${targetLanguage} translation`);
           
           // Ensure UI has time to show loading state (increased from 300ms)
           await new Promise(resolve => setTimeout(resolve, 600));
@@ -681,11 +695,11 @@ export const ContractStore = signalStore(
         }
         
         // Not cached - need to translate
-        console.log(`🌍 [Store] Translating to ${targetLanguage}...`);
+        logger.info(`🌍 [Store] Translating to ${targetLanguage}...`);
         
         // Find best source language to translate from
         const availableLanguages = translationCache.getAvailableLanguages(contract.id);
-        console.log(`📋 [Store] Available languages: ${availableLanguages.join(', ')}`);
+        logger.info(`📋 [Store] Available languages: ${availableLanguages.join(', ')}`);
         
         if (availableLanguages.length === 0) {
           // TODO: Auto-start analysis if contract text exists, or redirect to upload page
@@ -698,11 +712,11 @@ export const ContractStore = signalStore(
         
         if (!sourceAnalysis) {
           // TODO: Handle missing source language gracefully - possibly reload analysis
-          console.error(`Source analysis not found for language: ${sourceLanguage}`);
+          logger.error(`Source analysis not found for language: ${sourceLanguage}`);
           throw new Error(translate.instant('errors.analysisFailed'));
         }
         
-        console.log(`🔄 [Store] Translating from ${sourceLanguage} to ${targetLanguage}...`);
+        logger.info(`🔄 [Store] Translating from ${sourceLanguage} to ${targetLanguage}...`);
         
         // Translate from source to target (with null checks)
         const [metadata, summary, risks, obligations, omissions] = await Promise.all([
@@ -733,13 +747,13 @@ export const ContractStore = signalStore(
           translatingToLanguage: null
         });
         
-        console.log(`✅ [Store] Translated from ${sourceLanguage} and cached ${targetLanguage} results`);
+        logger.info(`✅ [Store] Translated from ${sourceLanguage} and cached ${targetLanguage} results`);
         
       } catch (error) {
-        console.error(`❌ [Store] Translation to ${targetLanguage} failed:`, error);
+        logger.error(`❌ [Store] Translation to ${targetLanguage} failed:`, error);
         
         // CRITICAL: Revert to previous language to keep UI and results consistent
-        console.log(`🔄 [Store] Reverting to previous language: ${prevLang}`);
+        logger.info(`🔄 [Store] Reverting to previous language: ${prevLang}`);
         languageStore.setPreferredLanguage(prevLang);
         
         // Clear translation state
@@ -764,11 +778,12 @@ export const ContractStore = signalStore(
   // Lifecycle hooks
   withHooks({
     onInit(store) {
-      console.log('🚀 [ContractStore] Initializing store...');
+      const logger = inject(LoggerService);
+      logger.info('🚀 [ContractStore] Initializing store...');
       
       // Initialize with mock data if in mock mode
       if (AppConfig.useMockAI) {
-        console.log('🎨 [ContractStore] Mock mode enabled - loading mock data');
+        logger.info('🎨 [ContractStore] Mock mode enabled - loading mock data');
         
         const mockContract: Contract = MOCK_CONTRACT;
         
@@ -790,14 +805,15 @@ export const ContractStore = signalStore(
           destroySubject: null,
         });
         
-        console.log('✅ [ContractStore] Mock data loaded successfully');
+        logger.info('✅ [ContractStore] Mock data loaded successfully');
       } else {
-        console.log('🏭 [ContractStore] Production mode - clean state initialized');
+        logger.info('🏭 [ContractStore] Production mode - clean state initialized');
       }
     },
     
     onDestroy(store) {
-      console.log('🧹 [ContractStore] Cleaning up on destroy...');
+      const logger = inject(LoggerService);
+      logger.info('🧹 [ContractStore] Cleaning up on destroy...');
       
       // Clean up RxJS subscriptions
       if (store.destroySubject()) {

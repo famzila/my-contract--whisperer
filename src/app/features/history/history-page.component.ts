@@ -21,7 +21,6 @@ import {
 
 @Component({
   selector: 'app-history-page',
-  standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
   template: `
     <div class="min-h-screen bg-gray-50">

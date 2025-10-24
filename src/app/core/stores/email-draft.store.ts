@@ -9,6 +9,7 @@ import { patchState } from '@ngrx/signals';
 import { WriterService } from '../services/ai/writer.service';
 import { LanguageDetectorService } from '../services/ai/language-detector.service';
 import { TranslatorService } from '../services/ai/translator.service';
+import { LoggerService } from '../services/logger.service';
 import { AppConfig } from '../config/app.config';
 
 /**
@@ -67,7 +68,7 @@ export const EmailDraftStore = signalStore(
   })),
   
   // Methods to update state
-  withMethods((store, writerService = inject(WriterService), languageDetectorService = inject(LanguageDetectorService), translatorService = inject(TranslatorService)) => ({
+  withMethods((store, writerService = inject(WriterService), languageDetectorService = inject(LanguageDetectorService), translatorService = inject(TranslatorService), logger = inject(LoggerService)) => ({
     /**
      * Draft a professional email using Writer API
      * @param questions - Array of questions to include in the email
@@ -86,7 +87,7 @@ export const EmailDraftStore = signalStore(
       contractLanguage: string = 'en'
     ): Promise<void> {
       if (questions.length === 0) {
-        console.warn('No questions to draft email');
+        logger.warn('No questions to draft email');
         return;
       }
       
@@ -102,7 +103,7 @@ export const EmailDraftStore = signalStore(
         
         if (!isAvailable || AppConfig.useMockAI) {
           // Use mock email if Writer API not available or in mock mode
-          console.log('📧 Using mock email template (Writer API not available or mock mode enabled)');
+          logger.info('📧 Using mock email template (Writer API not available or mock mode enabled)');
           const mockEmail = generateMockEmail(recipientName, senderName, senderRole, recipientRole, questions, contractLanguage);
           
           // Simulate delay for realistic UX
@@ -117,7 +118,7 @@ export const EmailDraftStore = signalStore(
         }
         
         // Use Writer API to generate professional email with streaming
-        console.log(`✍️ Drafting email in ${contractLanguage} with Writer API (streaming)...`);
+        logger.info(`✍️ Drafting email in ${contractLanguage} with Writer API (streaming)...`);
         
         const prompt = buildEmailPrompt(recipientName, senderName, senderRole, recipientRole, questions, contractLanguage);
         const stream = await writerService.writeStreaming(prompt, {
@@ -136,13 +137,13 @@ export const EmailDraftStore = signalStore(
           patchState(store, { draftedEmail: emailText });
         }
         
-        console.log('✅ Email drafted successfully');
+        logger.info('✅ Email drafted successfully');
         patchState(store, { 
           isDrafting: false,
           emailLanguage: contractLanguage 
         });
       } catch (error) {
-        console.error('❌ Error drafting email:', error);
+        logger.error('❌ Error drafting email:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to draft email';
         
         // Fallback to mock email on error
@@ -164,12 +165,12 @@ export const EmailDraftStore = signalStore(
       const emailLanguage = store.emailLanguage();
       
       if (!currentEmail) {
-        console.warn('No email to rewrite');
+        logger.warn('No email to rewrite');
         return;
       }
       
       if (!emailLanguage) {
-        console.warn('No email language found, defaulting to English');
+        logger.warn('No email language found, defaulting to English');
       }
       
       const languageName = getLanguageName(emailLanguage || 'en');
@@ -185,7 +186,7 @@ export const EmailDraftStore = signalStore(
         
         if (!isAvailable || AppConfig.useMockAI) {
           // Fallback to Writer API in mock mode
-          console.log(`🔄 Using Writer API for rewriting in ${languageName} (mock mode or Rewriter unavailable)`);
+          logger.info(`🔄 Using Writer API for rewriting in ${languageName} (mock mode or Rewriter unavailable)`);
           
           const prompt = `Rewrite this professional email IN ${languageName.toUpperCase()} with a ${store.rewriteTone()} tone and make it ${store.rewriteLength()} length:
 
@@ -207,7 +208,7 @@ IMPORTANT: Maintain the SAME LANGUAGE (${languageName}). Keep all key informatio
         }
         
         // Use Rewriter API with language-specific context in prompt
-        console.log(`🔄 Rewriting email in ${languageName} with Rewriter API (streaming)...`);
+        logger.info(`🔄 Rewriting email in ${languageName} with Rewriter API (streaming)...`);
         
         // Create a language-aware rewrite prompt
         const languageContext = `LANGUAGE CONTEXT: This email is in ${languageName}. Maintain this language throughout the rewrite.`;
@@ -235,13 +236,13 @@ IMPORTANT: Maintain the SAME LANGUAGE (${languageName}). Keep all key informatio
         // Check if language changed and translate if needed
         const finalEmail = await this.ensureCorrectLanguage(rewrittenText, emailLanguage || 'en', languageName);
         
-        console.log('✅ Email rewritten successfully');
+        logger.info('✅ Email rewritten successfully');
         patchState(store, { 
           draftedEmail: finalEmail,
           isRewriting: false 
         });
       } catch (error) {
-        console.error('❌ Error rewriting email:', error);
+        logger.error('❌ Error rewriting email:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to rewrite email';
         
         // Keep original email on error
@@ -261,10 +262,10 @@ IMPORTANT: Maintain the SAME LANGUAGE (${languageName}). Keep all key informatio
       
       try {
         await navigator.clipboard.writeText(email);
-        console.log('✅ Email copied to clipboard');
+        logger.info('✅ Email copied to clipboard');
         return true;
       } catch (err) {
-        console.error('❌ Failed to copy email:', err);
+        logger.error('❌ Failed to copy email:', err);
         return false;
       }
     },
@@ -314,7 +315,7 @@ IMPORTANT: Maintain the SAME LANGUAGE (${languageName}). Keep all key informatio
       try {
         // Skip language check for English (most common case)
         if (targetLanguage === 'en') {
-          console.log(`🔍 [Language Check] Skipping check for English`);
+          logger.info(`🔍 [Language Check] Skipping check for English`);
           return rewrittenEmail;
         }
         
@@ -322,18 +323,18 @@ IMPORTANT: Maintain the SAME LANGUAGE (${languageName}). Keep all key informatio
         const detectedLanguage = await languageDetectorService.detect(rewrittenEmail);
         
         if (!detectedLanguage) {
-          console.warn('⚠️ [Language Check] Could not detect language, keeping original');
+          logger.warn('⚠️ [Language Check] Could not detect language, keeping original');
           return rewrittenEmail;
         }
         
         // If language matches target, we're good
         if (detectedLanguage === targetLanguage) {
-          console.log(`✅ [Language Check] Email is correctly in ${languageName} (${targetLanguage})`);
+          logger.info(`✅ [Language Check] Email is correctly in ${languageName} (${targetLanguage})`);
           return rewrittenEmail;
         }
         
         // Language changed! Translate back to target language
-        console.log(`🔄 [Language Check] Language changed from ${targetLanguage} to ${detectedLanguage}, translating back...`);
+        logger.info(`🔄 [Language Check] Language changed from ${targetLanguage} to ${detectedLanguage}, translating back...`);
         
         const translatedEmail = await translatorService.translate(
           rewrittenEmail,
@@ -341,11 +342,11 @@ IMPORTANT: Maintain the SAME LANGUAGE (${languageName}). Keep all key informatio
           targetLanguage
         );
         
-        console.log(`✅ [Language Check] Successfully translated back to ${languageName}`);
+        logger.info(`✅ [Language Check] Successfully translated back to ${languageName}`);
         return translatedEmail;
         
       } catch (error) {
-        console.error('❌ [Language Check] Error in language correction:', error);
+        logger.error('❌ [Language Check] Error in language correction:', error);
         // Return original rewritten email if translation fails
         return rewrittenEmail;
       }
@@ -362,7 +363,8 @@ IMPORTANT: Maintain the SAME LANGUAGE (${languageName}). Keep all key informatio
   // Lifecycle hooks
   withHooks({
     onDestroy(store) {
-      console.log('🧹 [EmailDraftStore] Cleaning up on destroy...');
+      const logger = inject(LoggerService);
+      logger.info('🧹 [EmailDraftStore] Cleaning up on destroy...');
       
       // Reset email draft state when leaving analysis dashboard
       patchState(store, initialState);

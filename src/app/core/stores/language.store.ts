@@ -3,12 +3,13 @@
  * Manages language preferences, detection, and translation state
  * Reference: https://ngrx.io/guide/signals/signal-store
  */
-import { signalStore, withState, withComputed, withMethods } from '@ngrx/signals';
+import { signalStore, withState, withComputed, withMethods, withHooks } from '@ngrx/signals';
 import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslatorService } from '../services/ai/translator.service';
 import { LanguageDetectorService } from '../services/ai/language-detector.service';
+import { LoggerService } from '../services/logger.service';
 import { LANGUAGES, DEFAULT_LANGUAGE, isRTL, isAppLanguageSupported, isGeminiNanoSupported } from '../constants/languages';
 
 /**
@@ -90,7 +91,8 @@ function saveLanguage(languageCode: string): void {
   try {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, languageCode);
   } catch (error) {
-    console.warn('Failed to save language preference to localStorage:', error);
+      const logger = inject(LoggerService);
+      logger.warn('Failed to save language preference to localStorage:', error);
   }
 }
 
@@ -152,7 +154,7 @@ export const LanguageStore = signalStore(
   })),
   
   // Methods
-  withMethods((store, translatorService = inject(TranslatorService), translateService = inject(TranslateService), languageDetectorService = inject(LanguageDetectorService)) => ({
+  withMethods((store, translatorService = inject(TranslatorService), translateService = inject(TranslateService), languageDetectorService = inject(LanguageDetectorService), logger = inject(LoggerService)) => ({
     /**
      * Detect contract language from text using Chrome Language Detector API
      */
@@ -170,19 +172,19 @@ export const LanguageStore = signalStore(
             showLanguageBanner: needsTranslation,
           });
           
-          console.log(`🌍 [Language] Detected: ${detectedLang}${needsTranslation ? ` (user prefers ${userLang})` : ''}`);
+          logger.info(`🌍 [Language] Detected: ${detectedLang}${needsTranslation ? ` (user prefers ${userLang})` : ''}`);
           return detectedLang;
         }
         
         // Fallback if detection returns null
-        console.warn('⚠️ [Language] Detection returned null, using default');
+        logger.warn('⚠️ [Language] Detection returned null, using default');
         patchState(store, { 
           detectedContractLanguage: DEFAULT_LANGUAGE,
           showLanguageBanner: false,
         });
         return DEFAULT_LANGUAGE;
       } catch (error) {
-        console.error('❌ [Language] Detection error:', error);
+        logger.error('❌ [Language] Detection error:', error);
         patchState(store, { 
           detectedContractLanguage: DEFAULT_LANGUAGE, // fallback to English
           showLanguageBanner: false,
@@ -208,7 +210,7 @@ export const LanguageStore = signalStore(
       const isValid = store.availableLanguages().some(lang => lang.code === languageCode);
       
       if (!isValid) {
-        console.warn(`Invalid language code: ${languageCode}`);
+        logger.warn(`Invalid language code: ${languageCode}`);
         return;
       }
       
@@ -230,7 +232,7 @@ export const LanguageStore = signalStore(
       // Update translation service language
       translateService.use(languageCode);
       
-      console.log(`🗣️ Preferred language set to: ${languageCode} (saved to localStorage)`);
+      logger.info(`🗣️ Preferred language set to: ${languageCode} (saved to localStorage)`);
     },
     
     /**
@@ -249,7 +251,7 @@ export const LanguageStore = signalStore(
       const cacheKey = `${text.substring(0, 100)}-${targetLang}`;
       const cached = store.translationCache()[cacheKey];
       if (cached) {
-        console.log('📦 Using cached translation');
+        logger.info('📦 Using cached translation');
         return cached;
       }
       
@@ -268,7 +270,7 @@ export const LanguageStore = signalStore(
           isTranslating: false,
         });
         
-        console.log(`✅ Translation completed: ${sourceLang} → ${targetLang}`);
+        logger.info(`✅ Translation completed: ${sourceLang} → ${targetLang}`);
         return translated;
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Translation failed';
@@ -277,7 +279,7 @@ export const LanguageStore = signalStore(
           translationError: errorMsg,
         });
         
-        console.error('❌ Translation error:', errorMsg);
+        logger.error('❌ Translation error:', errorMsg);
         
         // Return original text as fallback
         return text;
@@ -303,7 +305,7 @@ export const LanguageStore = signalStore(
         );
         
         patchState(store, { isTranslating: false });
-        console.log(`✅ Batch translation completed: ${texts.length} items`);
+        logger.info(`✅ Batch translation completed: ${texts.length} items`);
         
         return translations;
       } catch (error) {
@@ -313,7 +315,7 @@ export const LanguageStore = signalStore(
           translationError: errorMsg,
         });
         
-        console.error('❌ Batch translation error:', errorMsg);
+        logger.error('❌ Batch translation error:', errorMsg);
         
         // Return original texts as fallback
         return texts;
@@ -332,7 +334,7 @@ export const LanguageStore = signalStore(
      */
     clearCache: () => {
       patchState(store, { translationCache: {} });
-      console.log('🗑️ Translation cache cleared');
+      logger.info('🗑️ Translation cache cleared');
     },
     
     /**
@@ -350,11 +352,11 @@ export const LanguageStore = signalStore(
      * @returns The actual language that will be used (may fallback to English)
      */
     setAnalysisLanguage: (languageCode: string): string => {
-      console.log(`\n🌍 [Language Sync] Setting analysis language to: ${languageCode}`);
+      logger.info(`\n🌍 [Language Sync] Setting analysis language to: ${languageCode}`);
       
       // Check if language is supported for app UI
       if (isAppLanguageSupported(languageCode)) {
-        console.log(`✅ [Language Sync] ${languageCode} is supported for app UI`);
+        logger.info(`✅ [Language Sync] ${languageCode} is supported for app UI`);
         
         // Switch app UI to this language
         translateService.use(languageCode);
@@ -375,11 +377,11 @@ export const LanguageStore = signalStore(
         // Save to localStorage
         saveLanguage(languageCode);
         
-        console.log(`✅ [Language Sync] App UI switched to ${languageCode}\n`);
+        logger.info(`✅ [Language Sync] App UI switched to ${languageCode}\n`);
         return languageCode;
       } else {
         // Fallback to English
-        console.warn(`⚠️ [Language Sync] ${languageCode} not supported for app UI, falling back to English`);
+        logger.warn(`⚠️ [Language Sync] ${languageCode} not supported for app UI, falling back to English`);
         
         translateService.use(LANGUAGES.ENGLISH);
         
@@ -390,11 +392,61 @@ export const LanguageStore = signalStore(
         
         saveLanguage(LANGUAGES.ENGLISH);
         
-        console.log(`✅ [Language Sync] App UI set to English (fallback)\n`);
+        logger.info(`✅ [Language Sync] App UI set to English (fallback)\n`);
         return LANGUAGES.ENGLISH;
       }
     },
     
+    /**
+     * Check if translation is available between languages
+     */
+    async canTranslate(sourceLang: string, targetLang: string) {
+      try {
+        return await translatorService.canTranslate(sourceLang, targetLang);
+      } catch (error) {
+        logger.error('Failed to check translation availability', error);
+        throw error;
+      }
+    },
+    
+    /**
+     * Download language pack (requires user gesture)
+     */
+    async downloadLanguagePack(sourceLang: string, targetLang: string) {
+      try {
+        const capabilities = await translatorService.canTranslate(sourceLang, targetLang);
+        
+        if (capabilities.available === 'downloadable') {
+          logger.info(`Downloading language pack: ${sourceLang} → ${targetLang}`);
+          await translatorService.createTranslator({ 
+            sourceLanguage: sourceLang, 
+            targetLanguage: targetLang 
+          });
+          logger.info('Language pack downloaded successfully');
+        }
+        
+        return capabilities;
+      } catch (error) {
+        logger.error(`Failed to download language pack: ${sourceLang} → ${targetLang}`, error);
+        throw error;
+      }
+    },
+    
+    /**
+     * Create translator session
+     */
+    async createTranslator(sourceLang: string, targetLang: string) {
+      try {
+        return await translatorService.createTranslator({
+          sourceLanguage: sourceLang,
+          targetLanguage: targetLang
+        });
+      } catch (error) {
+        logger.error(`Failed to create translator: ${sourceLang} → ${targetLang}`, error);
+        throw error;
+      }
+    },
+
     /**
      * Reset store to initial state
      */
@@ -404,10 +456,18 @@ export const LanguageStore = signalStore(
       try {
         localStorage.removeItem(LANGUAGE_STORAGE_KEY);
       } catch (error) {
-        console.warn('Failed to clear language preference from localStorage:', error);
+        logger.warn('Failed to clear language preference from localStorage:', error);
       }
     },
-  }))
+  })),
+  
+  // Lifecycle hooks
+  withHooks({
+    onDestroy(store) {
+      // Cleanup translation cache if needed
+      store.clearCache();
+    }
+  })
 );
 
 /**
