@@ -467,7 +467,7 @@ export class AnalysisDashboard implements OnInit {
 
   /**
    * Draft a professional email with questions using Writer API
-   * Delegates to EmailDraftStore
+   * Delegates to EmailDraftStore with smart context detection
    */
   async draftProfessionalEmail(): Promise<void> {
     const metadata = this.getMetadata();
@@ -476,37 +476,9 @@ export class AnalysisDashboard implements OnInit {
     if (!metadata || !questions.length) return;
     
     const selectedRole = metadata.analyzedForRole;
-    const parties = metadata.parties;
     
-    // Determine who is the sender (you) and who is the recipient (them)
-    let senderName = 'you';
-    let recipientName = 'the other party';
-    let senderRole = '';
-    let recipientRole = '';
-    
-    if (parties?.party1 && parties?.party2) {
-      if (parties.party1.role?.toLowerCase() === selectedRole?.toLowerCase()) {
-        // Viewing as party1 - you ARE party1, email TO party2
-        senderName = parties.party1.name;
-        recipientName = parties.party2.name;
-        senderRole = parties.party1.role || '';
-        recipientRole = parties.party2.role || '';
-      } else if (parties.party2.role?.toLowerCase() === selectedRole?.toLowerCase()) {
-        // Viewing as party2 - you ARE party2, email TO party1
-        senderName = parties.party2.name;
-        recipientName = parties.party1.name;
-        senderRole = parties.party2.role || '';
-        recipientRole = parties.party1.role || '';
-      }
-    }
-    
-    // Get contract language from metadata or language store
-    const contractLanguage = metadata.detectedLanguage || this.languageStore.detectedContractLanguage() || 'en';
-    
-    console.log(`✉️ [Email] Drafting in ${contractLanguage} from ${senderName} (${senderRole}) TO ${recipientName} (${recipientRole})`);
-    
-    // Delegate to EmailDraftStore with contract language
-    await this.emailStore.draftEmail(questions, recipientName, senderName, senderRole, recipientRole, contractLanguage);
+    // Delegate to EmailDraftStore with smart context detection
+    await this.emailStore.draftProfessionalEmailWithContext(questions, metadata, selectedRole);
     
     // Open the email draft modal
     this.openEmailDraftModal();

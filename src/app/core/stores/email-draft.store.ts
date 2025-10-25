@@ -11,6 +11,7 @@ import { LanguageDetectorService } from '../services/ai/language-detector.servic
 import { TranslatorService } from '../services/ai/translator.service';
 import { LoggerService } from '../services/logger.service';
 import { AppConfig } from '../config/app.config';
+import type { ContractMetadata } from '../schemas/analysis-schemas';
 
 /**
  * Email draft store state shape
@@ -69,6 +70,59 @@ export const EmailDraftStore = signalStore(
   
   // Methods to update state
   withMethods((store, writerService = inject(WriterService), languageDetectorService = inject(LanguageDetectorService), translatorService = inject(TranslatorService), logger = inject(LoggerService)) => ({
+    /**
+     * Draft a professional email with smart context detection
+     * Automatically determines sender/recipient from contract metadata
+     * @param questions - Array of questions to include in the email
+     * @param metadata - Contract metadata containing parties and analysis context
+     * @param selectedRole - The role the user is viewing the contract as
+     */
+    async draftProfessionalEmailWithContext(
+      questions: string[],
+      metadata: ContractMetadata,
+      selectedRole: string | null
+    ): Promise<void> {
+      if (questions.length === 0) {
+        logger.warn('No questions to draft email');
+        return;
+      }
+      
+      if (!metadata) {
+        logger.error('No contract metadata available for email drafting');
+        return;
+      }
+      
+      // Determine sender/recipient logic (moved from component)
+      let senderName = 'you';
+      let recipientName = 'the other party';
+      let senderRole = '';
+      let recipientRole = '';
+      
+      if (metadata.parties?.party1 && metadata.parties?.party2) {
+        if (metadata.parties.party1.role?.toLowerCase() === selectedRole?.toLowerCase()) {
+          // Viewing as party1 - you ARE party1, email TO party2
+          senderName = metadata.parties.party1.name;
+          recipientName = metadata.parties.party2.name;
+          senderRole = metadata.parties.party1.role || '';
+          recipientRole = metadata.parties.party2.role || '';
+        } else if (metadata.parties.party2.role?.toLowerCase() === selectedRole?.toLowerCase()) {
+          // Viewing as party2 - you ARE party2, email TO party1
+          senderName = metadata.parties.party2.name;
+          recipientName = metadata.parties.party1.name;
+          senderRole = metadata.parties.party2.role || '';
+          recipientRole = metadata.parties.party1.role || '';
+        }
+      }
+      
+      // Get contract language from metadata
+      const contractLanguage = metadata.detectedLanguage || 'en';
+      
+      logger.info(`✉️ [Email] Drafting in ${contractLanguage} from ${senderName} (${senderRole}) TO ${recipientName} (${recipientRole})`);
+      
+      // Call the existing draftEmail method with determined context
+      await this.draftEmail(questions, recipientName, senderName, senderRole, recipientRole, contractLanguage);
+    },
+
     /**
      * Draft a professional email using Writer API
      * @param questions - Array of questions to include in the email
