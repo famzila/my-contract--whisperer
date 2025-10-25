@@ -144,13 +144,9 @@ export const OnboardingStore = signalStore(
       
       // CRITICAL: Only show modal if detected language is DIFFERENT from user's preferred language
       if (detected === preferred) {
-        const logger = inject(LoggerService);
-        logger.info(`✅ Language match: detected "${detected}" === preferred "${preferred}" - No modal needed`);
         return false;
       }
       
-      const logger = inject(LoggerService);
-      logger.info(`🌍 Language mismatch: detected "${detected}" !== preferred "${preferred}" - Show modal`);
       return true;
     }),
     

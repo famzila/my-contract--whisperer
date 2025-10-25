@@ -9,49 +9,11 @@ import { patchState } from '@ngrx/signals';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslatorService } from '../services/ai/translator.service';
 import { LanguageDetectorService } from '../services/ai/language-detector.service';
+import { LanguageUtilsService } from '../services/language-utils.service';
 import { LoggerService } from '../services/logger.service';
 import { LANGUAGES, DEFAULT_LANGUAGE, isRTL, isAppLanguageSupported, isGeminiNanoSupported } from '../constants/languages';
+import type { Language, LanguageState, TranslationCache } from '../models/language.model';
 
-/**
- * Supported languages for the app
- */
-export interface Language {
-  code: string;
-  name: string;
-  nativeName: string;
-  flag: string;
-}
-
-/**
- * Translation cache entry
- */
-interface TranslationCache {
-  [key: string]: string; // key: `${text}-${targetLang}`, value: translated text
-}
-
-/**
- * Language store state
- */
-interface LanguageState {
-  // Detected contract language
-  detectedContractLanguage: string | null;
-  
-  // User's preferred language for analysis
-  preferredLanguage: string;
-  
-  // Available languages
-  availableLanguages: Language[];
-  
-  // Translation states
-  isTranslating: boolean;
-  translationError: string | null;
-  
-  // Cache for translations (performance optimization)
-  translationCache: TranslationCache;
-  
-  // Show language selector banner
-  showLanguageBanner: boolean;
-}
 
 /**
  * Supported languages configuration
@@ -66,42 +28,13 @@ const SUPPORTED_LANGUAGES: Language[] = [
   { code: LANGUAGES.SPANISH, name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
 ];
 
-/**
- * LocalStorage key for language preference
- */
-const LANGUAGE_STORAGE_KEY = 'contract-whisperer-language';
-
-/**
- * Get saved language from localStorage
- */
-function getSavedLanguage(): string {
-  // try {
-  //   const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-  //   return saved && SUPPORTED_LANGUAGES.some(lang => lang.code === saved) ? saved : DEFAULT_LANGUAGE;
-  // } catch {
-  // }
-  // Always return default English (until we fix RTL issues)
-  return DEFAULT_LANGUAGE;
-}
-
-/**
- * Save language to localStorage
- */
-function saveLanguage(languageCode: string): void {
-  try {
-    localStorage.setItem(LANGUAGE_STORAGE_KEY, languageCode);
-  } catch (error) {
-      const logger = inject(LoggerService);
-      logger.warn('Failed to save language preference to localStorage:', error);
-  }
-}
 
 /**
  * Initial state
  */
 const initialState: LanguageState = {
   detectedContractLanguage: null,
-  preferredLanguage: getSavedLanguage(), // Load from localStorage
+  preferredLanguage: DEFAULT_LANGUAGE, // Will be loaded from localStorage in onInit
   availableLanguages: SUPPORTED_LANGUAGES,
   isTranslating: false,
   translationError: null,
@@ -154,7 +87,7 @@ export const LanguageStore = signalStore(
   })),
   
   // Methods
-  withMethods((store, translatorService = inject(TranslatorService), translateService = inject(TranslateService), languageDetectorService = inject(LanguageDetectorService), logger = inject(LoggerService)) => ({
+  withMethods((store, translatorService = inject(TranslatorService), translateService = inject(TranslateService), languageDetectorService = inject(LanguageDetectorService), languageUtils = inject(LanguageUtilsService), logger = inject(LoggerService)) => ({
     /**
      * Detect contract language from text using Chrome Language Detector API
      */
@@ -220,7 +153,7 @@ export const LanguageStore = signalStore(
       });
       
       // Save to localStorage
-      saveLanguage(languageCode);
+      languageUtils.saveLanguage(languageCode);
       
       // Apply RTL if needed
       if (isRTL(languageCode)) {
@@ -375,7 +308,7 @@ export const LanguageStore = signalStore(
         });
         
         // Save to localStorage
-        saveLanguage(languageCode);
+        languageUtils.saveLanguage(languageCode);
         
         logger.info(`✅ [Language Sync] App UI switched to ${languageCode}\n`);
         return languageCode;
@@ -390,7 +323,7 @@ export const LanguageStore = signalStore(
           showLanguageBanner: false,
         });
         
-        saveLanguage(LANGUAGES.ENGLISH);
+        languageUtils.saveLanguage(LANGUAGES.ENGLISH);
         
         logger.info(`✅ [Language Sync] App UI set to English (fallback)\n`);
         return LANGUAGES.ENGLISH;
@@ -453,16 +386,30 @@ export const LanguageStore = signalStore(
     reset: () => {
       patchState(store, initialState);
       // Clear localStorage
-      try {
-        localStorage.removeItem(LANGUAGE_STORAGE_KEY);
-      } catch (error) {
-        logger.warn('Failed to clear language preference from localStorage:', error);
-      }
+      languageUtils.clearLanguage();
     },
   })),
   
   // Lifecycle hooks
   withHooks({
+    onInit(store) {
+      const languageUtils = inject(LanguageUtilsService);
+      const translateService = inject(TranslateService);
+      
+      // Load saved language from localStorage
+      const savedLanguage = languageUtils.getSavedLanguage();
+      patchState(store, { preferredLanguage: savedLanguage });
+      
+      // Initialize translation service
+      translateService.use(savedLanguage);
+      
+      // Apply RTL if needed
+      if (isRTL(savedLanguage)) {
+        document.documentElement.setAttribute('dir', 'rtl');
+      } else {
+        document.documentElement.removeAttribute('dir');
+      }
+    },
     onDestroy(store) {
       // Cleanup translation cache if needed
       store.clearCache();
@@ -470,22 +417,4 @@ export const LanguageStore = signalStore(
   })
 );
 
-/**
- * Initialize the language store with saved language preference
- * This should be called when the app starts
- */
-export function initializeLanguageStore(translateService: TranslateService): void {
-  const savedLanguage = getSavedLanguage();
-  // Set the initial language in TranslateService
-  translateService.use(savedLanguage);
-  
-  // Apply RTL if needed
-  if (isRTL(savedLanguage)) {
-    document.documentElement.setAttribute('dir', 'rtl');
-  } else {
-    // remove dir attribute
-    document.documentElement.removeAttribute('dir');
-    // document.documentElement.setAttribute('dir', 'ltr');
-  }
-}
 

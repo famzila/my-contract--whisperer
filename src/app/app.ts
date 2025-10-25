@@ -2,7 +2,6 @@ import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { LANGUAGES, DEFAULT_LANGUAGE } from './core/constants/languages';
-import { initializeLanguageStore } from './core/stores/language.store';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +24,5 @@ export class App {
       LANGUAGES.CHINESE
     ]);
     
-    // Initialize language from localStorage
-    initializeLanguageStore(this.translate);
   }
 }
