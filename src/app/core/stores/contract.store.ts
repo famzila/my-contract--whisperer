@@ -946,19 +946,21 @@ export const ContractStore = signalStore(
     },
     
     onDestroy(store) {
-      const logger = inject(LoggerService);
-      logger.info('🧹 [ContractStore] Cleaning up on destroy...');
-      
       // Clean up RxJS subscriptions
       if (store.destroySubject()) {
         store.destroySubject()!.next();
         store.destroySubject()!.complete();
       }
       
-      // Reset isDone flag to prevent disabled language selector on other pages
-      // Keep other state for cache/navigation purposes
+      // Reset analysis state to prevent disabled language selector on other pages
+      // Keep contract data for cache/navigation purposes but reset analysis flags
       patchState(store, { 
         isDone: false,
+        isAnalyzing: false,
+        isTranslating: false,
+        translatingToLanguage: null,
+        analysisError: null,
+        analysisProgress: 0,
         destroySubject: null 
       });
     }

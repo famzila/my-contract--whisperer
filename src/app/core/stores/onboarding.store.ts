@@ -365,9 +365,6 @@ export const OnboardingStore = signalStore(
     },
     
     onDestroy(store) {
-      const logger = inject(LoggerService);
-      logger.info('🧹 [OnboardingStore] Cleaning up on destroy...');
-      
       // Reset onboarding state to prepare for new contract upload
       // Keep userPreferredLanguage for better UX
       const userPrefLang = store.userPreferredLanguage();

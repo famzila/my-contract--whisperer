@@ -253,13 +253,26 @@ export const UiStore = signalStore(
   
   // Lifecycle hooks
   withHooks({
-    onInit({ theme }) {
-      // Apply the initial theme to the document
-      if (theme() === 'dark') {
+    onInit(store) {
+      // Load saved theme from localStorage
+      const savedTheme = localStorage.getItem('contract-whisperer-theme') as 'light' | 'dark' | 'auto' || 'light';
+      patchState(store, { theme: savedTheme });
+      
+      // Apply the theme to the document
+      if (savedTheme === 'dark') {
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
       }
+    },
+    
+    onDestroy(store) {
+      // Close all modals on destroy if they are open
+      store.closeAllModals();
+      
+      // Save current theme to localStorage
+      const currentTheme = store.theme();
+      localStorage.setItem('contract-whisperer-theme', currentTheme);
     }
   })
 );

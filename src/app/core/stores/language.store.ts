@@ -515,8 +515,15 @@ export const LanguageStore = signalStore(
       }
     },
     onDestroy(store) {
-      // Cleanup translation cache if needed
+      // Cleanup translation cache
       store.clearCache();
+      
+      // Reset translation state
+      patchState(store, {
+        isTranslating: false,
+        translationError: null,
+        showLanguageBanner: false
+      });
     }
   })
 );
