@@ -18,7 +18,7 @@ export class ContractInsightCard {
   title = input.required<string>();
   description = input<string>('');
   severity = input.required<InsightSeverity>();
-  impactLabel = input<string>('Why this matters:'); // todo translate
+  impactLabel = input<string>('analysis.insights.whyThisMatters');
   impactText = input<string>('');
   expanded = input<boolean>(false);
 
@@ -28,6 +28,15 @@ export class ContractInsightCard {
       high: 'critical',
       medium: 'warning',
       low: 'info'
+    };
+    return severityMap[this.severity()];
+  });
+
+  severityBadgeLabel = computed(() => {
+    const severityMap: Record<InsightSeverity, string> = {
+      high: 'analysis.severityBadge.critical',
+      medium: 'analysis.severityBadge.warning',
+      low: 'analysis.severityBadge.info'
     };
     return severityMap[this.severity()];
   });

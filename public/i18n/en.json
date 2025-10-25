@@ -210,6 +210,9 @@
       "warning": "Warning",
       "info": "Info"
     },
+    "insights": {
+      "whyThisMatters": "Why this matters:"
+    },
     "obligations": {
       "title": "Obligations",
       "subtitle": "What each party is responsible for - structured and actionable",
