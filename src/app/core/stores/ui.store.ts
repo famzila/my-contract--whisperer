@@ -79,12 +79,16 @@ export const UiStore = signalStore(
      */
     setTheme: (theme: 'light' | 'dark' | 'auto') => {
       patchState(store, { theme });
+      
       // Apply theme to document
       if (theme === 'dark') {
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
       }
+      
+      // Save to localStorage immediately
+      localStorage.setItem('contract-whisperer-theme', theme);
     },
     
     /**
@@ -95,11 +99,15 @@ export const UiStore = signalStore(
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
       patchState(store, { theme: newTheme });
       
+      // Apply theme to document
       if (newTheme === 'dark') {
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
       }
+      
+      // Save to localStorage immediately
+      localStorage.setItem('contract-whisperer-theme', newTheme);
     },
     
     /**
@@ -255,10 +263,10 @@ export const UiStore = signalStore(
   withHooks({
     onInit(store) {
       // Load saved theme from localStorage
-      const savedTheme = localStorage.getItem('contract-whisperer-theme') as 'light' | 'dark' | 'auto' || 'light';
+      const savedTheme = (localStorage.getItem('contract-whisperer-theme') || 'dark') as 'light' | 'dark' | 'auto';
       patchState(store, { theme: savedTheme });
       
-      // Apply the theme to the document
+      // Apply theme to document immediately
       if (savedTheme === 'dark') {
         document.documentElement.classList.add('dark');
       } else {
@@ -270,9 +278,6 @@ export const UiStore = signalStore(
       // Close all modals on destroy if they are open
       store.closeAllModals();
       
-      // Save current theme to localStorage
-      const currentTheme = store.theme();
-      localStorage.setItem('contract-whisperer-theme', currentTheme);
     }
   })
 );
