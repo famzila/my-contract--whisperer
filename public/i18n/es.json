@@ -519,6 +519,9 @@
     "summarizerUnavailable": "Las funciones de resumen no están disponibles actualmente",
     "sessionNotInitialized": "Servicio no listo. Por favor, refresca la página.",
     "notAContract": "No es un contrato: {{reason}}",
+    "languageSwitchFailed": "No se pudo cambiar a {{targetLanguage}}. La aplicación se ha revertido a {{currentLanguage}}.",
+    "languageSwitchExplanation": "Si es la primera vez que usas {{targetLanguage}}, necesitas una conexión a internet para descargar el paquete de traducción. Esta es una descarga única que ocurre de forma segura en tu navegador. Una vez descargado, puedes usar {{targetLanguage}} sin conexión. Por favor, verifica tu conexión a internet e inténtalo de nuevo.",
+    "languageSwitchRetry": "Puedes volver y volver a seleccionar {{targetLanguage}} para intentar de nuevo.",
     "notAValidContract": "Esto no parece ser un documento de contrato válido.",
     "analysisFailed": "Lo sentimos, ocurrió un error. No pudimos analizar tu contrato. Por favor, inténtalo de nuevo.",
     "translationFailed": "Fallo en la traducción. Por favor, inténtalo de nuevo."

@@ -519,6 +519,9 @@
     "summarizerUnavailable": "Summary features are currently unavailable",
     "sessionNotInitialized": "Service not ready. Please refresh the page.",
     "notAContract": "Not a contract: {{reason}}",
+    "languageSwitchFailed": "Unable to switch to {{targetLanguage}}. The app has been reverted to {{currentLanguage}}.",
+    "languageSwitchExplanation": "If this is your first time using {{targetLanguage}}, you need an internet connection to download the translation package. This is a one-time download that happens securely in your browser. Once downloaded, you can use {{targetLanguage}} offline. Please check your internet connection and try again.",
+    "languageSwitchRetry": "You can go back and reselect {{targetLanguage}} to try again.",
     "notAValidContract": "This doesn't appear to be a valid contract document.",
     "analysisFailed": "We're sorry, an error occurred. We couldn't analyze your contract. Please try again.",
     "translationFailed": "Translation failed. Please try again."

@@ -382,6 +382,109 @@ export const LanguageStore = signalStore(
     },
 
     /**
+     * Switch language with optimistic updates and error handling
+     * Consolidates all language switching business logic from components
+     */
+    async switchLanguage(
+      newLanguageCode: string, 
+      hasContract: boolean, 
+      hasAnalysis: boolean,
+      contractStore?: any // ContractStore for analysis re-translation
+    ): Promise<{ success: boolean; error?: string; revertedTo?: string }> {
+      const previousLanguage = store.preferredLanguage();
+      
+      // If no change, return early
+      if (previousLanguage === newLanguageCode) {
+        return { success: true };
+      }
+      
+      logger.info(`🌍 [LanguageSwitch] Switching: ${previousLanguage} → ${newLanguageCode}`);
+      
+      // Optimistic update: immediately update UI language
+      const originalLanguage = previousLanguage;
+      patchState(store, { 
+        preferredLanguage: newLanguageCode,
+        isTranslating: false,
+        translationError: null 
+      });
+      
+      // Update TranslateService immediately for UI
+      translateService.use(newLanguageCode);
+      
+      // Apply RTL if needed
+      if (isRTL(newLanguageCode)) {
+        document.documentElement.setAttribute('dir', 'rtl');
+      } else {
+        document.documentElement.removeAttribute('dir');
+      }
+      
+      // Save to localStorage immediately
+      languageUtils.saveLanguage(newLanguageCode);
+      
+      try {
+        // If there's an active contract analysis, handle translation
+        if (hasContract && hasAnalysis && contractStore) {
+          logger.info(`🔄 [LanguageSwitch] Re-translating analysis results...`);
+          
+          // Pre-download language pack if needed (requires user gesture)
+          try {
+            const capabilities = await translatorService.canTranslate(previousLanguage, newLanguageCode);
+            
+            if (capabilities.available === 'downloadable') {
+              logger.info(`📦 [LanguageSwitch] Downloading language pack: ${previousLanguage} → ${newLanguageCode}`);
+              await translatorService.createTranslator({ 
+                sourceLanguage: previousLanguage, 
+                targetLanguage: newLanguageCode 
+              });
+              logger.info(`✅ [LanguageSwitch] Language pack downloaded successfully`);
+            }
+          } catch (error) {
+            logger.warn(`⚠️ [LanguageSwitch] Language pack download failed, continuing anyway:`, error);
+            // Continue with translation attempt
+          }
+          
+          // Re-translate analysis results
+          await contractStore.switchAnalysisLanguage(newLanguageCode, previousLanguage);
+          logger.info(`✅ [LanguageSwitch] Analysis re-translated successfully`);
+        }
+        
+        logger.info(`✅ [LanguageSwitch] Language switch completed successfully`);
+        return { success: true };
+        
+      } catch (error) {
+        logger.error(`❌ [LanguageSwitch] Failed to switch language:`, error);
+        
+        // Rollback: revert to previous language
+        patchState(store, { 
+          preferredLanguage: originalLanguage,
+          isTranslating: false,
+          translationError: error instanceof Error ? error.message : 'Language switch failed'
+        });
+        
+        // Revert TranslateService
+        translateService.use(originalLanguage);
+        
+        // Revert RTL
+        if (isRTL(originalLanguage)) {
+          document.documentElement.setAttribute('dir', 'rtl');
+        } else {
+          document.documentElement.removeAttribute('dir');
+        }
+        
+        // Revert localStorage
+        languageUtils.saveLanguage(originalLanguage);
+        
+        logger.info(`🔄 [LanguageSwitch] Reverted to: ${originalLanguage}`);
+        
+        return { 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Language switch failed',
+          revertedTo: originalLanguage
+        };
+      }
+    },
+
+    /**
      * Reset store to initial state
      */
     reset: () => {

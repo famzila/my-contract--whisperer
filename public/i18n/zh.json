@@ -519,6 +519,9 @@
     "summarizerUnavailable": "摘要功能目前不可用",
     "sessionNotInitialized": "服务未准备就绪。请刷新页面。",
     "notAContract": "不是合同：{{reason}}",
+    "languageSwitchFailed": "无法切换到{{targetLanguage}}。应用已恢复到{{currentLanguage}}。",
+    "languageSwitchExplanation": "如果您是第一次使用{{targetLanguage}}，需要互联网连接来下载翻译包。这是一次性下载，在您的浏览器中安全进行。下载完成后，您可以离线使用{{targetLanguage}}。请检查您的互联网连接并重试。",
+    "languageSwitchRetry": "您可以返回并重新选择{{targetLanguage}}来重试。",
     "notAValidContract": "这似乎不是一个有效的合同文件。",
     "analysisFailed": "很抱歉，发生了一个错误。我们无法分析您的合同。请重试。",
     "translationFailed": "翻译失败。请重试。"

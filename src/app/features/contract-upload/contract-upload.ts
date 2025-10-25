@@ -261,78 +261,33 @@ export class ContractUpload {
   async onSelectRole(role: string | null): Promise<void> {
     if (!role) return;
 
-    // Map party1/party2 to actual roles
-    let actualRole: string = role;
     const detectedParties = this.onboardingStore.detectedParties();
-
-    if (role === 'party1' && detectedParties?.parties?.party1) {
-      // Map party1 to its actual role (e.g., 'landlord', 'employer')
-      actualRole = this.mapPartyRoleToUserRole(detectedParties.parties.party1.role);
-      this.logger.info(
-        `👤 [Selection] User selected Party 1 (${detectedParties.parties.party1.name}) → Role: ${actualRole}`
-      );
-    } else if (role === 'party2' && detectedParties?.parties?.party2) {
-      // Map party2 to its actual role (e.g., 'tenant', 'employee')
-      actualRole = this.mapPartyRoleToUserRole(detectedParties.parties.party2.role);
-      this.logger.info(
-        `👤 [Selection] User selected Party 2 (${detectedParties.parties.party2.name}) → Role: ${actualRole}`
-      );
-    } else {
-      this.logger.info(`👤 [Selection] User selected generic role: ${actualRole}`);
-    }
-
-    // Set role in onboarding store
-    this.onboardingStore.setSelectedRole(actualRole as any);
-
-    // Get pending contract text
     const pendingText = this.onboardingStore.pendingContractText();
+    
     if (!pendingText) {
       this.uiStore.showToast('No contract found', 'error');
       return;
     }
 
-    // Now trigger analysis with the selected role
+    // Show loading toast
     this.uiStore.showToast('Starting analysis...', 'info');
 
-    try {
-      // Re-parse and analyze with selected role (progressive loading)
-      const parsedContract = this.contractStore.parseTextToContract(pendingText, 'pending-analysis');
+    // Use the consolidated store method with business logic
+    const result = await this.contractStore.selectRoleAndAnalyze(
+      role,
+      detectedParties,
+      pendingText
+    );
 
-      // Start analysis - navigation happens automatically when metadata is ready!
-      // Don't await - let it run in background while we navigate
-      this.contractStore.analyzeContract(parsedContract).catch((error) => {
-        this.logger.error('❌ Analysis error:', error);
-        // Don't navigate back to upload - user is already on analysis page
-        // Just show toast - they can see what sections loaded successfully
-        this.uiStore.showToast('Some sections failed to load. Please try refreshing.', 'warning');
-      });
-
+    if (result.success) {
+      this.logger.info(`✅ [ContractUpload] Role selection completed successfully`);
       // Note: Navigation to /analysis happens automatically in the store when metadata is ready (~1s)
-    } catch (error) {
-      this.uiStore.showToast('Analysis failed', 'error');
+    } else {
+      this.logger.error(`❌ [ContractUpload] Role selection failed:`, result.error);
+      this.uiStore.showToast(result.error || 'Analysis failed', 'error');
     }
   }
 
-  /**
-   * Map detected party role to UserRole enum
-   * Party roles from AI: "Landlord", "Tenant", "Employer", "Employee", etc.
-   * UserRole: 'landlord', 'tenant', 'employer', 'employee', etc. (lowercase)
-   */
-  private mapPartyRoleToUserRole(partyRole: string): string {
-    const roleMap: Record<string, string> = {
-      Landlord: 'landlord',
-      Tenant: 'tenant',
-      Employer: 'employer',
-      Employee: 'employee',
-      Client: 'client',
-      Contractor: 'contractor',
-      Partner: 'partner',
-      Lessor: 'landlord',
-      Lessee: 'tenant',
-    };
-
-    return roleMap[partyRole] || partyRole.toLowerCase();
-  }
 
   /**
    * Handle language selection - use contract language (no translation)

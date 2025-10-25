@@ -519,6 +519,9 @@
     "summarizerUnavailable": "ميزات الملخص غير متاحة حاليًا",
     "sessionNotInitialized": "الخدمة غير جاهزة. الرجاء تحديث الصفحة.",
     "notAContract": "ليس عقداً: {{reason}}",
+    "languageSwitchFailed": "تعذر التبديل إلى {{targetLanguage}}. تم إرجاع التطبيق إلى {{currentLanguage}}.",
+    "languageSwitchExplanation": "إذا كانت هذه هي المرة الأولى التي تستخدم فيها {{targetLanguage}}، فأنت بحاجة إلى اتصال بالإنترنت لتحميل حزمة الترجمة. هذا تحميل لمرة واحدة يحدث بأمان في متصفحك. بمجرد التحميل، يمكنك استخدام {{targetLanguage}} دون اتصال بالإنترنت. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.",
+    "languageSwitchRetry": "يمكنك العودة وإعادة تحديد {{targetLanguage}} للمحاولة مرة أخرى.",
     "notAValidContract": "لا يبدو أن هذا مستند عقد صالح.",
     "analysisFailed": "نعتذر، حدث خطأ. لم نتمكن من تحليل عقدك. الرجاء المحاولة مرة أخرى.",
     "translationFailed": "فشلت الترجمة. الرجاء المحاولة مرة أخرى."

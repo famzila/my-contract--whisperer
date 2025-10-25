@@ -8,6 +8,7 @@ import { Languages, LucideAngularModule } from 'lucide-angular';
 import { LanguageStore } from '../../../core/stores/language.store';
 import { ContractStore } from '../../../core/stores/contract.store';
 import { LoggerService } from '../../../core/services/logger.service';
+import { getLanguageName } from '../../../core/utils/language-names.util';
 import { Globe, ChevronDown, Check } from '../../icons/lucide-icons';
 
 @Component({
@@ -20,6 +21,7 @@ export class LanguageSelector {
   languageStore = inject(LanguageStore);
   contractStore = inject(ContractStore);
   translateService = inject(TranslateService);
+  translate = inject(TranslateService);
   logger = inject(LoggerService);
   
   // Lucide icons
@@ -78,63 +80,48 @@ export class LanguageSelector {
   }
   
   /**
-   * Select language
+   * Select language - now uses consolidated store method with optimistic updates
    */
   async selectLanguage(languageCode: string): Promise<void> {
-    const previousLanguage = this.languageStore.preferredLanguage();
-    
-    // If there's an active contract analysis, pre-download language pack if needed
-    // This ensures we have a user gesture available for the Chrome Translator API
     const hasContract = this.contractStore.contract();
     const hasAnalysis = this.contractStore.canShowDashboard();
     
-    if (hasContract && hasAnalysis && previousLanguage !== languageCode) {
-      this.logger.info(`🌍 [LanguageSelector] Language changed: ${previousLanguage} → ${languageCode}`);
-      
-      // Check if language pack needs download (only once per language, per browser)
-      try {
-        const capabilities = await this.languageStore.canTranslate(previousLanguage, languageCode);
-        
-        if (capabilities.available === 'downloadable') {
-          await this.languageStore.downloadLanguagePack(previousLanguage, languageCode);
-        }
-      } catch (error) {
-        // Continue anyway - translation will attempt to download if needed
-      }
-    }
+    // Use the consolidated store method with optimistic updates and error handling
+    const result = await this.languageStore.switchLanguage(
+      languageCode, 
+      !!hasContract, 
+      !!hasAnalysis, 
+      this.contractStore
+    );
     
-    // If there's an active contract analysis, re-translate it to the new language
-    if (hasContract && hasAnalysis && previousLanguage !== languageCode) {
-      this.logger.info(`🔄 [LanguageSelector] Re-translating analysis results...`);
-      
-      try {
-        // Pass the previous language to the store so it can revert properly
-        await this.contractStore.switchAnalysisLanguage(languageCode, previousLanguage);
-        this.logger.info(`✅ [LanguageSelector] Analysis re-translated successfully`);
-        
-        // Only update UI language after successful translation
-        this.languageStore.setPreferredLanguage(languageCode);
-        this.isDropdownOpen.set(false);
-      } catch (error) {
-        this.logger.error(`❌ [LanguageSelector] Failed to re-translate analysis:`, error);
-        
-        // Store has already reverted to previous language
-        // The language selector should automatically reflect the current language via computed signals
-        const currentLanguage = this.languageStore.preferredLanguage();
-        this.logger.info(`🔄 [LanguageSelector] Store reverted to: ${currentLanguage}`);
-        this.logger.info(`🔄 [LanguageSelector] Language selector should now show: ${currentLanguage}`);
-        
-        // Show user-friendly error message
-        alert(
-          `Failed to translate to ${languageCode}. ` +
-          `The app has been reverted to ${currentLanguage}. ` +
-          `Please try again or check your internet connection if this is the first time using this language.`
-        );
-      }
-    } else {
-      // No analysis to translate, just update UI language
-      this.languageStore.setPreferredLanguage(languageCode);
+    if (result.success) {
+      // Close dropdown on success
       this.isDropdownOpen.set(false);
+      this.logger.info(`✅ [LanguageSelector] Language switched successfully to ${languageCode}`);
+    } else {
+      // Handle error with user-friendly message
+      this.logger.error(`❌ [LanguageSelector] Language switch failed:`, result.error);
+      
+      // Show improved, transparent error message with friendly language names
+      const targetLanguageName = getLanguageName(languageCode);
+      const currentLanguageName = getLanguageName(result.revertedTo || this.languageStore.preferredLanguage());
+      
+      // Build comprehensive error message using translations
+      const errorMessage = this.translate.instant('errors.languageSwitchFailed', {
+        targetLanguage: targetLanguageName,
+        currentLanguage: currentLanguageName
+      });
+      
+      const explanation = this.translate.instant('errors.languageSwitchExplanation', {
+        targetLanguage: targetLanguageName
+      });
+      
+      const retryMessage = this.translate.instant('errors.languageSwitchRetry', {
+        targetLanguage: targetLanguageName
+      });
+      
+      // Show comprehensive error message
+      alert(`${errorMessage}\n\n${explanation}\n\n${retryMessage}`);
     }
   }
   

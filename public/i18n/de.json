@@ -519,6 +519,9 @@
     "summarizerUnavailable": "Zusammenfassungsfunktionen sind derzeit nicht verfügbar",
     "sessionNotInitialized": "Dienst ist nicht bereit. Bitte aktualisieren Sie die Seite.",
     "notAContract": "Kein Vertrag: {{reason}}",
+    "languageSwitchFailed": "Wechsel zu {{targetLanguage}} nicht möglich. Die App wurde auf {{currentLanguage}} zurückgesetzt.",
+    "languageSwitchExplanation": "Wenn Sie {{targetLanguage}} zum ersten Mal verwenden, benötigen Sie eine Internetverbindung zum Herunterladen des Übersetzungspakets. Dies ist ein einmaliger Download, der sicher in Ihrem Browser erfolgt. Nach dem Download können Sie {{targetLanguage}} offline verwenden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "languageSwitchRetry": "Sie können zurückgehen und {{targetLanguage}} erneut auswählen, um es nochmal zu versuchen.",
     "notAValidContract": "Dies scheint kein gültiges Vertragsdokument zu sein.",
     "analysisFailed": "Es tut uns leid, es ist ein Fehler aufgetreten. Wir konnten Ihren Vertrag nicht analysieren. Bitte versuchen Sie es erneut.",
     "translationFailed": "Übersetzung fehlgeschlagen. Bitte versuchen Sie es erneut."

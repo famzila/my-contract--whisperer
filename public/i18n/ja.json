@@ -519,6 +519,9 @@
     "summarizerUnavailable": "要約機能は現在利用できません",
     "sessionNotInitialized": "サービスが準備できていません。ページを更新してください。",
     "notAContract": "契約書ではありません: {{reason}}",
+    "languageSwitchFailed": "{{targetLanguage}}への切り替えができません。アプリは{{currentLanguage}}に戻されました。",
+    "languageSwitchExplanation": "{{targetLanguage}}を初めて使用する場合、翻訳パッケージをダウンロードするためにインターネット接続が必要です。これは一度だけのダウンロードで、ブラウザで安全に行われます。ダウンロード後は、{{targetLanguage}}をオフラインで使用できます。インターネット接続を確認して、もう一度お試しください。",
+    "languageSwitchRetry": "戻って{{targetLanguage}}を再選択して、もう一度お試しください。",
     "notAValidContract": "これは有効な契約書文書ではないようです。",
     "analysisFailed": "申し訳ありません、エラーが発生しました。契約書を分析できませんでした。もう一度お試しください。",
     "translationFailed": "翻訳に失敗しました。もう一度お試しください。"

@@ -798,6 +798,110 @@ export const ContractStore = signalStore(
     },
     
     /**
+     * Handle role selection with consolidated business logic
+     * Moves complex role selection logic from components to store
+     */
+    async selectRoleAndAnalyze(
+      role: string | null,
+      detectedParties: any,
+      pendingText: string
+    ): Promise<{ success: boolean; error?: string }> {
+      if (!role) {
+        return { success: false, error: 'No role selected' };
+      }
+
+      if (!pendingText) {
+        return { success: false, error: 'No contract text found' };
+      }
+
+      try {
+        logger.info(`👤 [RoleSelection] Processing role selection: ${role}`);
+
+        // Map party1/party2 to actual roles
+        let actualRole: string = role;
+        
+        if (role === 'party1' && detectedParties?.parties?.party1) {
+          // Map party1 to its actual role (e.g., 'landlord', 'employer')
+          actualRole = this.mapPartyRoleToUserRole(detectedParties.parties.party1.role);
+          logger.info(
+            `👤 [RoleSelection] User selected Party 1 (${detectedParties.parties.party1.name}) → Role: ${actualRole}`
+          );
+        } else if (role === 'party2' && detectedParties?.parties?.party2) {
+          // Map party2 to its actual role (e.g., 'tenant', 'employee')
+          actualRole = this.mapPartyRoleToUserRole(detectedParties.parties.party2.role);
+          logger.info(
+            `👤 [RoleSelection] User selected Party 2 (${detectedParties.parties.party2.name}) → Role: ${actualRole}`
+          );
+        } else {
+          logger.info(`👤 [RoleSelection] User selected generic role: ${actualRole}`);
+        }
+
+        // Set role in onboarding store
+        onboardingStore.setSelectedRole(actualRole as any);
+
+        // Parse contract text
+        const parsedContract = parserService.parseText(pendingText, 'pending-analysis');
+        
+        // Convert ParsedContract to Contract format
+        const contract: Contract = {
+          id: `contract-${Date.now()}`, // Generate unique ID
+          text: parsedContract.text,
+          fileName: parsedContract.fileName,
+          fileSize: parsedContract.fileSize,
+          fileType: parsedContract.fileType,
+          uploadedAt: new Date(),
+          wordCount: parsedContract.text.split(/\s+/).length,
+          estimatedReadingTime: Math.ceil(parsedContract.text.split(/\s+/).length / 200), // ~200 WPM
+        };
+        
+        // Set contract in store
+        patchState(store, { contract });
+
+        // Start analysis - navigation happens automatically when metadata is ready!
+        // Don't await - let it run in background while we navigate
+        this.analyzeContract(parsedContract).catch((error) => {
+          logger.error('❌ Analysis error:', error);
+          // Don't navigate back to upload - user is already on analysis page
+          // Just show toast - they can see what sections loaded successfully
+          patchState(store, { 
+            analysisError: 'Some sections failed to load. Please try refreshing.' 
+          });
+        });
+
+        logger.info(`✅ [RoleSelection] Role selection and analysis started successfully`);
+        return { success: true };
+
+      } catch (error) {
+        logger.error(`❌ [RoleSelection] Role selection failed:`, error);
+        return { 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Role selection failed' 
+        };
+      }
+    },
+
+    /**
+     * Map detected party role to UserRole enum
+     * Party roles from AI: "Landlord", "Tenant", "Employer", "Employee", etc.
+     * UserRole: 'landlord', 'tenant', 'employer', 'employee', etc. (lowercase)
+     */
+    mapPartyRoleToUserRole(partyRole: string): string {
+      const roleMap: Record<string, string> = {
+        Landlord: 'landlord',
+        Tenant: 'tenant',
+        Employer: 'employer',
+        Employee: 'employee',
+        Client: 'client',
+        Contractor: 'contractor',
+        Partner: 'partner',
+        Lessor: 'landlord',
+        Lessee: 'tenant',
+      };
+
+      return roleMap[partyRole] || partyRole.toLowerCase();
+    },
+
+    /**
      * Reset store to initial state
      */
     reset: () => {
