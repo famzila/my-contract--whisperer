@@ -100,7 +100,7 @@ export class ContractUpload {
    */
   private async checkChromeAiAvailability(): Promise<void> {
     try {
-      const status = await this.uiStore.checkAiAvailability();
+      const status = await this.contractStore.checkAiAvailability();
       this.chromeAiAvailable.set(status.allAvailable);
     } catch (error) {
       this.logger.warn('Failed to check AI availability:', error);

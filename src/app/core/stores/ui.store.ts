@@ -7,7 +7,6 @@ import { signalStore, withState, withComputed, withMethods, withHooks } from '@n
 import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { ModalConfig, ModalService } from '../services/modal.service';
-import { AiOrchestratorService } from '../services/ai/ai-orchestrator.service';
 import { LoggerService } from '../services/logger.service';
 
 /**
@@ -47,8 +46,6 @@ interface UiState {
   // Sidebar
   isSidebarOpen: boolean;
   
-  // AI Services Status
-  aiServicesChecked: boolean;
 }
 
 /**
@@ -60,7 +57,6 @@ const initialState: UiState = {
   settingsModal: { isOpen: false },
   toasts: [],
   isSidebarOpen: true,
-  aiServicesChecked: false,
 };
 
 /**
@@ -77,7 +73,7 @@ export const UiStore = signalStore(
   })),
   
   // Methods
-  withMethods((store, modalService = inject(ModalService), aiOrchestrator = inject(AiOrchestratorService), logger = inject(LoggerService)) => ({
+  withMethods((store, modalService = inject(ModalService), logger = inject(LoggerService)) => ({
     /**
      * Set theme
      */
@@ -187,12 +183,6 @@ export const UiStore = signalStore(
       patchState(store, { isSidebarOpen: !store.isSidebarOpen() });
     },
     
-    /**
-     * Set AI services checked
-     */
-    setAiServicesChecked: (checked: boolean) => {
-      patchState(store, { aiServicesChecked: checked });
-    },
     
     /**
      * Reset UI state
@@ -259,21 +249,6 @@ export const UiStore = signalStore(
       modalService.closeAll();
     },
 
-    /**
-     * Check Chrome AI services availability
-     */
-    async checkAiAvailability() {
-      try {
-        patchState(store, { aiServicesChecked: false });
-        const status = await aiOrchestrator.checkAvailability();
-        patchState(store, { aiServicesChecked: true });
-        return status;
-      } catch (error) {
-        logger.error('Failed to check AI availability', error);
-        patchState(store, { aiServicesChecked: true });
-        throw error;
-      }
-    },
   })),
   
   // Lifecycle hooks

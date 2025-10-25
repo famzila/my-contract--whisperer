@@ -23,6 +23,7 @@ import { ContractParserService, type ParsedContract } from '../services/contract
 import { ContractValidationService } from '../services/contract-validation.service';
 import { PartyExtractionService } from '../services/party-extraction.service';
 import { TranslationCacheService } from '../services/translation-cache.service';
+import { AiOrchestratorService } from '../services/ai/ai-orchestrator.service';
 import { LanguageStore } from './language.store';
 import { OnboardingStore } from './onboarding.store';
 import { isGeminiNanoSupported } from '../constants/languages';
@@ -70,6 +71,10 @@ interface ContractState {
   
   // RxJS streaming cleanup
   destroySubject: Subject<void> | null;
+  
+  // AI Services Status
+  aiServicesAvailable: boolean;
+  aiServicesChecked: boolean;
 }
 
 /**
@@ -92,6 +97,8 @@ const initialState: ContractState = {
   isTranslating: false,
   translatingToLanguage: null,
   destroySubject: null,
+  aiServicesAvailable: false,
+  aiServicesChecked: false,
 };
 
 /**
@@ -172,6 +179,7 @@ export const ContractStore = signalStore(
     validationService = inject(ContractValidationService),
     partyExtractionService = inject(PartyExtractionService),
     translationCache = inject(TranslationCacheService),
+    aiOrchestrator = inject(AiOrchestratorService),
     translate = inject(TranslateService),
     router = inject(Router),
     ngZone = inject(NgZone),
@@ -185,6 +193,28 @@ export const ContractStore = signalStore(
         return parserService.parseText(text, source);
       } catch (error) {
         logger.error('Failed to parse contract text', error);
+        throw error;
+      }
+    },
+
+    /**
+     * Check Chrome AI services availability
+     */
+    async checkAiAvailability() {
+      try {
+        patchState(store, { aiServicesChecked: false });
+        const status = await aiOrchestrator.checkAvailability();
+        patchState(store, { 
+          aiServicesAvailable: status.allAvailable,
+          aiServicesChecked: true 
+        });
+        return status;
+      } catch (error) {
+        logger.error('Failed to check AI availability', error);
+        patchState(store, { 
+          aiServicesAvailable: false,
+          aiServicesChecked: true 
+        });
         throw error;
       }
     },
