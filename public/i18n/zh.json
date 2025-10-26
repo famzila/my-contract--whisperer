@@ -527,7 +527,8 @@
     "languageSwitchRetry": "您可以返回并重新选择{{targetLanguage}}来重试。",
     "notAValidContract": "这似乎不是一个有效的合同文件。",
     "analysisFailed": "很抱歉，发生了一个错误。我们无法分析您的合同。请重试。",
-    "translationFailed": "翻译失败。请重试。"
+    "translationFailed": "翻译失败。请重试。",
+    "multiPartyContract": "此应用目前仅支持双方合同。多方合同目前不受支持。"
   },
   "languages": {
     "english": "英语",

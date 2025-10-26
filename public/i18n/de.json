@@ -527,7 +527,8 @@
     "languageSwitchRetry": "Sie können zurückgehen und {{targetLanguage}} erneut auswählen, um es nochmal zu versuchen.",
     "notAValidContract": "Dies scheint kein gültiges Vertragsdokument zu sein.",
     "analysisFailed": "Es tut uns leid, es ist ein Fehler aufgetreten. Wir konnten Ihren Vertrag nicht analysieren. Bitte versuchen Sie es erneut.",
-    "translationFailed": "Übersetzung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    "translationFailed": "Übersetzung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "multiPartyContract": "Diese App unterstützt derzeit nur Verträge zwischen 2 Parteien. Mehrparteienverträge werden derzeit nicht unterstützt."
   },
   "languages": {
     "english": "Englisch",

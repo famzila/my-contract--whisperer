@@ -314,6 +314,22 @@ export const ContractStore = signalStore(
         // Update stores with results
         onboardingStore.setDetectedLanguage(detectedLang);
         onboardingStore.setDetectedParties(partyResult);
+        
+        // CRITICAL: Check for multi-party contracts (app limitation)
+        if (partyResult.contractType === 'multilateral') {
+          logger.warn('⚠️ [Validation] Multi-party contract detected - app limitation');
+          onboardingStore.setValidationResult(
+            false,
+            'Multi-Party Contract',
+            translate.instant('errors.multiPartyContract')
+          );
+          patchState(store, { 
+            uploadError: translate.instant('errors.multiPartyContract'),
+            isUploading: false,
+          });
+          throw new Error(translate.instant('errors.multiPartyContract'));
+        }
+        
         onboardingStore.setProcessing(false);
         
         // CRITICAL: If language matches, auto-select to skip modal
@@ -388,6 +404,22 @@ export const ContractStore = signalStore(
         // Update stores with results
         onboardingStore.setDetectedLanguage(detectedLang);
         onboardingStore.setDetectedParties(partyResult);
+        
+        // CRITICAL: Check for multi-party contracts (app limitation)
+        if (partyResult.contractType === 'multilateral') {
+          logger.warn('⚠️ [Validation] Multi-party contract detected - app limitation');
+          onboardingStore.setValidationResult(
+            false,
+            'Multi-Party Contract',
+            translate.instant('errors.multiPartyContract')
+          );
+          patchState(store, { 
+            uploadError: translate.instant('errors.multiPartyContract'),
+            isUploading: false,
+          });
+          throw new Error(translate.instant('errors.multiPartyContract'));
+        }
+        
         onboardingStore.setProcessing(false);
         
         // CRITICAL: If language matches, auto-select to skip modal

@@ -527,7 +527,8 @@
     "languageSwitchRetry": "돌아가서 {{targetLanguage}}을 다시 선택하여 시도해보세요.",
     "notAValidContract": "이는 유효한 계약 문서로 보이지 않습니다.",
     "analysisFailed": "죄송합니다. 오류가 발생했습니다. 계약서를 분석할 수 없었습니다. 다시 시도하십시오.",
-    "translationFailed": "번역에 실패했습니다. 다시 시도하십시오."
+    "translationFailed": "번역에 실패했습니다. 다시 시도하십시오.",
+    "multiPartyContract": "이 앱은 현재 2자 간 계약만 지원합니다. 다자 계약은 현재 지원되지 않습니다."
   },
   "languages": {
     "english": "영어",

@@ -527,7 +527,8 @@
     "languageSwitchRetry": "Puedes volver y volver a seleccionar {{targetLanguage}} para intentar de nuevo.",
     "notAValidContract": "Esto no parece ser un documento de contrato válido.",
     "analysisFailed": "Lo sentimos, ocurrió un error. No pudimos analizar tu contrato. Por favor, inténtalo de nuevo.",
-    "translationFailed": "Fallo en la traducción. Por favor, inténtalo de nuevo."
+    "translationFailed": "Fallo en la traducción. Por favor, inténtalo de nuevo.",
+    "multiPartyContract": "Esta aplicación actualmente solo admite contratos entre 2 partes. Los contratos multipartitas no son compatibles en este momento."
   },
   "languages": {
     "english": "Inglés",

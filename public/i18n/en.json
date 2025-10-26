@@ -525,7 +525,8 @@
     "languageSwitchRetry": "You can go back and reselect {{targetLanguage}} to try again.",
     "notAValidContract": "This doesn't appear to be a valid contract document.",
     "analysisFailed": "We're sorry, an error occurred. We couldn't analyze your contract. Please try again.",
-    "translationFailed": "Translation failed. Please try again."
+    "translationFailed": "Translation failed. Please try again.",
+    "multiPartyContract": "This app currently only supports contracts between 2 parties. Multi-party contracts are not supported at this time."
   },
   "languages": {
     "english": "English",
