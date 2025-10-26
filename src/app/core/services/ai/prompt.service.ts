@@ -311,9 +311,11 @@ Contract:
 ${contractText}
 
 Instructions:
-- Group obligations into two categories: employer and employee
-- For EMPLOYER obligations: include duty (required), and optionally: amount (number), frequency (string), startDate (string), duration (string), scope (string)
-- For EMPLOYEE obligations: include duty (required), and optionally: scope (string), frequency (string)
+- Group obligations into two categories: party1 and party2
+- party1 refers to the first party mentioned (employer, landlord, client, service provider, etc.)
+- party2 refers to the second party (employee, tenant, contractor, service recipient, etc.)
+- For each obligation, extract: duty, amount, frequency, startDate, duration, scope
+- Both parties can have ANY of these fields - extract whatever is relevant from the contract
 - For monetary amounts: use numbers only (e.g., 50000, not "$50,000" or "50000")
 - For dates: use ISO format (YYYY-MM-DD) or descriptive text
 - For frequency: use simple terms like "monthly", "bi-weekly", "annually", "one-time"

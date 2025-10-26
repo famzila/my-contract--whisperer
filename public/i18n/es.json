@@ -219,17 +219,10 @@
     "obligations": {
       "title": "Obligaciones",
       "subtitle": "De qué es responsable cada parte - estructurado y procesable",
-      "employer": "Empleador / Empresa",
-      "employee": "Empleado / Individual",
       "starts": "Comienza",
       "duration": "Duración",
-      "paySalary": "Pagar Salario",
-      "provideBenefits": "Proporcionar Beneficios",
-      "maintainConfidentiality": "Mantener Confidencialidad",
-      "complyWithContract": "Cumplir con el Contrato",
       "extractionError": "Lo sentimos, no pudimos extraer la información de obligaciones. ¡Por favor, inténtalo de nuevo!",
-      "noEmployerObligations": "No se encontraron obligaciones del empleador.",
-      "noEmployeeObligations": "No se encontraron obligaciones del empleado."
+      "noObligations": "No se encontraron obligaciones."
     },
     "omissions": {
       "title": "Lo que falta",

@@ -83,12 +83,10 @@ export interface Restrictions {
 }
 
 export type RiskSeverity = 'High' | 'Medium' | 'Low';
-export type RiskEmoji = '🚨' | '⚠️' | 'ℹ️';
 
 export interface RiskFlag {
   title: string;
   severity: RiskSeverity;
-  emoji: RiskEmoji;
   icon?: string;                     // 👈 NEW: Lucide icon name (schema-based format)
   description: string;
   impact: string;                    // Explain the potential impact
@@ -97,11 +95,9 @@ export interface RiskFlag {
 }
 
 export interface Obligations {
-  employer: StructuredObligation[];
-  employee: StructuredObligation[];
-  // Perspective-aware fields (will replace employer/employee)
-  yours?: StructuredObligation[];   // Your obligations (based on selected role)
-  theirs?: StructuredObligation[];  // Their obligations (other party)
+  party1: StructuredObligation[];  // First party obligations
+  party2: StructuredObligation[];  // Second party obligations
+  // Future: parties: Record<string, StructuredObligation[]> for multi-party
 }
 
 export interface StructuredObligation {

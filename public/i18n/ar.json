@@ -219,17 +219,10 @@
     "obligations": {
       "title": "الالتزامات",
       "subtitle": "ما هو مسؤولية كل طرف - منظمة وقابلة للتنفيذ",
-      "employer": "صاحب العمل / الشركة",
-      "employee": "الموظف / الفرد",
       "starts": "يبدأ",
       "duration": "المدة",
-      "paySalary": "دفع الراتب",
-      "provideBenefits": "توفير المزايا",
-      "maintainConfidentiality": "الحفاظ على السرية",
-      "complyWithContract": "الامتثال للعقد",
       "extractionError": "نعتذر، لم نتمكن من استخلاص معلومات الالتزامات. الرجاء المحاولة مرة أخرى!",
-      "noEmployerObligations": "لم يتم العثور على التزامات لصاحب العمل.",
-      "noEmployeeObligations": "لم يتم العثور على التزامات للموظف."
+      "noObligations": "لم يتم العثور على التزامات."
     },
     "omissions": {
       "title": "ما هو مفقود",

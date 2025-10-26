@@ -219,17 +219,10 @@
     "obligations": {
       "title": "Obligations",
       "subtitle": "Ce dont chaque partie est responsable - structuré et exploitable",
-      "employer": "Employeur / Entreprise",
-      "employee": "Employé / Particulier",
       "starts": "Début",
       "duration": "Durée",
-      "paySalary": "Payer le salaire",
-      "provideBenefits": "Fournir des avantages",
-      "maintainConfidentiality": "Maintenir la confidentialité",
-      "complyWithContract": "Se conformer au contrat",
       "extractionError": "Nous sommes désolés, nous n'avons pas pu extraire les informations sur les obligations. Veuillez réessayer !",
-      "noEmployerObligations": "Aucune obligation de l'employeur trouvée.",
-      "noEmployeeObligations": "Aucune obligation de l'employé trouvée."
+      "noObligations": "Aucune obligation trouvée."
     },
     "omissions": {
       "title": "Ce qui manque",

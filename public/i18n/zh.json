@@ -219,17 +219,10 @@
     "obligations": {
       "title": "义务",
       "subtitle": "各方应承担的责任 - 结构化且可操作",
-      "employer": "雇主 / 公司",
-      "employee": "雇员 / 个人",
       "starts": "开始",
       "duration": "期限",
-      "paySalary": "支付薪水",
-      "provideBenefits": "提供福利",
-      "maintainConfidentiality": "保守机密",
-      "complyWithContract": "遵守合同",
       "extractionError": "很抱歉，我们无法提取义务信息。请重试！",
-      "noEmployerObligations": "未找到雇主义务。",
-      "noEmployeeObligations": "未找到雇员义务。"
+      "noObligations": "未找到义务。"
     },
     "omissions": {
       "title": "遗漏项",

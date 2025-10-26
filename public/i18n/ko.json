@@ -219,17 +219,10 @@
     "obligations": {
       "title": "의무",
       "subtitle": "각 당사자가 책임져야 할 사항 - 구조화되고 실행 가능함",
-      "employer": "고용주 / 회사",
-      "employee": "직원 / 개인",
       "starts": "시작",
       "duration": "기간",
-      "paySalary": "급여 지급",
-      "provideBenefits": "혜택 제공",
-      "maintainConfidentiality": "기밀 유지",
-      "complyWithContract": "계약 준수",
       "extractionError": "죄송합니다. 의무 정보를 추출할 수 없었습니다. 다시 시도하십시오!",
-      "noEmployerObligations": "고용주의 의무가 발견되지 않았습니다.",
-      "noEmployeeObligations": "직원의 의무가 발견되지 않았습니다."
+      "noObligations": "의무가 발견되지 않았습니다."
     },
     "omissions": {
       "title": "누락된 사항",

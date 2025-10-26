@@ -17,7 +17,6 @@
       size="md"
       [text]="copyAllButtonState() === 'copy' ? ('analysis.questions.copyAll' | translate) : ('analysis.questions.copied' | translate)"
       [icon]="copyAllButtonState() === 'copy' ? CopyIcon : CheckIcon"
-      [customClasses]="copyAllButtonState() === 'copied' ? 'text-green-600' : ''"
     >
     </app-button>
     @if (!isContractProvider()) {

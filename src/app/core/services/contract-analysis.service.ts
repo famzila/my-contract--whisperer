@@ -719,29 +719,23 @@ export class ContractAnalysisService {
     obligations: Schemas.ObligationsAnalysis,
     targetLanguage: string
   ): Promise<Schemas.ObligationsAnalysis> {
-    console.log(`🌍 [Post-translation] Translating obligations to ${targetLanguage}...`);
+    this.logger.info(`🌍 [Post-translation] Translating obligations to ${targetLanguage}...`);
     
-    type EmployerObligation = Schemas.ObligationsAnalysis['obligations']['employer'][0];
-    type EmployeeObligation = Schemas.ObligationsAnalysis['obligations']['employee'][0];
+    type PartyObligation = Schemas.ObligationsAnalysis['obligations']['party1'][0];
+    
+    const translateObligation = async (obl: PartyObligation): Promise<PartyObligation> => ({
+      ...obl,
+      duty: await this.translator.translateFromEnglish(obl.duty, targetLanguage),
+      frequency: obl.frequency ? await this.translator.translateFromEnglish(obl.frequency, targetLanguage) : null,
+      startDate: obl.startDate ? await this.translator.translateFromEnglish(obl.startDate, targetLanguage) : null,
+      duration: obl.duration ? await this.translator.translateFromEnglish(obl.duration, targetLanguage) : null,
+      scope: obl.scope ? await this.translator.translateFromEnglish(obl.scope, targetLanguage) : null,
+    });
     
     return {
       obligations: {
-        employer: await Promise.all(
-          obligations.obligations.employer.map(async (obl: EmployerObligation) => ({
-            ...obl,
-            duty: await this.translator.translateFromEnglish(obl.duty, targetLanguage),
-            frequency: obl.frequency ? await this.translator.translateFromEnglish(obl.frequency, targetLanguage) : null,
-            scope: obl.scope ? await this.translator.translateFromEnglish(obl.scope, targetLanguage) : null,
-          }))
-        ),
-        employee: await Promise.all(
-          obligations.obligations.employee.map(async (obl: EmployeeObligation) => ({
-            ...obl,
-            duty: await this.translator.translateFromEnglish(obl.duty, targetLanguage),
-            frequency: obl.frequency ? await this.translator.translateFromEnglish(obl.frequency, targetLanguage) : null,
-            scope: obl.scope ? await this.translator.translateFromEnglish(obl.scope, targetLanguage) : null,
-          }))
-        ),
+        party1: await Promise.all(obligations.obligations.party1.map(translateObligation)),
+        party2: await Promise.all(obligations.obligations.party2.map(translateObligation)),
       },
     };
   }

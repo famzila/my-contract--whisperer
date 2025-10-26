@@ -2,7 +2,7 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader';
-import { StructuredObligation } from '../../../../core/models/ai-analysis.model';
+import { PerspectiveObligations } from '../../../../core/utils/obligation-mapper.util';
 import { 
   Clock, 
   CheckCircle, 
@@ -14,20 +14,6 @@ import {
 import { Notice } from "../../../../shared/components/notice/notice";
 import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
 
-export interface Obligation {
-  duty: string;
-  amount?: number;
-  frequency?: string;
-  startDate?: string;
-  duration?: string;
-  scope?: string;
-}
-
-export interface ObligationsData {
-  employer: StructuredObligation[];
-  employee: StructuredObligation[];
-}
-
 @Component({
   selector: 'app-obligations-tab',
   imports: [TranslateModule, LucideAngularModule, SkeletonLoader, Notice, TabHeader],
@@ -36,7 +22,7 @@ export interface ObligationsData {
 })
 export class ObligationsTabComponent {
   // Modern input signals
-  obligations = input<ObligationsData | null>(null);
+  obligations = input<PerspectiveObligations | null>(null);
   isLoading = input<boolean>(false);
   retryCount = input<number>(0);
   isRetrying = input<boolean>(false);

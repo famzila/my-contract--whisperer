@@ -161,63 +161,51 @@ export class TranslationOrchestratorService {
   ): Promise<Obligations> {
     console.log(`  📋 [Translation] Translating obligations...`);
     
-    // Translate employer obligations
-    const employer = await Promise.all(
-      obligations.employer.map(async (obl: StructuredObligation) => ({
+    // Translate party1 obligations
+    const party1 = await Promise.all(
+      obligations.party1.map(async (obl: StructuredObligation) => ({
         ...obl,
         duty: await this.translator.translate(obl.duty, sourceLanguage, targetLanguage),
+        frequency: obl.frequency
+          ? await this.translator.translate(obl.frequency, sourceLanguage, targetLanguage)
+          : null,
+        startDate: obl.startDate
+          ? await this.translator.translate(obl.startDate, sourceLanguage, targetLanguage)
+          : null,
+        duration: obl.duration
+          ? await this.translator.translate(obl.duration, sourceLanguage, targetLanguage)
+          : null,
         scope: obl.scope
           ? await this.translator.translate(obl.scope, sourceLanguage, targetLanguage)
           : null,
-        // Preserve: amount, frequency, startDate, duration (numbers/dates)
+        // Preserve: amount (number)
       }))
     );
     
-    // Translate employee obligations
-    const employee = await Promise.all(
-      obligations.employee.map(async (obl: StructuredObligation) => ({
+    // Translate party2 obligations
+    const party2 = await Promise.all(
+      obligations.party2.map(async (obl: StructuredObligation) => ({
         ...obl,
         duty: await this.translator.translate(obl.duty, sourceLanguage, targetLanguage),
+        frequency: obl.frequency
+          ? await this.translator.translate(obl.frequency, sourceLanguage, targetLanguage)
+          : null,
+        startDate: obl.startDate
+          ? await this.translator.translate(obl.startDate, sourceLanguage, targetLanguage)
+          : null,
+        duration: obl.duration
+          ? await this.translator.translate(obl.duration, sourceLanguage, targetLanguage)
+          : null,
         scope: obl.scope
           ? await this.translator.translate(obl.scope, sourceLanguage, targetLanguage)
           : null,
-        // Preserve: amount, frequency, startDate, duration (numbers/dates)
+        // Preserve: amount (number)
       }))
     );
     
-    // Handle perspective-aware obligations if present
-    let yours: StructuredObligation[] | undefined;
-    let theirs: StructuredObligation[] | undefined;
-    
-    if (obligations.yours) {
-      yours = await Promise.all(
-        obligations.yours.map(async (obl: StructuredObligation) => ({
-          ...obl,
-          duty: await this.translator.translate(obl.duty, sourceLanguage, targetLanguage),
-          scope: obl.scope
-            ? await this.translator.translate(obl.scope, sourceLanguage, targetLanguage)
-            : null,
-        }))
-      );
-    }
-    
-    if (obligations.theirs) {
-      theirs = await Promise.all(
-        obligations.theirs.map(async (obl: StructuredObligation) => ({
-          ...obl,
-          duty: await this.translator.translate(obl.duty, sourceLanguage, targetLanguage),
-          scope: obl.scope
-            ? await this.translator.translate(obl.scope, sourceLanguage, targetLanguage)
-            : null,
-        }))
-      );
-    }
-    
-    return { 
-      employer, 
-      employee,
-      ...(yours && { yours }),
-      ...(theirs && { theirs }),
+    return {
+      party1,
+      party2,
     };
   }
   

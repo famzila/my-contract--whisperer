@@ -104,43 +104,79 @@ export const MOCK_LEASE_DATA = {
   },
   "obligations": {
     "obligations": {
-      "employer": [
+      "party1": [
         {
           "duty": "Maintain the structure, plumbing, electrical, heating, and major appliances in safe working order.",
+          "amount": null,
+          "frequency": null,
+          "startDate": null,
+          "duration": null,
           "scope": "Property maintenance"
         },
         {
           "duty": "Provide and pay for water, sewer, and garbage collection.",
+          "amount": null,
+          "frequency": "monthly",
+          "startDate": null,
+          "duration": null,
           "scope": "Utilities"
         },
         {
           "duty": "Enter the Premises with twenty-four (24) hours' notice for inspection, maintenance, or to show the property to prospective tenants or buyers.",
+          "amount": null,
+          "frequency": null,
+          "startDate": null,
+          "duration": null,
           "scope": "Property inspection/showings"
         },
         {
           "duty": "Enter the Premises without notice to prevent damage or injury (emergency only)",
+          "amount": null,
+          "frequency": null,
+          "startDate": null,
+          "duration": null,
           "scope": "Emergency situations"
         }
       ],
-      "employee": [
+      "party2": [
         {
           "duty": "Pay rent of One Thousand Eight Hundred Dollars ($1,800) due on the first (1st) day of each calendar month.",
+          "amount": 1800,
+          "frequency": "monthly",
+          "startDate": "2025-03-01",
+          "duration": null,
           "scope": "Monthly payment"
         },
         {
           "duty": "Pay late fee of fifty dollars ($50) if rent is not received within five (5) days of the due date.",
+          "amount": 50,
+          "frequency": null,
+          "startDate": null,
+          "duration": null,
           "scope": "Late payment penalty"
         },
         {
           "duty": "Keep the Premises clean, sanitary, and in good condition.",
+          "amount": null,
+          "frequency": null,
+          "startDate": null,
+          "duration": null,
           "scope": "Property upkeep"
         },
         {
           "duty": "Promptly notify Landlord of any needed repairs.",
+          "amount": null,
+          "frequency": null,
+          "startDate": null,
+          "duration": null,
           "scope": "Repair requests"
         },
         {
           "duty": "Comply with all local ordinances, building codes, and homeowner association regulations.",
+          "amount": null,
+          "frequency": null,
+          "startDate": null,
+          "duration": null,
           "scope": "Legal compliance"
         }
       ]

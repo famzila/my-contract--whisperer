@@ -21,14 +21,10 @@ import { ObligationsTabComponent } from './components/obligations-tab/obligation
 import { OmissionsTabComponent } from './components/omissions-tab/omissions-tab.component';
 import { QuestionsTabComponent } from './components/questions-tab/questions-tab.component';
 import { DisclaimerTabComponent } from './components/disclaimer-tab/disclaimer-tab.component';
-import type { ContractClause } from '../../core/models/contract.model';
-import type {
-  AIAnalysisResponse,
-  RiskSeverity,
-  RiskEmoji,
-} from '../../core/models/ai-analysis.model';
+
 import { AppConfig } from '../../core/config/app.config';
 import { isAppLanguageSupported, getLanguageTranslationKey } from '../../core/constants/languages';
+import { mapObligationsToPerspective, PerspectiveObligations } from '../../core/utils/obligation-mapper.util';
 import {
   Clipboard,
   AlertTriangle,
@@ -224,15 +220,26 @@ export class AnalysisDashboard implements OnInit {
     return [];
   }
 
-  getObligations() {
+  getObligations(): PerspectiveObligations | null {
     // Get progressive loading obligations
     const progressiveObligations = this.contractStore.sectionsObligations()?.data;
+    
     if (progressiveObligations !== undefined) {
       // Handle nested obligations structure from AI response
       if (progressiveObligations && typeof progressiveObligations === 'object' && 'obligations' in progressiveObligations) {
-        return progressiveObligations.obligations; // Extract the nested obligations object
+        const metadata = this.contractStore.sectionsMetadata()?.data;
+        const selectedRole = this.onboardingStore.selectedRole();
+
+        if (metadata) {
+          const result = mapObligationsToPerspective(
+            progressiveObligations.obligations,
+            metadata,
+            selectedRole
+          );
+          return result;
+        }
       }
-      return progressiveObligations; // Can be null if extraction failed
+      return null; // Can be null if extraction failed
     }
     
     return null;

@@ -217,17 +217,10 @@
     "obligations": {
       "title": "Obligations",
       "subtitle": "What each party is responsible for - structured and actionable",
-      "employer": "Employer / Company",
-      "employee": "Employee / Individual",
       "starts": "Starts",
       "duration": "Duration",
-      "paySalary": "Pay Salary",
-      "provideBenefits": "Provide Benefits",
-      "maintainConfidentiality": "Maintain Confidentiality",
-      "complyWithContract": "Comply with Contract",
       "extractionError": "We're sorry, we couldn't extract obligations information. Please try again!",
-      "noEmployerObligations": "No employer obligations found.",
-      "noEmployeeObligations": "No employee obligations found."
+      "noObligations": "No obligations found."
     },
     "omissions": {
       "title": "What's Missing",

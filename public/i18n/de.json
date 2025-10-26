@@ -219,17 +219,10 @@
     "obligations": {
       "title": "Verpflichtungen",
       "subtitle": "Wofür jede Partei verantwortlich ist – strukturiert und umsetzbar",
-      "employer": "Arbeitgeber / Unternehmen",
-      "employee": "Arbeitnehmer / Einzelperson",
       "starts": "Beginn",
       "duration": "Dauer",
-      "paySalary": "Gehalt zahlen",
-      "provideBenefits": "Leistungen bereitstellen",
-      "maintainConfidentiality": "Vertraulichkeit wahren",
-      "complyWithContract": "Vertrag einhalten",
       "extractionError": "Es tut uns leid, wir konnten die Verpflichtungsinformationen nicht extrahieren. Bitte versuchen Sie es erneut!",
-      "noEmployerObligations": "Keine Arbeitgeberpflichten gefunden.",
-      "noEmployeeObligations": "Keine Arbeitnehmerpflichten gefunden."
+      "noObligations": "Keine Verpflichtungen gefunden."
     },
     "omissions": {
       "title": "Was fehlt",

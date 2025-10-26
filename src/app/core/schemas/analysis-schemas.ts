@@ -133,9 +133,9 @@ export const OBLIGATIONS_SCHEMA = {
     obligations: {
       type: "object",
       properties: {
-        employer: {
+        party1: {
           type: "array",
-          description: "Obligations of the employer (or equivalent first party)",
+          description: "Obligations of the first party (employer, landlord, client, service provider, etc.)",
           items: {
             type: "object",
             properties: {
@@ -149,21 +149,24 @@ export const OBLIGATIONS_SCHEMA = {
             required: ["duty"]
           }
         },
-        employee: {
+        party2: {
           type: "array",
-          description: "Obligations of the employee (or equivalent second party)",
+          description: "Obligations of the second party (employee, tenant, contractor, service recipient, etc.)",
           items: {
             type: "object",
             properties: {
               duty: { type: "string", description: "What must be done" },
-              scope: { type: ["string", "null"], description: "Additional details (e.g., 'Full-time', '40 hours/week')" },
-              frequency: { type: ["string", "null"], description: "How often if recurring" }
+              amount: { type: ["number", "null"], description: "Monetary amount if applicable" },
+              frequency: { type: ["string", "null"], description: "How often (e.g., 'monthly', 'bi-weekly')" },
+              startDate: { type: ["string", "null"], description: "When obligation starts" },
+              duration: { type: ["string", "null"], description: "How long obligation lasts" },
+              scope: { type: ["string", "null"], description: "Additional details or conditions" }
             },
             required: ["duty"]
           }
         }
       },
-      required: ["employer", "employee"]
+      required: ["party1", "party2"]
     }
   },
   required: ["obligations"],
@@ -337,7 +340,7 @@ export type RisksAnalysis = {
 
 export type ObligationsAnalysis = {
   obligations: {
-    employer: Array<{
+    party1: Array<{
       duty: string;
       amount?: number | null;
       frequency?: string | null;
@@ -345,10 +348,13 @@ export type ObligationsAnalysis = {
       duration?: string | null;
       scope?: string | null;
     }>;
-    employee: Array<{
+    party2: Array<{
       duty: string;
-      scope?: string | null;
+      amount?: number | null;
       frequency?: string | null;
+      startDate?: string | null;
+      duration?: string | null;
+      scope?: string | null;
     }>;
   };
 };

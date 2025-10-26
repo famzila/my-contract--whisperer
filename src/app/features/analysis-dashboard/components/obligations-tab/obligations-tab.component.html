@@ -23,20 +23,20 @@
 } @else {
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <!-- Employer/Party 1 -->
+  <!-- Your Obligations -->
   <div class="p-6 border border-divider h-full bg-white dark:bg-slate-800 rounded-lg">
-      <h3 class="mb-3 flex items-center gap-2">
-        <lucide-icon [name]="CheckCircleIcon" class="w-8 h-8 text-green-600 dark:text-green-400"></lucide-icon>
-        {{ 'analysis.obligations.employer' | translate }}
-      </h3>
+      <h4 class="mb-3 flex items-center gap-2">
+        <lucide-icon [name]="CheckCircleIcon" class="w-4 h-4 text-green-600 dark:text-green-400"></lucide-icon>
+        {{ obligations()?.yourPartyName || 'Loading...' }} <span class="text-sm text-gray-500 dark:text-gray-400">({{ obligations()?.yourPartyRole || 'Loading...' }})</span>
+      </h4>
       <div class="space-y-3">
         @if (obligations() === null) {
         <app-notice
           type="error"
           [message]="'analysis.obligations.extractionError' | translate"
         ></app-notice>
-        } @else if (obligations() && obligations()?.employer && obligations()!.employer.length > 0)
-        { @for (obligation of obligations()?.employer || []; track $index) {
+        } @else if (obligations() && obligations()?.yours && obligations()!.yours.length > 0)
+        { @for (obligation of obligations()?.yours || []; track $index) {
         <div class="bg-white dark:bg-slate-800 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
           <p class="font-medium text-body mb-1">{{ obligation.duty }}</p>
           <div class="text-body-sm space-y-1">
@@ -71,40 +71,55 @@
         } } @else {
         <div class="bg-white dark:bg-slate-800 rounded-lg p-6 border border-blue-200 dark:border-blue-800 text-center">
           <div class="text-gray-400 dark:text-gray-500 mb-2">
-            <lucide-icon [name]="CheckCircleIcon" class="w-8 h-8 mx-auto"></lucide-icon>
+            <lucide-icon [name]="CheckCircleIcon" class="w-4 h-4 mx-auto"></lucide-icon>
           </div>
-          <p class="text-muted">{{ 'analysis.obligations.noEmployerObligations' | translate }}</p>
+          <p class="text-muted">{{ 'analysis.obligations.noObligations' | translate }}</p>
         </div>
         }
       </div>
     </div>
 
-  <!-- Employee/Party 2 -->
+  <!-- Their Obligations -->
   <div class="p-6 border border-divider h-full bg-white dark:bg-slate-800 rounded-lg">
-      <h3 class="mb-3 flex items-center gap-2">
+      <h4 class="mb-3 flex items-center gap-2">
         <lucide-icon [name]="CheckCircleIcon" class="w-8 h-8 text-green-600 dark:text-green-400"></lucide-icon>
-        {{ 'analysis.obligations.employee' | translate }}
-      </h3>
+        {{ obligations()?.theirPartyName || 'Loading...' }} <span class="text-sm text-gray-500 dark:text-gray-400">({{ obligations()?.theirPartyRole || 'Loading...' }})</span>
+      </h4>
       <div class="space-y-3">
         @if (obligations() === null) {
         <app-notice
           type="error"
           [message]="'analysis.obligations.extractionError' | translate"
         ></app-notice>
-        } @else if (obligations() && obligations()?.employee && obligations()!.employee.length > 0)
-        { @for (obligation of obligations()?.employee || []; track $index) {
+        } @else if (obligations() && obligations()?.theirs && obligations()!.theirs.length > 0)
+        { @for (obligation of obligations()?.theirs || []; track $index) {
         <div class="bg-white dark:bg-slate-800 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
           <p class="font-medium text-body mb-1">{{ obligation.duty }}</p>
           <div class="text-body-sm space-y-1">
-            @if (obligation.scope) {
+            @if (obligation.amount) {
             <p class="flex items-center gap-2">
-              <lucide-icon [name]="ClipboardIcon" class="w-4 h-4 text-blue-600 dark:text-blue-400"></lucide-icon>
-              {{ obligation.scope }}
+              <lucide-icon [name]="DollarSignIcon" class="w-4 h-4 text-green-600 dark:text-green-400"></lucide-icon>
+              ${{ obligation.amount.toLocaleString() }}
+            </p>
+            } @if (obligation.frequency) {
+            <p class="flex items-center gap-2">
+              <lucide-icon [name]="RefreshCwIcon" class="w-4 h-4 text-blue-600 dark:text-blue-400"></lucide-icon>
+              {{ obligation.frequency }}
+            </p>
+            } @if (obligation.startDate) {
+            <p class="flex items-center gap-2">
+              <lucide-icon [name]="ClockIcon" class="w-4 h-4 text-blue-600 dark:text-blue-400"></lucide-icon>
+              {{ 'analysis.obligations.starts' | translate }}: {{ obligation.startDate }}
             </p>
             } @if (obligation.duration) {
             <p class="flex items-center gap-2">
               <lucide-icon [name]="ClockIcon" class="w-4 h-4 text-blue-600 dark:text-blue-400"></lucide-icon>
               {{ obligation.duration }}
+            </p>
+            } @if (obligation.scope) {
+            <p class="flex items-center gap-2">
+              <lucide-icon [name]="ClipboardIcon" class="w-4 h-4 text-blue-600 dark:text-blue-400"></lucide-icon>
+              {{ obligation.scope }}
             </p>
             }
           </div>
@@ -114,7 +129,7 @@
           <div class="text-gray-400 dark:text-gray-500 mb-2">
             <lucide-icon [name]="AlertTriangleIcon" class="w-8 h-8 mx-auto"></lucide-icon>
           </div>
-          <p class="text-muted">{{ 'analysis.obligations.noEmployeeObligations' | translate }}</p>
+          <p class="text-muted">{{ 'analysis.obligations.noObligations' | translate }}</p>
         </div>
         }
       </div>
