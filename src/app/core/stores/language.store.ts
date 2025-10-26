@@ -9,7 +9,7 @@ import { patchState } from '@ngrx/signals';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslatorService } from '../services/ai/translator.service';
 import { LanguageDetectorService } from '../services/ai/language-detector.service';
-import { LanguageUtilsService } from '../services/language-utils.service';
+import { LanguageUtilsService } from '../utils/language.util';
 import { LoggerService } from '../services/logger.service';
 import { LANGUAGES, DEFAULT_LANGUAGE, isRTL, isAppLanguageSupported, isGeminiNanoSupported } from '../constants/languages';
 import type { Language, LanguageState, TranslationCache } from '../models/language.model';

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import type {
   AIWriter,
   AIRewriter,
@@ -8,6 +8,7 @@ import type {
   AIWriterOptions,
   AIRewriterOptions,
 } from '../../models/ai.types';
+import { LoggerService } from '../logger.service';
 
 /**
  * Service for Chrome Built-in Writer and Rewriter APIs
@@ -19,6 +20,7 @@ import type {
 export class WriterService {
   private writer: AIWriter | null = null;
   private rewriter: AIRewriter | null = null;
+  private logger = inject(LoggerService);
 
   /**
    * Check if Writer API is available
@@ -56,7 +58,7 @@ export class WriterService {
    * Write text using Writer API
    */
   async write(prompt: string, options?: AIWriterOptions): Promise<string> {
-    console.log('✍️ Writing with Writer API...');
+    this.logger.info('Writing with Writer API...');
 
     const availability = await (window as any).Writer.availability();
 
@@ -77,20 +79,20 @@ export class WriterService {
       createOptions.monitor = (m: any) => {
         m.addEventListener('downloadprogress', (e: any) => {
           const percent = (e.loaded * 100).toFixed(1);
-          console.log(`📥 Downloading Writer model: ${percent}%`);
+          this.logger.info(`📥 Downloading Writer model: ${percent}%`);
         });
       };
     }
 
-    console.log('🚀 Creating Writer session with options:', createOptions);
+    this.logger.info(`Creating Writer session with options:`, createOptions);
     const writer = await (window as any).Writer.create(createOptions);
     this.writer = writer;
 
     // Generate the content
-    console.log('📤 Sending prompt to Writer API...');
+    this.logger.info('Sending prompt to Writer API...');
     const result = await writer.write(prompt, { signal: options?.signal });
 
-    console.log('✅ Writer API response received');
+    this.logger.info('Writer API response received');
     return result;
   }
 
@@ -98,7 +100,7 @@ export class WriterService {
    * Write text with streaming output
    */
   async writeStreaming(prompt: string, options?: AIWriterOptions): Promise<ReadableStream> {
-    console.log('✍️ Writing with Writer API (streaming)...');
+    this.logger.info('Writing with Writer API (streaming)...');
 
     const availability = await (window as any).Writer.availability();
 
@@ -119,7 +121,7 @@ export class WriterService {
       createOptions.monitor = (m: any) => {
         m.addEventListener('downloadprogress', (e: any) => {
           const percent = (e.loaded * 100).toFixed(1);
-          console.log(`📥 Downloading Writer model: ${percent}%`);
+          this.logger.info(`📥 Downloading Writer model: ${percent}%`);
         });
       };
     }
@@ -136,7 +138,7 @@ export class WriterService {
    * Rewrite text using Rewriter API
    */
   async rewrite(input: string, options?: AIRewriterOptions): Promise<string> {
-    console.log('🔄 Rewriting with Rewriter API...');
+    this.logger.info('Rewriting with Rewriter API...');
 
     const availability = await (window as any).Rewriter.availability();
 
@@ -155,7 +157,7 @@ export class WriterService {
       createOptions.monitor = (m: any) => {
         m.addEventListener('downloadprogress', (e: any) => {
           const percent = (e.loaded * 100).toFixed(1);
-          console.log(`📥 Downloading Rewriter model: ${percent}%`);
+          this.logger.info(`📥 Downloading Rewriter model: ${percent}%`);
         });
       };
     }
@@ -202,7 +204,7 @@ export class WriterService {
    * Rewrite with streaming output
    */
   async rewriteStreaming(input: string, options?: AIRewriterOptions): Promise<ReadableStream> {
-    console.log('🔄 Rewriting with Rewriter API (streaming)...');
+    this.logger.info('Rewriting with Rewriter API (streaming)...');
 
     const availability = await (window as any).Rewriter.availability();
 
@@ -221,7 +223,7 @@ export class WriterService {
       createOptions.monitor = (m: any) => {
         m.addEventListener('downloadprogress', (e: any) => {
           const percent = (e.loaded * 100).toFixed(1);
-          console.log(`📥 Downloading Rewriter model: ${percent}%`);
+          this.logger.info(`📥 Downloading Rewriter model: ${percent}%`);
         });
       };
     }

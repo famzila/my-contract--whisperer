@@ -4,12 +4,13 @@
 
 /**
  * Supported language interface
+ * flag is optional for cases where we only need basic language info
  */
 export interface Language {
   code: string;
   name: string;
   nativeName: string;
-  flag: string;
+  flag?: string; // Optional flag emoji
 }
 
 /**
@@ -51,3 +52,4 @@ export interface TranslationCapabilities {
   sourceLanguage: string;
   targetLanguage: string;
 }
+

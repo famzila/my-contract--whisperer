@@ -8,7 +8,7 @@ import { Languages, LucideAngularModule } from 'lucide-angular';
 import { LanguageStore } from '../../../core/stores/language.store';
 import { ContractStore } from '../../../core/stores/contract.store';
 import { LoggerService } from '../../../core/services/logger.service';
-import { getLanguageName } from '../../../core/utils/language-names.util';
+import { getLanguageName } from '../../../core/utils/language.util';
 import { Globe, ChevronDown, Check } from '../../icons/lucide-icons';
 
 @Component({

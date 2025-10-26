@@ -161,8 +161,6 @@ export class OfflineStorageService {
       
       request.onsuccess = () => {
         const contracts = request.result as OfflineContract[];
-        // Sort by accessed date (most recent first)
-        contracts.sort((a, b) => b.accessedAt.getTime() - a.accessedAt.getTime());
         resolve(contracts);
       };
       request.onerror = () => reject(request.error);
@@ -229,11 +227,11 @@ export class OfflineStorageService {
           available: estimate.quota || 0,
         };
       } catch (error) {
-        console.warn('Storage estimate not available:', error);
         return null;
       }
     }
     return null;
   }
 }
+
 

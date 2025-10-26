@@ -10,9 +10,8 @@ import { WriterService } from '../services/ai/writer.service';
 import { LanguageDetectorService } from '../services/ai/language-detector.service';
 import { TranslatorService } from '../services/ai/translator.service';
 import { LoggerService } from '../services/logger.service';
-import { generateMockEmail } from '../utils/email-generator.util';
-import { mapToneToRewriterAPI, mapLengthToRewriterAPI } from '../utils/email-mappers.util';
-import { getLanguageName } from '../utils/language-names.util';
+import { generateMockEmail, mapToneToRewriterAPI, mapLengthToRewriterAPI } from '../utils/email.util';
+import { getLanguageName } from '../utils/language.util';
 import { AppConfig } from '../config/app.config';
 import type { ContractMetadata } from '../schemas/analysis-schemas';
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, from, defer } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import type {
@@ -7,6 +7,7 @@ import type {
   AIPromptOptions,
 } from '../../models/ai.types';
 import * as Schemas from '../../schemas/analysis-schemas';
+import { LoggerService } from '../logger.service';
 
 /**
  * Service for Chrome Built-in Prompt API (Gemini Nano)
@@ -19,13 +20,14 @@ import * as Schemas from '../../schemas/analysis-schemas';
 })
 export class PromptService {
   private session: AILanguageModel | null = null;
+  private logger = inject(LoggerService);
 
   /**
    * Check if Prompt API is available
    */
   async isAvailable(): Promise<boolean> {
     if (!('LanguageModel' in window)) {
-      console.warn('⚠️ [PromptService] Chrome Built-in AI not available. Please enable Chrome AI features.');
+      this.logger.warn('Chrome Built-in AI not available. Please enable Chrome AI features.');
       return false;
     }
     return true;
@@ -118,16 +120,16 @@ Guidelines:
           const percent = (e.loaded * 100).toFixed(1);
           // Only log significant progress milestones to avoid log spam
           if (e.loaded === 0 || e.loaded === 1 || e.loaded % 0.25 === 0) {
-            console.log(`📥 [AI Model] Loading: ${percent}%`);
+            this.logger.info(`📥 [AI Model] Loading: ${percent}%`);
           }
         });
       },
     };
 
     const langInfo = outputLanguages[0] !== 'en' ? ` (input: [${inputLanguages.join(', ')}], output: [${outputLanguages.join(', ')}])` : '';
-    console.log(`\n🤖 [AI] Creating session${options?.userRole ? ` for ${options.userRole} perspective` : ''}${langInfo}...`);
+    this.logger.info(`Creating session${options?.userRole ? ` for ${options.userRole} perspective` : ''}${langInfo}...`);
     this.session = await window.LanguageModel.create(createOptions);
-    console.log('✅ [AI] Session ready\n');
+    this.logger.info('Session ready');
     
     return this.session;
   }
@@ -170,10 +172,10 @@ ${contractText}
 
 Remember: Output ONLY the JSON object, no markdown, no code blocks, no additional text.`;
 
-    console.log(`📤 [AI] Sending analysis request (${contractText.length} chars)...`);
+    this.logger.info(`Sending analysis request (${contractText.length} chars)...`);
     const result = await this.prompt(prompt);
     
-    console.log(`📥 [AI] Received response (${result.length} chars)`);
+    this.logger.info(`Received response (${result.length} chars)`);
     
     // Clean up response in case AI adds markdown code blocks
     let cleanedResult = result.trim();
@@ -190,10 +192,10 @@ Remember: Output ONLY the JSON object, no markdown, no code blocks, no additiona
     // Only log if JSON parsing fails (for debugging)
     try {
       JSON.parse(cleanedResult);
-      console.log('✅ [AI] Valid JSON response received');
+      this.logger.info('Valid JSON response received');
     } catch (e) {
-      console.error('❌ [AI] Invalid JSON response:');
-      console.error(cleanedResult.substring(0, 500) + '...');
+      this.logger.error('Invalid JSON response:');
+      this.logger.error(cleanedResult.substring(0, 500) + '...');
     }
     
     return cleanedResult;

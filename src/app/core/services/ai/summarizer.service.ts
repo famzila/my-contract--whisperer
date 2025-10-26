@@ -1,10 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import type {
   AISummarizer,
   AISummarizerCapabilities,
   AISummarizerCreateOptions,
   AISummarizerOptions,
 } from '../../models/ai.types';
+import { LoggerService } from '../logger.service';
 
 /**
  * Service for Chrome Built-in Summarizer API
@@ -17,6 +18,7 @@ import type {
 })
 export class SummarizerService {
   private summarizer: AISummarizer | null = null;
+  private logger = inject(LoggerService);
 
   /**
    * Check if Summarizer API is available
@@ -61,7 +63,7 @@ export class SummarizerService {
           const percent = (e.loaded * 100).toFixed(1);
           // Only log significant progress milestones to avoid log spam
           if (e.loaded === 0 || e.loaded === 1 || e.loaded % 0.25 === 0) {
-            console.log(`📥 [AI Model] Summarizer loading: ${percent}%`);
+            this.logger.info(`📥 [AI Model] Summarizer loading: ${percent}%`);
           }
         });
       },
@@ -69,13 +71,13 @@ export class SummarizerService {
 
     // Log download status
     if (availability === 'downloadable') {
-      console.log('📥 Summarizer model needs to be downloaded. Starting download...');
-      console.log('⏳ This may take a few moments. Download progress will be shown below.');
+      this.logger.info('Summarizer model needs to be downloaded. Starting download...');
+      this.logger.info('This may take a few moments. Download progress will be shown below.');
     }
 
-    console.log('🚀 Creating Summarizer session...');
+    this.logger.info('Creating Summarizer session...');
     this.summarizer = await window.Summarizer.create(createOptions);
-    console.log('✅ Summarizer session created successfully');
+    this.logger.info('Summarizer session created successfully');
     
     return this.summarizer;
   }

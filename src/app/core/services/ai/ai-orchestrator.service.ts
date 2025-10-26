@@ -1,5 +1,4 @@
 import { Injectable, inject } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
 import { PromptService } from './prompt.service';
 import { SummarizerService } from './summarizer.service';
 import { TranslatorService } from './translator.service';
@@ -32,7 +31,6 @@ export class AiOrchestratorService {
   private translatorService = inject(TranslatorService);
   private languageDetectorService = inject(LanguageDetectorService);
   private writerService = inject(WriterService);
-  private translate = inject(TranslateService);
 
   private servicesStatus: AIServicesStatus | null = null;
 
@@ -70,133 +68,6 @@ export class AiOrchestratorService {
   }
 
   /**
-   * Analyze a complete contract with optional user role context
-   */
-  async analyzeContract(
-    contractText: string,
-    userRole?: 'employer' | 'employee' | 'client' | 'contractor' | 'landlord' | 'tenant' | 'partner' | 'both_views' | null
-  ): Promise<ContractAnalysisResult> {
-    const status = await this.checkAvailability();
-
-    // We only need Prompt and Summarizer APIs for basic contract analysis
-    if (!status.prompt || !status.summarizer) {
-      throw new Error(this.translate.instant('errors.aiServicesUnavailable'));
-    }
-
-    console.log(`✅ Both Prompt and Summarizer APIs available. Starting analysis${userRole ? ` from ${userRole}'s perspective` : ''}...`);
-
-    // Create session with perspective context
-    const session = await this.promptService.createSession({ userRole });
-    
-    // Run analysis using the perspective-aware session
-    const clauses = await session.prompt(`Analyze this contract and respond with ONLY valid JSON following the schema provided in your system prompt.
-
-Contract to analyze:
-${contractText}
-
-Remember: Output ONLY the JSON object, no markdown, no code blocks, no additional text.`);
-    
-    // Generate summary
-    const summary = await this.summarizerService.generateExecutiveSummary(contractText);
-    
-    // Cleanup session
-    session.destroy();
-
-    return {
-      summary,
-      clauses,
-      contractText,
-      analyzedAt: new Date(),
-    };
-  }
-
-  /**
-   * Get detailed analysis with multiple summary types
-   */
-  async getDetailedAnalysis(contractText: string): Promise<DetailedAnalysisResult> {
-    const status = await this.checkAvailability();
-
-    if (!status.prompt || !status.summarizer) {
-      throw new Error(this.translate.instant('errors.aiServicesUnavailable'));
-    }
-
-    const [executiveSummary, detailedSummary, eli5Summary, clauses] = await Promise.all([
-      this.summarizerService.generateExecutiveSummary(contractText),
-      this.summarizerService.generateDetailedSummary(contractText),
-      this.summarizerService.generateELI5Summary(contractText),
-      this.promptService.extractClauses(contractText),
-    ]);
-
-    return {
-      summary: executiveSummary, // Use executive summary as main summary
-      executiveSummary,
-      detailedSummary,
-      eli5Summary,
-      clauses,
-      contractText,
-      analyzedAt: new Date(),
-    };
-  }
-
-  /**
-   * Ask a question about the contract
-   */
-  async askQuestion(contractText: string, question: string): Promise<string> {
-    const status = this.servicesStatus || await this.checkAvailability();
-
-    if (!status.prompt) {
-      throw new Error(this.translate.instant('errors.promptApiUnavailable'));
-    }
-
-    return await this.promptService.askQuestion(contractText, question);
-  }
-
-  /**
-   * Translate summary to multiple languages
-   */
-  async translateSummary(
-    summary: string,
-    targetLanguages: string[]
-  ): Promise<Record<string, string>> {
-    const status = this.servicesStatus || await this.checkAvailability();
-
-    if (!status.translator) {
-      throw new Error(this.translate.instant('errors.translatorApiUnavailable'));
-    }
-
-    const sourceLanguage = this.translatorService.detectLanguage(summary);
-    return await this.translatorService.translateSummary(
-      summary,
-      sourceLanguage,
-      targetLanguages
-    );
-  }
-
-  /**
-   * Rewrite a clause with improvements
-   */
-  async improveClause(clauseText: string, improvementType: ClauseImprovementType): Promise<string> {
-    const status = this.servicesStatus || await this.checkAvailability();
-
-    if (!status.writer && !status.rewriter) {
-      throw new Error(this.translate.instant('errors.writerApiUnavailable'));
-    }
-
-    switch (improvementType) {
-      case 'clarity':
-        return await this.writerService.rewriteClearly(clauseText);
-      case 'fairness':
-        return await this.writerService.suggestFairerTerms(clauseText);
-      case 'specificity':
-        return await this.writerService.makeMoreSpecific(clauseText);
-      case 'simplicity':
-        return await this.writerService.simplifyLanguage(clauseText);
-      default:
-        return await this.writerService.rewriteClearly(clauseText);
-    }
-  }
-
-  /**
    * Cleanup all AI service resources
    */
   cleanup(): void {
@@ -207,28 +78,4 @@ Remember: Output ONLY the JSON object, no markdown, no code blocks, no additiona
     this.servicesStatus = null;
   }
 }
-
-/**
- * Contract analysis result
- */
-export interface ContractAnalysisResult {
-  summary: string;
-  clauses: string;
-  contractText: string;
-  analyzedAt: Date;
-}
-
-/**
- * Detailed analysis result
- */
-export interface DetailedAnalysisResult extends ContractAnalysisResult {
-  executiveSummary: string;
-  detailedSummary: string;
-  eli5Summary: string;
-}
-
-/**
- * Clause improvement types
- */
-export type ClauseImprovementType = 'clarity' | 'fairness' | 'specificity' | 'simplicity';
 
