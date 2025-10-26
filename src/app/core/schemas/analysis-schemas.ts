@@ -211,58 +211,94 @@ export const OMISSIONS_QUESTIONS_SCHEMA = {
 // ============================================================================
 export const SUMMARY_SCHEMA = {
   type: "object",
-  description: "Generate a comprehensive contract summary",
+  description: "Generate a comprehensive contract summary (NO duplicate info with metadata)",
   properties: {
     summary: {
       type: "object",
       properties: {
-        parties: {
-          type: "string",
-          description: "Brief description of contract parties and their roles"
-        },
-        role: {
-          type: "string",
-          description: "Nature of relationship (e.g., 'Full-time employment', 'Independent contractor')"
-        },
-        responsibilities: {
+        // REMOVED: parties (duplicate with metadata.parties)
+        // REMOVED: role (duplicate with metadata.detectedRole)
+        
+        keyResponsibilities: {
           type: "array",
           items: { type: "string" },
-          description: "Key responsibilities of the signing party",
+          description: "Main duties and responsibilities (3-5 key items)",
           minItems: 1
         },
         compensation: {
           type: "object",
           properties: {
-            baseSalary: { type: ["number", "null"] },
-            bonus: { type: ["string", "null"] },
-            equity: { type: ["string", "null"] },
-            other: { type: ["string", "null"] }
+            baseSalary: { 
+              type: ["number", "null"],
+              description: "Annual base salary as number (e.g., 150000)" 
+            },
+            bonus: { 
+              type: ["string", "null"],
+              description: "Bonus structure (e.g., 'Up to 20% performance-based')" 
+            },
+            equity: { 
+              type: ["string", "null"],
+              description: "Stock/equity details (e.g., '0.5% vesting over 4 years')" 
+            },
+            other: { 
+              type: ["string", "null"],
+              description: "Other compensation" 
+            }
           }
         },
         benefits: {
           type: "array",
           items: { type: "string" },
-          description: "Benefits provided (e.g., 'Health insurance', '401k')"
+          description: "Benefits provided (e.g., 'Health insurance', '401k match')"
         },
         termination: {
           type: "object",
           properties: {
-            atWill: { type: ["string", "null"] },
-            forCause: { type: ["string", "null"] },
-            severance: { type: ["string", "null"] }
+            atWill: { 
+              type: ["string", "null"],
+              description: "At-will employment details" 
+            },
+            forCause: { 
+              type: ["string", "null"],
+              description: "For-cause termination conditions" 
+            },
+            severance: { 
+              type: ["string", "null"],
+              description: "Severance package details" 
+            },
+            noticeRequired: { 
+              type: ["string", "null"],
+              description: "Notice period required (e.g., '30 days')" 
+            }
           }
         },
         restrictions: {
           type: "object",
           properties: {
-            confidentiality: { type: ["string", "null"] },
-            nonCompete: { type: ["string", "null"] },
-            nonSolicitation: { type: ["string", "null"] },
-            other: { type: ["string", "null"] }
+            confidentiality: { 
+              type: ["string", "null"],
+              description: "Confidentiality obligations" 
+            },
+            nonCompete: { 
+              type: ["string", "null"],
+              description: "Non-compete clause details (duration, scope)" 
+            },
+            nonSolicitation: { 
+              type: ["string", "null"],
+              description: "Non-solicitation restrictions" 
+            },
+            intellectualProperty: { 
+              type: ["string", "null"],
+              description: "IP assignment and ownership terms" 
+            },
+            other: { 
+              type: ["string", "null"],
+              description: "Other restrictions" 
+            }
           }
         }
       },
-      required: ["parties", "role", "responsibilities", "benefits"]
+      required: ["keyResponsibilities", "compensation", "benefits", "termination", "restrictions"]
     }
   },
   required: ["summary"],
@@ -327,10 +363,15 @@ export type OmissionsAndQuestions = {
 };
 
 export type ContractSummary = {
+  // NEW: Quick overview from Summarizer API (optional)
+  quickTake?: string;
+  
+  // Structured details from Prompt API (NO duplicates with metadata)
   summary: {
-    parties: string;
-    role: string;
-    responsibilities: string[];
+    // REMOVED: parties (duplicate with metadata.parties)
+    // REMOVED: role (duplicate with metadata.detectedRole)
+    
+    keyResponsibilities: string[]; // Renamed from 'responsibilities'
     compensation: {
       baseSalary?: number | null;
       bonus?: string | null;
@@ -342,11 +383,13 @@ export type ContractSummary = {
       atWill?: string | null;
       forCause?: string | null;
       severance?: string | null;
+      noticeRequired?: string | null; // NEW: Important detail
     };
     restrictions: {
       confidentiality?: string | null;
       nonCompete?: string | null;
       nonSolicitation?: string | null;
+      intellectualProperty?: string | null; // NEW: IP assignment
       other?: string | null;
     };
   };

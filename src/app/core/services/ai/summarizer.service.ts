@@ -1,11 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import type {
   AISummarizer,
-  AISummarizerCapabilities,
   AISummarizerCreateOptions,
   AISummarizerOptions,
 } from '../../models/ai.types';
 import { LoggerService } from '../logger.service';
+import { getAiOutputLanguage } from '../../utils/language.util';
 
 /**
  * Service for Chrome Built-in Summarizer API
@@ -18,28 +18,29 @@ import { LoggerService } from '../logger.service';
 })
 export class SummarizerService {
   private summarizer: AISummarizer | null = null;
+  private currentOutputLanguage: string | null = null;
   private logger = inject(LoggerService);
 
   /**
    * Check if Summarizer API is available
+   * Note: This method only checks if the API exists, it doesn't create any sessions
    */
   async isAvailable(): Promise<boolean> {
-    if ('Summarizer' in window && window.Summarizer) {
-      try {
-        const availability = await window.Summarizer.availability();
-        return availability !== 'unavailable';
-      } catch (error) {
-        return false;
-      }
+    // Simple check - just verify the API exists
+    if (!('Summarizer' in window) || !window.Summarizer) {
+      return false;
     }
-    return false;
+    
+    // Don't call availability() as it might trigger internal API usage
+    // Just return true if the API exists
+    return true;
   }
 
   /**
-   * Create a new Summarizer instance
+   * Create a new Summarizer instance (private - only used internally)
    * This will trigger model download if needed (requires user interaction)
    */
-  async createSummarizer(
+  private async createSummarizer(
     options?: AISummarizerCreateOptions
   ): Promise<AISummarizer> {
     if (!window.Summarizer) {
@@ -55,7 +56,7 @@ export class SummarizerService {
 
     // Prepare options with monitor for download progress
     const createOptions: AISummarizerCreateOptions = {
-      outputLanguage: 'en', // Specify English output to avoid warnings
+      outputLanguage: options?.outputLanguage || 'en', // Explicit default to avoid warnings
       ...options,
       monitor: (m) => {
         // Track download progress only on first download (not on cached loads)
@@ -68,6 +69,8 @@ export class SummarizerService {
         });
       },
     };
+
+    this.logger.info(`🔍 [Summarizer] createSummarizer called with options:`, createOptions);
 
     // Log download status
     if (availability === 'downloadable') {
@@ -83,41 +86,49 @@ export class SummarizerService {
   }
 
   /**
-   * Summarize text
+   * Summarize text (private - only used internally)
+   * Assumes summarizer is already created with correct language
    */
-  async summarize(
+  private async summarize(
     text: string,
     options?: AISummarizerOptions
   ): Promise<string> {
     if (!this.summarizer) {
-      await this.createSummarizer();
-    }
-
-    if (!this.summarizer) {
-      throw new Error('Failed to create Summarizer');
+      throw new Error('Summarizer not initialized. This should never happen.');
     }
 
     return await this.summarizer.summarize(text, options);
   }
 
   /**
-   * Summarize text with streaming
+   * Generate executive summary (short, key points in TL;DR format)
+   * 
+   * This method generates a concise summary using the Summarizer API.
+   * The output language is automatically determined:
+   * - If outputLanguage is supported by Gemini Nano (en, es, ja), uses it directly
+   * - Otherwise, falls back to English
+   * 
+   * The method maintains a summarizer instance per language to avoid unnecessary recreation.
+   * 
+   * @param text - The text to summarize (contract content)
+   * @param outputLanguage - Desired output language (optional, will use getAiOutputLanguage fallback)
+   * @returns Promise<string> - Summary in markdown format with bullet points
    */
-  summarizeStreaming(
-    text: string,
-    options?: AISummarizerOptions
-  ): ReadableStream {
-    if (!this.summarizer) {
-      throw new Error('Summarizer not initialized. Call createSummarizer() first.');
+  async generateExecutiveSummary(text: string, outputLanguage?: string): Promise<string> {
+    const language = getAiOutputLanguage(outputLanguage);
+    
+    this.logger.info(`🔍 [Summarizer] generateExecutiveSummary called with outputLanguage: ${outputLanguage}, resolved to: ${language}`);
+    
+    // Always create a fresh summarizer with the correct output language
+    // This ensures the output language is properly set for each request
+    if (!this.summarizer || this.currentOutputLanguage !== language) {
+      this.logger.info(`🔍 [Summarizer] Creating new summarizer with outputLanguage: ${language}`);
+      await this.createSummarizer({ outputLanguage: language });
+      this.currentOutputLanguage = language;
+    } else {
+      this.logger.info(`🔍 [Summarizer] Reusing existing summarizer with language: ${this.currentOutputLanguage}`);
     }
-
-    return this.summarizer.summarizeStreaming(text, options);
-  }
-
-  /**
-   * Generate executive summary (short, key points)
-   */
-  async generateExecutiveSummary(text: string): Promise<string> {
+    
     return await this.summarize(text, {
       type: 'key-points',
       length: 'short',
@@ -126,34 +137,13 @@ export class SummarizerService {
   }
 
   /**
-   * Generate detailed summary
-   */
-  async generateDetailedSummary(text: string): Promise<string> {
-    return await this.summarize(text, {
-      type: 'tl;dr',
-      length: 'long',
-      format: 'markdown',
-    });
-  }
-
-  /**
-   * Generate ELI5 (Explain Like I'm 5) summary
-   */
-  async generateELI5Summary(text: string): Promise<string> {
-    return await this.summarize(text, {
-      type: 'tl;dr',
-      length: 'short',
-      format: 'plain-text',
-    });
-  }
-
-  /**
-   * Clean up resources
+   * Clean up resources and destroy the summarizer instance
    */
   destroy(): void {
     if (this.summarizer) {
       this.summarizer.destroy();
       this.summarizer = null;
+      this.currentOutputLanguage = null;
     }
   }
 }

@@ -176,6 +176,7 @@
     "summary": {
       "title": "Resumen del Contrato",
       "subtitle": "Una visión general rápida de los términos y condiciones clave del contrato",
+      "quickTake": "Resumen rápido",
       "parties": "Partes",
       "roleRelationship": "Rol/Relación",
       "keyResponsibilities": "Responsabilidades Clave",
@@ -188,10 +189,12 @@
       "atWill": "A voluntad",
       "forCause": "Por Causa Justificada",
       "severance": "Indemnización por Despido",
+      "noticeRequired": "Aviso requerido",
       "restrictions": "Restricciones",
       "confidentiality": "Confidencialidad",
       "nonCompete": "No Competencia",
       "nonSolicitation": "No Solicitación",
+      "intellectualProperty": "Propiedad Intelectual",
       "extractionError": "Lo sentimos, no pudimos extraer la información del resumen. ¡Por favor, inténtalo de nuevo!"
     },
     "risks": {

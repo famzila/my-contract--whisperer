@@ -176,6 +176,7 @@
     "summary": {
       "title": "Vertragszusammenfassung",
       "subtitle": "Ein kurzer Überblick über die wichtigsten Vertragsbedingungen und -klauseln",
+      "quickTake": "Schnellübersicht",
       "parties": "Parteien",
       "roleRelationship": "Rolle/Beziehung",
       "keyResponsibilities": "Hauptpflichten",
@@ -188,10 +189,12 @@
       "atWill": "Jederzeit kündbar",
       "forCause": "Aus wichtigem Grund",
       "severance": "Abfindung",
+      "noticeRequired": "Kündigungsfrist erforderlich",
       "restrictions": "Beschränkungen",
       "confidentiality": "Vertraulichkeit",
       "nonCompete": "Wettbewerbsverbot",
       "nonSolicitation": "Abwerbeverbot",
+      "intellectualProperty": "Geistiges Eigentum",
       "extractionError": "Es tut uns leid, wir konnten die Zusammenfassungsinformationen nicht extrahieren. Bitte versuchen Sie es erneut!"
     },
     "risks": {

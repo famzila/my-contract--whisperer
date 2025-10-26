@@ -1,12 +1,14 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, merge, concat, defer, from, EMPTY, map, tap, catchError, switchMap, shareReplay, takeUntil, retry, timer, Subject } from 'rxjs';
+import { Observable, of, merge, concat, defer, from, EMPTY, map, tap, catchError, switchMap, shareReplay, takeUntil, retry, timer, Subject, combineLatest } from 'rxjs';
 import { ContractParserService, ParsedContract } from './contract-parser.service';
 import { AiOrchestratorService } from './ai/ai-orchestrator.service';
 import { PromptService } from './ai/prompt.service';
+import { SummarizerService } from './ai/summarizer.service';
 import { TranslationOrchestratorService } from './translation-orchestrator.service';
 import { TranslatorService } from './ai/translator.service';
 import { TranslationCacheService } from './translation-cache.service';
 import { OfflineStorageService } from './storage/offline-storage.service';
+import { LoggerService } from './logger.service';
 import { AppConfig } from '../config/app.config';
 import { Contract, ContractAnalysis } from '../models/contract.model';
 import { AnalysisContext, DEFAULT_ANALYSIS_CONTEXT } from '../models/analysis-context.model';
@@ -30,10 +32,12 @@ import { isGeminiNanoSupported, LANGUAGES } from '../constants/languages';
 export class ContractAnalysisService {
   private aiOrchestrator = inject(AiOrchestratorService);
   private promptService = inject(PromptService);
+  private summarizerService = inject(SummarizerService);
   private parser = inject(ContractParserService);
   private translationOrchestrator = inject(TranslationOrchestratorService);
   private translator = inject(TranslatorService);
   private translationCache = inject(TranslationCacheService);
+  private logger = inject(LoggerService);
   private offlineStorage = inject(OfflineStorageService);
 
   /**
@@ -139,7 +143,7 @@ export class ContractAnalysisService {
     }
     
     // Direct analysis (no pre-translation needed)
-    return this.analyzeDirectly$(parsedContract, analysisContext, outputLanguage, contractLanguage);
+    return this.analyzeDirectly$(parsedContract, analysisContext, outputLanguage, contractLanguage, contract);
   }
 
   /**
@@ -149,7 +153,8 @@ export class ContractAnalysisService {
     parsedContract: ParsedContract,
     analysisContext: AnalysisContext,
     outputLanguage: string | undefined,
-    contractLanguage: string
+    contractLanguage: string,
+    contract: Contract
   ): Observable<{
     section: 'metadata' | 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions' | 'complete';
     data: any;
@@ -162,7 +167,7 @@ export class ContractAnalysisService {
     const targetLanguage = outputLanguage;
     const isOutputLanguageSupported = !outputLanguage || isGeminiNanoSupported(outputLanguage);
     const geminiOutputLanguage = isOutputLanguageSupported ? outputLanguage : LANGUAGES.ENGLISH;
-    const needsPostTranslation = !isOutputLanguageSupported && targetLanguage;
+    const needsPostTranslation = !isOutputLanguageSupported;
     
     console.log(`🚀 [Direct Analysis] Contract: ${contractLanguage}, Target: ${targetLanguage}, Gemini Output: ${geminiOutputLanguage}, Post-translate: ${needsPostTranslation}`);
     
@@ -185,8 +190,8 @@ export class ContractAnalysisService {
         geminiOutputLanguage
       )),
       // Post-translate if needed
-      switchMap(metadata => needsPostTranslation
-        ? defer(() => from(this.postTranslateMetadata(metadata, targetLanguage!)))
+      switchMap(metadata => needsPostTranslation && outputLanguage
+        ? defer(() => from(this.postTranslateMetadata(metadata, outputLanguage)))
         : of(metadata)
       ),
       map(metadata => ({
@@ -201,27 +206,62 @@ export class ContractAnalysisService {
       })
     );
 
-    // STREAMING: Summary, Risks, Obligations, Omissions (all independent)
-    const summary$ = session$.pipe(
+    // STREAMING: Summary (HYBRID APPROACH)
+    // - Quick Take: Summarizer API (TL;DR format)
+    // - Structured Details: Prompt API (compensation, termination, restrictions)
+    const quickTake$ = session$.pipe(
+      switchMap(() => from(
+        this.summarizerService.generateExecutiveSummary(parsedContract.text, geminiOutputLanguage)
+      )),
+      // 🔑 NEW: Cache English Quick Take BEFORE post-translation
+      tap(quickTakeText => {
+        if (needsPostTranslation && quickTakeText) {
+          this.cacheIntermediateEnglishSection(contract.id, 'quickTake', quickTakeText);
+        }
+      }),
+      switchMap(quickTakeText => needsPostTranslation && quickTakeText && outputLanguage
+        ? defer(() => from(this.translator.translateFromEnglish(quickTakeText, outputLanguage)))
+        : of(quickTakeText)
+      ),
+      catchError(error => {
+        this.logger.warn('Quick take generation failed:', error);
+        return of(null); // Optional - don't fail if Summarizer unavailable
+      })
+    );
+
+    const structuredSummary$ = session$.pipe(
       switchMap(() => this.withRetryAndNotify$(
         'summary',
         this.promptService.extractSummary$(parsedContract.text, geminiOutputLanguage).pipe(
-          switchMap(summary => needsPostTranslation
-            ? defer(() => from(this.postTranslateSummary(summary, targetLanguage!)))
+          switchMap(summary => needsPostTranslation && outputLanguage
+            ? defer(() => from(this.postTranslateSummary(summary, outputLanguage)))
             : of(summary)
           )
         ),
         40
       )),
+      catchError(error => {
+        console.error('❌ Structured summary extraction failed after retries:', error);
+        return of({ section: 'summary' as const, data: null, progress: 40 });
+      })
+    );
+
+    // COMBINE: Merge quick take with structured summary
+    const summary$ = combineLatest([quickTake$, structuredSummary$]).pipe(
+      map(([quickTake, structuredResult]) => ({
+        section: structuredResult.section,
+        data: structuredResult.data ? {
+          ...structuredResult.data,
+          quickTake // Add quick take to result
+        } : null,
+        progress: structuredResult.progress,
+        isRetrying: (structuredResult as any).isRetrying ?? false,
+        retryCount: (structuredResult as any).retryCount ?? undefined
+      })),
       tap(result => {
         if (!result.isRetrying) {
-          console.log('✅ Summary complete', result);
+          console.log('✅ Hybrid summary complete (Quick Take + Structured)', result);
         }
-      }),
-      catchError(error => {
-        console.error('❌ Summary extraction failed after retries:', error);
-        // Return null data - UI will show error message
-        return of({ section: 'summary' as const, data: null, progress: 40 });
       })
     );
 
@@ -229,8 +269,8 @@ export class ContractAnalysisService {
       switchMap(() => this.withRetryAndNotify$(
         'risks',
         this.promptService.extractRisks$(parsedContract.text, geminiOutputLanguage).pipe(
-          switchMap(risks => needsPostTranslation
-            ? defer(() => from(this.postTranslateRisks(risks, targetLanguage!)))
+          switchMap(risks => needsPostTranslation && outputLanguage
+            ? defer(() => from(this.postTranslateRisks(risks, outputLanguage)))
             : of(risks)
           )
         ),
@@ -252,8 +292,8 @@ export class ContractAnalysisService {
       switchMap(() => this.withRetryAndNotify$(
         'obligations',
         this.promptService.extractObligations$(parsedContract.text, geminiOutputLanguage).pipe(
-          switchMap(obligations => needsPostTranslation
-            ? defer(() => from(this.postTranslateObligations(obligations, targetLanguage!)))
+          switchMap(obligations => needsPostTranslation && outputLanguage
+            ? defer(() => from(this.postTranslateObligations(obligations, outputLanguage)))
             : of(obligations)
           )
         ),
@@ -275,8 +315,8 @@ export class ContractAnalysisService {
       switchMap(() => this.withRetryAndNotify$(
         'omissionsAndQuestions',
         this.promptService.extractOmissionsAndQuestions$(parsedContract.text, geminiOutputLanguage).pipe(
-          switchMap(omissionsAndQuestions => needsPostTranslation
-            ? defer(() => from(this.postTranslateOmissionsAndQuestions(omissionsAndQuestions, targetLanguage!)))
+          switchMap(omissionsAndQuestions => needsPostTranslation && outputLanguage
+            ? defer(() => from(this.postTranslateOmissionsAndQuestions(omissionsAndQuestions, outputLanguage)))
             : of(omissionsAndQuestions)
           )
         ),
@@ -407,7 +447,30 @@ export class ContractAnalysisService {
       })
     );
 
-    const summary$ = translatedContract$.pipe(
+    // HYBRID SUMMARY (Pre-translation path)
+    // - Quick Take: Summarizer API (TL;DR format)
+    // - Structured Details: Prompt API (compensation, termination, restrictions)
+    const quickTakePreTranslate$ = translatedContract$.pipe(
+      switchMap(translatedText => from(
+        this.summarizerService.generateExecutiveSummary(translatedText, geminiOutputLanguage)
+      )),
+      // 🔑 NEW: Cache English Quick Take BEFORE post-translation
+      tap(quickTakeText => {
+        if (needsPostTranslation && quickTakeText) {
+          this.cacheIntermediateEnglishSection(contract.id, 'quickTake', quickTakeText);
+        }
+      }),
+      switchMap(quickTakeText => needsPostTranslation && quickTakeText
+        ? defer(() => from(this.translator.translateFromEnglish(quickTakeText, finalTargetLanguage)))
+        : of(quickTakeText)
+      ),
+      catchError(error => {
+        this.logger.warn('Quick take generation failed:', error);
+        return of(null);
+      })
+    );
+
+    const structuredSummaryPreTranslate$ = translatedContract$.pipe(
       switchMap(translatedText => session$.pipe(
         switchMap(() => this.withRetryAndNotify$(
           'summary',
@@ -426,14 +489,28 @@ export class ContractAnalysisService {
           40
         ))
       )),
+      catchError(error => {
+        console.error('❌ Structured summary extraction failed after retries:', error);
+        return of({ section: 'summary' as const, data: null, progress: 40 });
+      })
+    );
+
+    // COMBINE: Merge quick take with structured summary
+    const summary$ = combineLatest([quickTakePreTranslate$, structuredSummaryPreTranslate$]).pipe(
+      map(([quickTake, structuredResult]) => ({
+        section: structuredResult.section,
+        data: structuredResult.data ? {
+          ...structuredResult.data,
+          quickTake: quickTake || undefined // Add quick take to result (or undefined if failed)
+        } : null,
+        progress: structuredResult.progress,
+        isRetrying: (structuredResult as any).isRetrying ?? false,
+        retryCount: (structuredResult as any).retryCount ?? undefined
+      })),
       tap(result => {
         if (!result.isRetrying) {
-          console.log('✅ Summary complete (pre-translated + post-translated)', result);
+          console.log('✅ Hybrid summary complete (pre-translated + post-translated)', result);
         }
-      }),
-      catchError(error => {
-        console.error('❌ Summary extraction failed after retries:', error);
-        return of({ section: 'summary' as const, data: null, progress: 40 });
       })
     );
 
@@ -576,18 +653,23 @@ export class ContractAnalysisService {
     };
   }
 
+
   async postTranslateSummary(
     summary: Schemas.ContractSummary,
     targetLanguage: string
   ): Promise<Schemas.ContractSummary> {
     console.log(`🌍 [Post-translation] Translating summary to ${targetLanguage}...`);
     
+    // Translate quick take if present
+    const quickTake = summary.quickTake 
+      ? await this.translator.translateFromEnglish(summary.quickTake, targetLanguage)
+      : undefined;
+    
     return {
+      quickTake,
       summary: {
-        parties: await this.translator.translateFromEnglish(summary.summary.parties, targetLanguage),
-        role: await this.translator.translateFromEnglish(summary.summary.role, targetLanguage),
-        responsibilities: await Promise.all(
-          summary.summary.responsibilities.map((r: string) => this.translator.translateFromEnglish(r, targetLanguage))
+        keyResponsibilities: await Promise.all(
+          summary.summary.keyResponsibilities.map((r: string) => this.translator.translateFromEnglish(r, targetLanguage))
         ),
         compensation: {
           baseSalary: summary.summary.compensation.baseSalary,
@@ -602,11 +684,13 @@ export class ContractAnalysisService {
           atWill: summary.summary.termination.atWill ? await this.translator.translateFromEnglish(summary.summary.termination.atWill, targetLanguage) : null,
           forCause: summary.summary.termination.forCause ? await this.translator.translateFromEnglish(summary.summary.termination.forCause, targetLanguage) : null,
           severance: summary.summary.termination.severance ? await this.translator.translateFromEnglish(summary.summary.termination.severance, targetLanguage) : null,
+          noticeRequired: summary.summary.termination.noticeRequired ? await this.translator.translateFromEnglish(summary.summary.termination.noticeRequired, targetLanguage) : null,
         },
         restrictions: {
           confidentiality: summary.summary.restrictions.confidentiality ? await this.translator.translateFromEnglish(summary.summary.restrictions.confidentiality, targetLanguage) : null,
           nonCompete: summary.summary.restrictions.nonCompete ? await this.translator.translateFromEnglish(summary.summary.restrictions.nonCompete, targetLanguage) : null,
           nonSolicitation: summary.summary.restrictions.nonSolicitation ? await this.translator.translateFromEnglish(summary.summary.restrictions.nonSolicitation, targetLanguage) : null,
+          intellectualProperty: summary.summary.restrictions.intellectualProperty ? await this.translator.translateFromEnglish(summary.summary.restrictions.intellectualProperty, targetLanguage) : null,
           other: summary.summary.restrictions.other ? await this.translator.translateFromEnglish(summary.summary.restrictions.other, targetLanguage) : null,
         },
       },
@@ -795,7 +879,7 @@ Note: This is mock data. Enable Chrome Built-in AI for real analysis.`,
    */
   private cacheIntermediateEnglishSection(
     contractId: string,
-    section: 'metadata' | 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions',
+    section: 'metadata' | 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions' | 'quickTake',
     data: any
   ): void {
     try {
@@ -805,7 +889,8 @@ Note: This is mock data. Enable Chrome Built-in AI for real analysis.`,
         summary: null,
         risks: null,
         obligations: null,
-        omissions: null
+        omissions: null,
+        quickTake: null
       };
       
       // Update specific section
@@ -824,6 +909,9 @@ Note: This is mock data. Enable Chrome Built-in AI for real analysis.`,
           break;
         case 'omissionsAndQuestions':
           existingCache.omissions = data;
+          break;
+        case 'quickTake':
+          existingCache.quickTake = data;
           break;
       }
       

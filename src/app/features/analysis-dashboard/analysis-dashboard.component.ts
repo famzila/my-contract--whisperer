@@ -207,10 +207,7 @@ export class AnalysisDashboard implements OnInit {
     // Get progressive loading summary
     const progressiveSummary = this.contractStore.sectionsSummary()?.data;
     if (progressiveSummary !== undefined) {
-      // Handle nested summary structure from AI response
-      if (progressiveSummary && typeof progressiveSummary === 'object' && 'summary' in progressiveSummary) {
-        return progressiveSummary.summary; // Extract the nested summary object
-      }
+      // Return the full summary object (includes quickTake + summary)
       return progressiveSummary; // Can be null if extraction failed
     }
     

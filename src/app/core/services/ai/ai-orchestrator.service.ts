@@ -4,6 +4,7 @@ import { SummarizerService } from './summarizer.service';
 import { TranslatorService } from './translator.service';
 import { LanguageDetectorService } from './language-detector.service';
 import { WriterService } from './writer.service';
+import { LoggerService } from '../logger.service';
 
 /**
  * AI Service availability status
@@ -31,6 +32,7 @@ export class AiOrchestratorService {
   private translatorService = inject(TranslatorService);
   private languageDetectorService = inject(LanguageDetectorService);
   private writerService = inject(WriterService);
+  private logger = inject(LoggerService);
 
   private servicesStatus: AIServicesStatus | null = null;
 
@@ -57,6 +59,7 @@ export class AiOrchestratorService {
       allAvailable: prompt && summarizer && translator && writer && rewriter,
     };
 
+    this.logger.info('AI services status', this.servicesStatus);
     return this.servicesStatus;
   }
 

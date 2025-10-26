@@ -27,9 +27,7 @@ export const MOCK_LEASE_DATA = {
   },
   "summary": {
     "summary": {
-      "parties": "This lease agreement is between Olivia Green (Landlord) and James Parker (Tenant). Olivia Green is renting out a property, and James Parker is renting the property.",
-      "role": "Landlord-Tenant",
-      "responsibilities": [
+      "keyResponsibilities": [
         "Landlord: Maintain the property (structure, plumbing, electrical, heating, major appliances). Tenant: Keep the property clean and in good condition; notify landlord of repairs; comply with local ordinances and HOA rules.",
         "Tenant: Pay rent on the 1st of each month.  Tenant is liable for damages caused by negligence or misuse of the property. Tenant is responsible for electricity, gas, internet, and cable.",
         "Landlord: Provide water, sewer, and garbage collection.",
@@ -38,17 +36,24 @@ export const MOCK_LEASE_DATA = {
         "Landlord:  Enter the property with 24-hour notice for inspections/maintenance, or in emergencies.",
         "Tenant:  Notify landlord of intent to renew lease 60 days before expiration."
       ],
-      "compensation": {},
+      "compensation": {
+        "baseSalary": null,
+        "bonus": null,
+        "equity": null,
+        "other": null
+      },
       "benefits": [],
       "termination": {
         "atWill": null,
         "forCause": "The landlord can terminate the lease for material breach (e.g., nonpayment of rent, damage, violation of terms). Tenant can terminate at the end of the lease term with 30 days' written notice.",
-        "severance": null
+        "severance": null,
+        "noticeRequired": "30 days written notice"
       },
       "restrictions": {
         "confidentiality": null,
         "nonCompete": null,
         "nonSolicitation": null,
+        "intellectualProperty": null,
         "other": "Tenant is not allowed to sublet the property without the landlord's written consent; guests are limited to 14 consecutive days with written approval; tenant may only keep one pet with landlord's consent and a $300 non-refundable fee."
       }
     }

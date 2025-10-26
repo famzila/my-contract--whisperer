@@ -62,33 +62,27 @@
 }
 
 <div class="space-y-6">
-  <!-- Parties -->
+  <!-- Quick Take (from Summarizer API) -->
+  @if (summary()?.quickTake) {
   <div class="pb-6 border-b border-divider">
-    <h3 class="mb-3 flex items-center gap-2">
-      <lucide-icon [name]="UsersIcon" class="w-5 h-5 text-blue-600 dark:text-blue-400"></lucide-icon>
-      {{ 'analysis.summary.parties' | translate }}
-    </h3>
-    <p class="text-body">{{ summary()?.parties || ('common.notAvailable' | translate) }}</p>
+    <app-notice
+      type="info"
+      [icon]="ZapIcon"
+      [titleKey]="'analysis.summary.quickTake' | translate"
+      [message]="formatQuickTake(summary()!.quickTake!)"
+    ></app-notice>
   </div>
+  }
 
-  <!-- Role -->
-  <div class="pb-6 border-b border-divider">
-    <h3 class="mb-3 flex items-center gap-2">
-      <lucide-icon [name]="BriefcaseIcon" class="w-5 h-5 text-green-600 dark:text-green-400"></lucide-icon>
-      {{ 'analysis.summary.roleRelationship' | translate }}
-    </h3>
-    <p class="text-body">{{ summary()?.role || ('common.notAvailable' | translate) }}</p>
-  </div>
-
-  <!-- Responsibilities -->
-  @if (summary()?.responsibilities && summary()!.responsibilities!.length > 0) {
+  <!-- Key Responsibilities -->
+  @if (summary()?.summary?.keyResponsibilities && summary()!.summary!.keyResponsibilities!.length > 0) {
   <div class="pb-6 border-b border-divider">
     <h3 class="mb-3 flex items-center gap-2">
       <lucide-icon [name]="ClipboardIcon" class="w-5 h-5 text-blue-600 dark:text-blue-400"></lucide-icon>
       {{ 'analysis.summary.keyResponsibilities' | translate }}
     </h3>
     <ul class="list-disc list-inside space-y-1 text-body">
-      @for (resp of summary()?.responsibilities || []; track $index) {
+      @for (resp of summary()?.summary?.keyResponsibilities || []; track $index) {
       <li>{{ resp }}</li>
       }
     </ul>
@@ -102,37 +96,38 @@
       {{ 'analysis.summary.compensationBenefits' | translate }}
     </h3>
     <div class="space-y-2 text-body">
-      @if (summary()?.compensation?.baseSalary) {
+      @if (summary()?.summary?.compensation?.baseSalary) {
       <p>
-        <strong>{{ 'analysis.summary.baseSalary' | translate }}:</strong> ${{
-          summary()?.compensation?.baseSalary | number
-        }}
+        <strong>{{ 'analysis.summary.baseSalary' | translate }}:</strong> 
+        {{ summary()?.summary?.compensation?.baseSalary | currency:'USD':'symbol':'1.0-0' }}
+        <span class="text-sm text-gray-500 dark:text-gray-400">/ year</span>
       </p>
-      } @if (summary()?.compensation?.bonus) {
+      } @if (summary()?.summary?.compensation?.bonus) {
       <p>
         <strong>{{ 'analysis.summary.bonus' | translate }}:</strong>
-        {{ summary()?.compensation?.bonus }}
+        {{ summary()?.summary?.compensation?.bonus }}
       </p>
-      } @if (summary()?.compensation?.equity) {
+      } @if (summary()?.summary?.compensation?.equity) {
       <p>
         <strong>{{ 'analysis.summary.equity' | translate }}:</strong>
-        {{ summary()?.compensation?.equity }}
+        {{ summary()?.summary?.compensation?.equity }}
       </p>
-      } @if (summary()?.compensation?.other) {
+      } @if (summary()?.summary?.compensation?.other) {
       <p>
         <strong>{{ 'analysis.summary.other' | translate }}:</strong>
-        {{ summary()?.compensation?.other }}
+        {{ summary()?.summary?.compensation?.other }}
       </p>
       }
     </div>
-    @if (summary()?.benefits && summary()?.benefits!.length > 0) {
+    @if (summary()?.summary?.benefits && summary()?.summary?.benefits!.length > 0) {
     <ul class="list-disc list-inside space-y-1 text-body mt-3">
-      @for (benefit of summary()?.benefits || []; track $index) {
+      @for (benefit of summary()?.summary?.benefits || []; track $index) {
       <li>{{ benefit }}</li>
       }
     </ul>
     }
   </div>
+
   <!-- Termination -->
   <div class="pb-6 border-b border-divider">
     <h3 class="mb-3 flex items-center gap-2">
@@ -140,20 +135,25 @@
       {{ 'analysis.summary.terminationConditions' | translate }}
     </h3>
     <div class="space-y-2 text-body">
-      @if (summary()?.termination?.atWill) {
+      @if (summary()?.summary?.termination?.atWill) {
       <p>
         <strong>{{ 'analysis.summary.atWill' | translate }}:</strong>
-        {{ summary()?.termination?.atWill }}
+        {{ summary()?.summary?.termination?.atWill }}
       </p>
-      } @if (summary()?.termination?.forCause) {
+      } @if (summary()?.summary?.termination?.forCause) {
       <p>
         <strong>{{ 'analysis.summary.forCause' | translate }}:</strong>
-        {{ summary()?.termination?.forCause }}
+        {{ summary()?.summary?.termination?.forCause }}
       </p>
-      } @if (summary()?.termination?.severance) {
+      } @if (summary()?.summary?.termination?.severance) {
       <p>
         <strong>{{ 'analysis.summary.severance' | translate }}:</strong>
-        {{ summary()?.termination?.severance }}
+        {{ summary()?.summary?.termination?.severance }}
+      </p>
+      } @if (summary()?.summary?.termination?.noticeRequired) {
+      <p>
+        <strong>{{ 'analysis.summary.noticeRequired' | translate }}:</strong>
+        {{ summary()?.summary?.termination?.noticeRequired }}
       </p>
       }
     </div>
@@ -166,25 +166,30 @@
       {{ 'analysis.summary.restrictions' | translate }}
     </h3>
     <div class="space-y-2 text-body">
-      @if (summary()?.restrictions?.confidentiality) {
+      @if (summary()?.summary?.restrictions?.confidentiality) {
       <p>
         <strong>{{ 'analysis.summary.confidentiality' | translate }}:</strong>
-        {{ summary()?.restrictions?.confidentiality }}
+        {{ summary()?.summary?.restrictions?.confidentiality }}
       </p>
-      } @if (summary()?.restrictions?.nonCompete) {
+      } @if (summary()?.summary?.restrictions?.nonCompete) {
       <p>
         <strong>{{ 'analysis.summary.nonCompete' | translate }}:</strong>
-        {{ summary()?.restrictions?.nonCompete }}
+        {{ summary()?.summary?.restrictions?.nonCompete }}
       </p>
-      } @if (summary()?.restrictions?.nonSolicitation) {
+      } @if (summary()?.summary?.restrictions?.nonSolicitation) {
       <p>
         <strong>{{ 'analysis.summary.nonSolicitation' | translate }}:</strong>
-        {{ summary()?.restrictions?.nonSolicitation }}
+        {{ summary()?.summary?.restrictions?.nonSolicitation }}
       </p>
-      } @if (summary()?.restrictions?.other) {
+      } @if (summary()?.summary?.restrictions?.intellectualProperty) {
+      <p>
+        <strong>{{ 'analysis.summary.intellectualProperty' | translate }}:</strong>
+        {{ summary()?.summary?.restrictions?.intellectualProperty }}
+      </p>
+      } @if (summary()?.summary?.restrictions?.other) {
       <p>
         <strong>{{ 'analysis.summary.other' | translate }}:</strong>
-        {{ summary()?.restrictions?.other }}
+        {{ summary()?.summary?.restrictions?.other }}
       </p>
       }
     </div>

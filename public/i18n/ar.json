@@ -176,6 +176,7 @@
     "summary": {
       "title": "ملخص العقد",
       "subtitle": "نظرة عامة سريعة على الشروط والأحكام الرئيسية للعقد",
+      "quickTake": "نظرة سريعة",
       "parties": "الأطراف",
       "roleRelationship": "الدور/العلاقة",
       "keyResponsibilities": "المسؤوليات الرئيسية",
@@ -188,10 +189,12 @@
       "atWill": "حسب الرغبة",
       "forCause": "بسبب",
       "severance": "مكافأة نهاية الخدمة",
+      "noticeRequired": "إشعار مطلوب",
       "restrictions": "القيود",
       "confidentiality": "السرية",
       "nonCompete": "عدم المنافسة",
       "nonSolicitation": "عدم الاستقطاب",
+      "intellectualProperty": "الملكية الفكرية",
       "extractionError": "نعتذر، لم نتمكن من استخلاص معلومات الملخص. الرجاء المحاولة مرة أخرى!"
     },
     "risks": {

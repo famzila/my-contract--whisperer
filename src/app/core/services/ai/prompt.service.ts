@@ -368,13 +368,14 @@ Contract:
 ${contractText}
 
 Instructions:
-- Describe the parties and their relationship
-- List key responsibilities of the signing party
+- DO NOT include parties or role information (already captured in metadata)
+- List 3-5 key responsibilities of the signing party
 - Detail all compensation (salary, bonuses, equity, other benefits)
-- Explain termination conditions (at-will, for-cause, severance)
+- Explain termination conditions (at-will, for-cause, severance, notice period)
 - Identify any restrictions (confidentiality, non-compete, non-solicitation, IP assignment)
 - Use clear, plain language - avoid legal jargon
-- For monetary amounts, use numbers (e.g., 150000, not "150k" or "$150,000")
+- For base salary, use numbers only (e.g., 150000, not "150k" or "$150,000")
+- For other compensation fields, use descriptive text
 - Use null for fields that don't apply or aren't specified in the contract
 
 Return the summary in the exact JSON structure specified in the schema.`;

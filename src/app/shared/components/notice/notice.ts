@@ -74,7 +74,9 @@ import {
      * Get header classes with RTL support
      */
     headerClasses = computed(() => {
-      return 'flex items-center gap-2 rtl:flex-row-reverse';
+      const baseClasses = 'flex items-center gap-2';
+      const rtlClasses = this.isRTL() ? 'flex-start' : 'flex-row';
+      return `${baseClasses} ${rtlClasses}`;
     });
   
     /**

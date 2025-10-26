@@ -176,6 +176,7 @@
     "summary": {
       "title": "合同摘要",
       "subtitle": "合同关键条款和条件的快速概览",
+      "quickTake": "快速概览",
       "parties": "当事方",
       "roleRelationship": "角色/关系",
       "keyResponsibilities": "关键责任",
@@ -188,10 +189,12 @@
       "atWill": "任意终止",
       "forCause": "有正当理由",
       "severance": "遣散费",
+      "noticeRequired": "需要通知期",
       "restrictions": "限制",
       "confidentiality": "保密性",
       "nonCompete": "竞业禁止",
       "nonSolicitation": "禁止招揽",
+      "intellectualProperty": "知识产权",
       "extractionError": "很抱歉，我们无法提取摘要信息。请重试！"
     },
     "risks": {

@@ -176,6 +176,7 @@
     "summary": {
       "title": "Résumé du Contrat",
       "subtitle": "Un aperçu rapide des termes et conditions clés du contrat",
+      "quickTake": "Aperçu rapide",
       "parties": "Parties",
       "roleRelationship": "Rôle/Relation",
       "keyResponsibilities": "Responsabilités clés",
@@ -188,10 +189,12 @@
       "atWill": "À volonté",
       "forCause": "Pour motif légitime",
       "severance": "Indemnité de départ",
+      "noticeRequired": "Préavis requis",
       "restrictions": "Restrictions",
       "confidentiality": "Confidentialité",
       "nonCompete": "Non-concurrence",
       "nonSolicitation": "Non-sollicitation",
+      "intellectualProperty": "Propriété intellectuelle",
       "extractionError": "Nous sommes désolés, nous n'avons pas pu extraire les informations de synthèse. Veuillez réessayer !"
     },
     "risks": {

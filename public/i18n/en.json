@@ -176,8 +176,7 @@
     "summary": {
       "title": "Contract Summary",
       "subtitle": "A quick overview of the contract's key terms and conditions",
-      "parties": "Parties",
-      "roleRelationship": "Role/Relationship",
+      "quickTake": "Quick Take",
       "keyResponsibilities": "Key Responsibilities",
       "compensationBenefits": "Compensation & Benefits",
       "baseSalary": "Base Salary",
@@ -188,10 +187,12 @@
       "atWill": "At-Will",
       "forCause": "For Cause",
       "severance": "Severance",
+      "noticeRequired": "Notice Required",
       "restrictions": "Restrictions",
       "confidentiality": "Confidentiality",
       "nonCompete": "Non-Compete",
       "nonSolicitation": "Non-Solicitation",
+      "intellectualProperty": "Intellectual Property",
       "extractionError": "We're sorry, we couldn't extract summary information. Please try again!"
     },
     "risks": {

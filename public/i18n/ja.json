@@ -176,6 +176,7 @@
     "summary": {
       "title": "契約書の要約",
       "subtitle": "契約書の主要な条件と条項の概要",
+      "quickTake": "クイック概要",
       "parties": "当事者",
       "roleRelationship": "役割/関係",
       "keyResponsibilities": "主要な責任",
@@ -188,10 +189,12 @@
       "atWill": "随意解雇",
       "forCause": "正当な理由による",
       "severance": "退職金",
+      "noticeRequired": "通知期間が必要",
       "restrictions": "制限",
       "confidentiality": "機密保持",
       "nonCompete": "競業避止",
       "nonSolicitation": "勧誘禁止",
+      "intellectualProperty": "知的財産",
       "extractionError": "申し訳ありません、要約情報を抽出できませんでした。もう一度お試しください！"
     },
     "risks": {

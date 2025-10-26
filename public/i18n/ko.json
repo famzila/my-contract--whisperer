@@ -176,6 +176,7 @@
     "summary": {
       "title": "계약서 요약",
       "subtitle": "계약서의 핵심 용어 및 조건에 대한 빠른 개요",
+      "quickTake": "빠른 요약",
       "parties": "당사자",
       "roleRelationship": "역할/관계",
       "keyResponsibilities": "주요 책임",
@@ -188,10 +189,12 @@
       "atWill": "자의에 의한",
       "forCause": "정당한 사유로",
       "severance": "퇴직금",
+      "noticeRequired": "통지 기간 필요",
       "restrictions": "제한 사항",
       "confidentiality": "기밀 유지",
       "nonCompete": "경쟁 금지",
       "nonSolicitation": "권유 금지",
+      "intellectualProperty": "지적 재산권",
       "extractionError": "죄송합니다. 요약 정보를 추출할 수 없었습니다. 다시 시도하십시오!"
     },
     "risks": {
