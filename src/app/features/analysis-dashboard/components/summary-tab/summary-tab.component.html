@@ -95,6 +95,7 @@
       <lucide-icon [name]="DollarSignIcon" class="w-5 h-5 text-green-600 dark:text-green-400"></lucide-icon>
       {{ 'analysis.summary.compensationBenefits' | translate }}
     </h3>
+    @if (hasCompensationData()) {
     <div class="space-y-2 text-body">
       @if (summary()?.summary?.compensation?.baseSalary) {
       <p>
@@ -126,6 +127,9 @@
       }
     </ul>
     }
+    } @else {
+    <p class="text-body text-gray-500 dark:text-gray-400">-</p>
+    }
   </div>
 
   <!-- Termination -->
@@ -134,6 +138,7 @@
       <lucide-icon [name]="DoorOpenIcon" class="w-5 h-5 text-red-600 dark:text-red-400"></lucide-icon>
       {{ 'analysis.summary.terminationConditions' | translate }}
     </h3>
+    @if (hasTerminationData()) {
     <div class="space-y-2 text-body">
       @if (summary()?.summary?.termination?.atWill) {
       <p>
@@ -157,6 +162,9 @@
       </p>
       }
     </div>
+    } @else {
+    <p class="text-body text-gray-500 dark:text-gray-400">-</p>
+    }
   </div>
 
   <!-- Restrictions -->
@@ -165,6 +173,7 @@
       <lucide-icon [name]="ShieldIcon" class="w-5 h-5 text-red-600 dark:text-red-400"></lucide-icon>
       {{ 'analysis.summary.restrictions' | translate }}
     </h3>
+    @if (hasRestrictionsData()) {
     <div class="space-y-2 text-body">
       @if (summary()?.summary?.restrictions?.confidentiality) {
       <p>
@@ -193,6 +202,9 @@
       </p>
       }
     </div>
+    } @else {
+    <p class="text-body text-gray-500 dark:text-gray-400">-</p>
+    }
   </div>
 </div>
 } @else {

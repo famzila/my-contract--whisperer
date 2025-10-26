@@ -1,4 +1,4 @@
-import { Component, input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy, computed } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
@@ -69,6 +69,51 @@ export class SummaryTabComponent {
   isRetrying = input<boolean>(false);
   perspectiveContext = input<PerspectiveContext | null>(null);
 
+  /**
+   * Check if compensation section has any data
+   */
+  hasCompensationData = computed(() => {
+    const compensation = this.summary()?.summary?.compensation;
+    const benefits = this.summary()?.summary?.benefits;
+    
+    return !!(
+      compensation?.baseSalary ||
+      compensation?.bonus ||
+      compensation?.equity ||
+      compensation?.other ||
+      (benefits && benefits.length > 0)
+    );
+  });
+
+  /**
+   * Check if termination section has any data
+   */
+  hasTerminationData = computed(() => {
+    const termination = this.summary()?.summary?.termination;
+    
+    return !!(
+      termination?.atWill ||
+      termination?.forCause ||
+      termination?.severance ||
+      termination?.noticeRequired
+    );
+  });
+
+  /**
+   * Check if restrictions section has any data
+   */
+  hasRestrictionsData = computed(() => {
+    const restrictions = this.summary()?.summary?.restrictions;
+    
+    return !!(
+      restrictions?.confidentiality ||
+      restrictions?.nonCompete ||
+      restrictions?.nonSolicitation ||
+      restrictions?.intellectualProperty ||
+      restrictions?.other
+    );
+  });
+  
   // Icons
   ClipboardIcon = Clipboard;
   AlertTriangleIcon = AlertTriangle;
@@ -111,4 +156,6 @@ export class SummaryTabComponent {
       .map(point => `• ${point}`)
       .join('<br>');
   }
+
+  
 }
