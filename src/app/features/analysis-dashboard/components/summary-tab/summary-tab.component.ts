@@ -16,7 +16,7 @@ import {
 } from '../../../../shared/icons/lucide-icons';
 import { Notice } from "../../../../shared/components/notice/notice";
 import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
-import { SummaryData, PerspectiveContext } from "../../../../core/models/ai-analysis.model";
+import { ContractSummary, PerspectiveContext } from "../../../../core/models/ai-analysis.model";
 
 @Component({
   selector: 'app-summary-tab',
@@ -26,7 +26,7 @@ import { SummaryData, PerspectiveContext } from "../../../../core/models/ai-anal
 })
 export class SummaryTabComponent {
   // Modern input signals
-  summary = input<SummaryData | null>(null);
+  summary = input<ContractSummary | null>(null);
   isLoading = input<boolean>(false);
   retryCount = input<number>(0);
   isRetrying = input<boolean>(false);

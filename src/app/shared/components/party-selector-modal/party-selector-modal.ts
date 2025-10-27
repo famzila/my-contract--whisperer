@@ -113,14 +113,14 @@ export class PartySelectorModal {
         {
           value: 'party1' as UserRole,
           label: detected.parties.party1.name,
-          icon: this.getIconForRole(detected.parties.party1.role),
-          description: this.translateRoleName(detected.parties.party1.role),
+          icon: this.getIconForRole(detected.parties.party1.role || 'Party 1'),
+          description: this.translateRoleName(detected.parties.party1.role || 'Party 1'),
         },
         {
           value: 'party2' as UserRole,
           label: detected.parties.party2.name,
-          icon: this.getIconForRole(detected.parties.party2.role),
-          description: this.translateRoleName(detected.parties.party2.role),
+          icon: this.getIconForRole(detected.parties.party2.role || 'Party 2'),
+          description: this.translateRoleName(detected.parties.party2.role || 'Party 2'),
         },
         {
           value: 'both_views' as UserRole,

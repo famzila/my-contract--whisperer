@@ -143,13 +143,13 @@ export const OnboardingStore = signalStore(
       return [
         {
           value: 'party1',
-          label: `${parties.parties.party1.name} (${parties.parties.party1.role})`,
-          icon: getIconForRole(parties.parties.party1.role),
+          label: `${parties.parties.party1.name} (${parties.parties.party1.role || 'Party 1'})`,
+          icon: getIconForRole(parties.parties.party1.role || 'Party 1'),
         },
         {
           value: 'party2',
-          label: `${parties.parties.party2.name} (${parties.parties.party2.role})`,
-          icon: getIconForRole(parties.parties.party2.role),
+          label: `${parties.parties.party2.name} (${parties.parties.party2.role || 'Party 2'})`,
+          icon: getIconForRole(parties.parties.party2.role || 'Party 2'),
         },
         {
           value: 'both_views',

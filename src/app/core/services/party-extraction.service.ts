@@ -145,10 +145,12 @@ Rules:
           party1: {
             name: match[1].trim(),
             role: this.inferRole(match[2] || match[1], lowerText, 'first'),
+            location: null,
           },
           party2: {
             name: match[3].trim(),
             role: this.inferRole(match[4] || match[3], lowerText, 'second'),
+            location: null,
           },
         },
         contractType: 'bilateral',
@@ -163,10 +165,12 @@ Rules:
           party1: {
             name: match[1].trim(),
             role: this.inferRole(match[1], lowerText, 'first'),
+            location: null,
           },
           party2: {
             name: match[2].trim(),
             role: this.inferRole(match[2], lowerText, 'second'),
+            location: null,
           },
         },
         contractType: 'bilateral',
@@ -235,10 +239,12 @@ Rules:
           party1: {
             name: match[1].trim(),
             role: this.inferRole(match[1], lowerText, 'first'),
+            location: null,
           },
           party2: {
             name: match[2].trim(),
             role: this.inferRole(match[2], lowerText, 'second'),
+            location: null,
           },
         },
         contractType: 'bilateral',
@@ -253,10 +259,12 @@ Rules:
           party1: {
             name: match[1].trim(),
             role: this.inferRole(match[1], lowerText, 'first'),
+            location: null,
           },
           party2: {
             name: match[2].trim(),
             role: this.inferRole(match[2], lowerText, 'second'),
+            location: null,
           },
         },
         contractType: 'bilateral',
@@ -374,13 +382,13 @@ Rules:
     const party1: DetectedParty = {
       name: party1Raw.name,
       role: party1Raw.role || 'Party 1',
-      location: party1Raw.location,
+      location: party1Raw.location || null,
     };
     
     const party2: DetectedParty = {
       name: party2Raw.name,
       role: party2Raw.role || 'Party 2',
-      location: party2Raw.location,
+      location: party2Raw.location || null,
     };
     
     // Convert numeric confidence to string enum

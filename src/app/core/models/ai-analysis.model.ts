@@ -11,8 +11,8 @@ export interface AnalysisContext {
   // Party context
   userRole: UserRole;                 // Which party the user represents
   detectedParties?: {
-    party1?: { name: string; role: string; location?: string };
-    party2?: { name: string; role: string; location?: string };
+    party1?: Party;
+    party2?: Party;
   };
   
   // Additional context (for future use)
@@ -35,13 +35,20 @@ export type UserRole =
   | null;
 
 /**
- * Party information detected from contract
+ * Unified party information interface
+ * Used for both party detection and contract metadata
  */
-export interface DetectedParty {
+export interface Party {
   name: string;
-  role: string;        // e.g., "Employer", "Employee"
-  location?: string;
+  location?: string | null;          // Optional location (can be null or undefined)
+  role?: string;                     // Party's role (Employer, Employee, Landlord, Tenant, etc.)
+  position?: string | null;          // Job position or title (for employment contracts)
 }
+
+/**
+ * Party information detected from contract (alias for backward compatibility)
+ */
+export type DetectedParty = Party;
 
 /**
  * Party detection result
@@ -65,7 +72,7 @@ export interface AIAnalysisResponse {
   obligations: Obligations;
   omissions: Omission[];
   questions: string[];
-  contextWarnings?: ContextWarning[];  // 👈 NEW: Jurisdiction/cross-border warnings
+  contextWarnings?: ContextWarning[];  // Jurisdiction/cross-border warnings
   disclaimer: string;
 }
 
@@ -99,84 +106,8 @@ export interface ContractMetadata {
   analyzedInLanguage?: string;       // 👈 Language of analysis output
 }
 
-export interface Party {
-  name: string;
-  location: string | null;
-  role?: string;                     // 👈 Party's role (Employer, Employee, Landlord, Tenant, etc.)
-  position?: string | null;
-}
 
 export interface ContractSummary {
-  parties: string;
-  role: string;
-  responsibilities: string[];
-  compensation: Compensation;
-  benefits: string[];
-  termination: Termination;
-  restrictions: Restrictions;
-  fromYourPerspective?: string;  // Summary from selected perspective
-  keyBenefits?: string[];        // Key benefits from selected perspective
-  keyConcerns?: string[];        // Key concerns from selected perspective
-}
-
-export interface Compensation {
-  baseSalary: number | null;
-  bonus: string | null;
-  equity: string | null;
-  other: string | null;
-}
-
-export interface Termination {
-  atWill: string | null;
-  forCause: string | null;
-  severance: string | null;
-}
-
-export interface Restrictions {
-  confidentiality: string | null;
-  nonCompete: string | null;
-  nonSolicitation: string | null;
-  other: string | null;
-}
-
-export type RiskSeverity = 'High' | 'Medium' | 'Low';
-
-export interface RiskFlag {
-  title: string;
-  severity: RiskSeverity;
-  icon?: string;                     // 👈 NEW: Lucide icon name (schema-based format)
-  description: string;
-  impact: string;                    // Explain the potential impact
-  impactOn?: string;                 // 👈 NEW: Who is affected (employer/employee)
-  contextWarning?: string | null;    // 👈 NEW: Jurisdiction-specific warning
-}
-
-export interface Obligations {
-  party1: StructuredObligation[];  // First party obligations
-  party2: StructuredObligation[];  // Second party obligations
-  // Future: parties: Record<string, StructuredObligation[]> for multi-party
-}
-
-export interface StructuredObligation {
-  duty: string;
-  amount?: number | null;
-  frequency?: string | null;
-  startDate?: string | null;
-  duration?: string | null;
-  scope?: string | null;
-}
-
-export interface Omission {
-  item: string;
-  impact: string;
-  priority: 'High' | 'Medium' | 'Low';
-}
-
-/**
- * Summary data interface for the summary tab component
- * Extends the base ContractSummary with additional fields
- */
-export interface SummaryData {
   // Quick overview from Summarizer API (optional)
   quickTake?: string;
   
@@ -204,6 +135,44 @@ export interface SummaryData {
       other?: string | null;
     };
   };
+  
+  // Perspective-aware fields (for UI display)
+  fromYourPerspective?: string;  // Summary from selected perspective
+  keyBenefits?: string[];        // Key benefits from selected perspective
+  keyConcerns?: string[];        // Key concerns from selected perspective
+}
+
+export type RiskSeverity = 'High' | 'Medium' | 'Low';
+
+export interface RiskFlag {
+  title: string;
+  severity: RiskSeverity;
+  icon?: string;                     // Lucide icon name (schema-based format)
+  description: string;
+  impact: string;                    // Explain the potential impact
+  impactOn?: string;                 // Who is affected (employer/employee)
+  contextWarning?: string | null;    // Jurisdiction-specific warning
+}
+
+export interface Obligations {
+  party1: StructuredObligation[];  // First party obligations
+  party2: StructuredObligation[];  // Second party obligations
+  // Future: parties: Record<string, StructuredObligation[]> for multi-party
+}
+
+export interface StructuredObligation {
+  duty: string;
+  amount?: number | null;
+  frequency?: string | null;
+  startDate?: string | null;
+  duration?: string | null;
+  scope?: string | null;
+}
+
+export interface Omission {
+  item: string;
+  impact: string;
+  priority: 'High' | 'Medium' | 'Low';
 }
 
 /**
