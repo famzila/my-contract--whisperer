@@ -5,9 +5,11 @@ import type {
   AILanguageModel,
   AILanguageModelCreateOptions,
   AIPromptOptions,
-} from '../../models/ai.types';
+  UserRole,
+} from '../../models/ai-analysis.model';
 import * as Schemas from '../../schemas/analysis-schemas';
 import { LoggerService } from '../logger.service';
+import { PromptBuilderService } from './prompt-builder.service';
 
 /**
  * Service for Chrome Built-in Prompt API (Gemini Nano)
@@ -21,12 +23,13 @@ import { LoggerService } from '../logger.service';
 export class PromptService {
   private session: AILanguageModel | null = null;
   private logger = inject(LoggerService);
+  private promptBuilder = inject(PromptBuilderService);
 
   /**
    * Check if Prompt API is available
    */
   async isAvailable(): Promise<boolean> {
-    if (!('LanguageModel' in window)) {
+    if (!window.LanguageModel) {
       this.logger.warn('Chrome Built-in AI not available. Please enable Chrome AI features.');
       return false;
     }
@@ -61,7 +64,7 @@ export class PromptService {
    */
   async createSession(
     options?: AILanguageModelCreateOptions & { 
-      userRole?: 'employer' | 'employee' | 'client' | 'contractor' | 'landlord' | 'tenant' | 'partner' | 'both_views' | null;
+      userRole?: UserRole;
       contractLanguage?: string;
       outputLanguage?: string;
     }
@@ -71,7 +74,7 @@ export class PromptService {
     }
 
     // Get perspective-aware prompt if userRole is provided
-    const perspectivePrompt = options?.userRole ? this.buildPerspectivePrompt(options.userRole) : '';
+    const perspectivePrompt = options?.userRole ? this.promptBuilder.buildPerspectivePrompt(options.userRole) : '';
 
     // Build expectedInputs and expectedOutputs arrays for official API
     // Language handling is done via expectedInputs/expectedOutputs (official Chrome AI API)
@@ -101,17 +104,7 @@ export class PromptService {
       initialPrompts: options?.initialPrompts || [
         {
           role: 'system',
-          content: `You are an AI legal explainer that helps non-lawyers understand contracts clearly.
-
-${perspectivePrompt}
-
-Guidelines:
-- Use plain language, avoid legal jargon
-- Be specific with numbers, dates, and amounts
-- Focus on practical, real-world implications
-- Prioritize protecting the signing party's interests
-- Identify risks from highest to lowest severity
-- Use null for missing or non-applicable values`,
+          content: this.promptBuilder.buildBaseSystemPrompt(perspectivePrompt),
         },
       ],
       monitor: (m) => {
@@ -165,12 +158,7 @@ Guidelines:
    * Returns JSON string that can be parsed into AIAnalysisResponse
    */
   async extractClauses(contractText: string): Promise<string> {
-    const prompt = `Analyze this contract and respond with ONLY valid JSON following the schema provided in your system prompt.
-
-Contract to analyze:
-${contractText}
-
-Remember: Output ONLY the JSON object, no markdown, no code blocks, no additional text.`;
+    const prompt = this.promptBuilder.buildClauseExtractionPrompt(contractText);
 
     this.logger.info(`Sending analysis request (${contractText.length} chars)...`);
     const result = await this.prompt(prompt);
@@ -205,11 +193,7 @@ Remember: Output ONLY the JSON object, no markdown, no code blocks, no additiona
    * Ask a question about the contract
    */
   async askQuestion(contractText: string, question: string): Promise<string> {
-    const prompt = `Based on the following contract, answer this question: ${question}
-
-Contract:
-${contractText}`;
-
+    const prompt = this.promptBuilder.buildQuestionPrompt(contractText, question);
     return await this.prompt(prompt);
   }
 
@@ -245,24 +229,7 @@ ${contractText}`;
     userRole?: string,
     outputLanguage?: string
   ): Promise<Schemas.ContractMetadata> {
-    const roleContext = userRole ? `\n\nAnalyze this contract from the perspective of: ${userRole}` : '';
-    
-    const prompt = `Extract basic metadata from this contract.
-
-Contract:
-${contractText}${roleContext}
-
-Instructions:
-- Identify the contract type (e.g., "Employment Agreement", "NDA", "Lease Agreement")
-- Extract effective date and end date in ISO format (YYYY-MM-DD) or null if not specified
-- Calculate duration if dates are provided
-- Identify if the contract auto-renews (true/false/null)
-- Extract governing jurisdiction
-- Identify both parties with their names, locations, and roles
-- Detect the contract language (e.g., "en", "es", "fr", "ja")
-- Set analyzedForRole to the user's role: ${userRole || 'employee'}
-
-Return the metadata in the exact JSON structure specified in the schema.`;
+    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'metadata', userRole, outputLanguage);
 
     return this.promptWithSchema<Schemas.ContractMetadata>(
       prompt,
@@ -277,20 +244,7 @@ Return the metadata in the exact JSON structure specified in the schema.`;
     contractText: string,
     outputLanguage?: string
   ): Promise<Schemas.RisksAnalysis> {
-    const prompt = `Analyze all potential risks in this contract.
-
-Contract:
-${contractText}
-
-Instructions:
-- Identify ALL risks that could negatively impact the signing party
-- Prioritize by severity: "high" (could cause significant harm), "medium" (moderate concern), "low" (minor issue)
-- For each risk, provide a clear title, description, and concrete impact
-- Use appropriate icon: "alert-triangle" for high, "alert-circle" for medium, "info" for low
-- Focus on practical, real-world consequences
-- Order risks from highest to lowest severity
-
-Return the risks in the exact JSON structure specified in the schema.`;
+    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'risks', undefined, outputLanguage);
 
     return this.promptWithSchema<Schemas.RisksAnalysis>(
       prompt,
@@ -305,23 +259,7 @@ Return the risks in the exact JSON structure specified in the schema.`;
     contractText: string,
     outputLanguage?: string
   ): Promise<Schemas.ObligationsAnalysis> {
-    const prompt = `Extract all obligations from this contract for both parties.
-
-Contract:
-${contractText}
-
-Instructions:
-- Group obligations into two categories: party1 and party2
-- party1 refers to the first party mentioned (employer, landlord, client, service provider, etc.)
-- party2 refers to the second party (employee, tenant, contractor, service recipient, etc.)
-- For each obligation, extract: duty, amount, frequency, startDate, duration, scope
-- Both parties can have ANY of these fields - extract whatever is relevant from the contract
-- For monetary amounts: use numbers only (e.g., 50000, not "$50,000" or "50000")
-- For dates: use ISO format (YYYY-MM-DD) or descriptive text
-- For frequency: use simple terms like "monthly", "bi-weekly", "annually", "one-time"
-- Use null for any optional field that doesn't apply
-- Ensure all string values are properly escaped (no unescaped quotes or newlines)
-- Keep duty descriptions clear and concise (one sentence)`;
+    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'obligations', undefined, outputLanguage);
 
     return this.promptWithSchema<Schemas.ObligationsAnalysis>(
       prompt,
@@ -336,20 +274,7 @@ Instructions:
     contractText: string,
     outputLanguage?: string
   ): Promise<Schemas.OmissionsAndQuestions> {
-    const prompt = `Analyze this contract for missing clauses and generate clarifying questions.
-
-Contract:
-${contractText}
-
-Instructions:
-- Identify important clauses or details that are missing from the contract
-- For each omission, explain why its absence could be problematic
-- Prioritize omissions: "high" (critical missing clause), "medium" (important but not critical), "low" (nice to have)
-- Generate 5-8 specific, actionable questions the signing party should ask
-- Questions should seek clarification on ambiguous terms, missing details, or potential risks
-- Make questions practical and easy to ask
-
-Return the omissions and questions in the exact JSON structure specified in the schema.`;
+    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'omissions', undefined, outputLanguage);
 
     return this.promptWithSchema<Schemas.OmissionsAndQuestions>(
       prompt,
@@ -364,23 +289,7 @@ Return the omissions and questions in the exact JSON structure specified in the 
     contractText: string,
     outputLanguage?: string
   ): Promise<Schemas.ContractSummary> {
-    const prompt = `Generate a comprehensive, easy-to-understand summary of this contract.
-
-Contract:
-${contractText}
-
-Instructions:
-- DO NOT include parties or role information (already captured in metadata)
-- List 3-5 key responsibilities of the signing party
-- Detail all compensation (salary, bonuses, equity, other benefits)
-- Explain termination conditions (at-will, for-cause, severance, notice period)
-- Identify any restrictions (confidentiality, non-compete, non-solicitation, IP assignment)
-- Use clear, plain language - avoid legal jargon
-- For base salary, use numbers only (e.g., 150000, not "150k" or "$150,000")
-- For other compensation fields, use descriptive text
-- Use null for fields that don't apply or aren't specified in the contract
-
-Return the summary in the exact JSON structure specified in the schema.`;
+    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'summary', undefined, outputLanguage);
 
     return this.promptWithSchema<Schemas.ContractSummary>(
       prompt,
@@ -454,103 +363,4 @@ Return the summary in the exact JSON structure specified in the schema.`;
       this.session = null;
     }
   }
-
-  /**
-   * Build perspective-aware system prompt based on user role
-   */
-  buildPerspectivePrompt(userRole: 'employer' | 'employee' | 'client' | 'contractor' | 'landlord' | 'tenant' | 'partner' | 'both_views' | null): string {
-    const basePerspectives = {
-      employer: `You are analyzing this contract from the EMPLOYER'S perspective.
-
-Focus on:
-- 💼 Employer's obligations, costs, and financial commitments
-- 📋 Employee's performance commitments and deliverables
-- ⚖️ Termination rights and conditions for employer
-- 🔒 IP ownership, confidentiality, and company protections
-- 🚨 Risks: Employee underperformance, IP theft, litigation costs
-
-Tailor risks and obligations to help the employer understand what they must provide and how to protect their interests.`,
-
-      employee: `You are analyzing this contract from the EMPLOYEE'S perspective.
-
-Focus on:
-- 💰 Compensation fairness and total package value
-- 🛡️ Job security (at-will vs. for-cause termination)
-- 🚫 Career restrictions (non-compete, non-solicitation, IP assignment)
-- ⚖️ Work-life balance (hours, vacation, remote work)
-- 🚨 Risks: Underpayment, sudden termination, limited job mobility
-
-Tailor risks and obligations to help the employee understand what they're giving up and how to protect their career.`,
-
-      client: `You are analyzing this contract from the CLIENT'S perspective.
-
-Focus on:
-- 📦 Deliverables, scope, and what you're paying for
-- 💵 Payment terms, milestones, and total cost
-- ⏱️ Timeline, deadlines, and delivery guarantees
-- 🔒 Confidentiality and IP ownership rights
-- 🚨 Risks: Missed deadlines, poor quality, scope creep
-
-Tailor analysis to help the client understand what they'll receive, payment obligations, and how to enforce quality.`,
-
-      contractor: `You are analyzing this contract from the CONTRACTOR'S/FREELANCER'S perspective.
-
-Focus on:
-- 💰 Payment terms, rates, and when you get paid
-- 📋 Scope of work and what's expected
-- 🔒 IP rights (do you retain any work product?)
-- ⚖️ Liability limitations and indemnification
-- 🚨 Risks: Non-payment, scope creep, unfair IP assignment
-
-Tailor analysis to help the contractor understand fair compensation, payment timing, and liability exposure.`,
-
-      landlord: `You are analyzing this contract from the LANDLORD'S perspective.
-
-Focus on:
-- 💵 Rent payment terms, security deposit, and late fees
-- 🔒 Property damage protections and maintenance obligations
-- ⚖️ Eviction rights and termination conditions
-- 📋 Tenant responsibilities and restrictions
-- 🚨 Risks: Non-payment, property damage, difficult eviction
-
-Tailor analysis to help the landlord ensure timely rent payment and property protection.`,
-
-      tenant: `You are analyzing this contract from the TENANT'S perspective.
-
-Focus on:
-- 💰 Rent amount, increases, and additional fees
-- 🏠 Security deposit return conditions
-- 🔧 Maintenance responsibilities (yours vs. landlord's)
-- ⚖️ Termination rights and penalties for early exit
-- 🚨 Risks: Unfair eviction, withheld deposit, surprise costs
-
-Tailor analysis to help the tenant understand total housing cost and how to get security deposit back.`,
-
-      partner: `You are analyzing this contract from a PARTNER'S perspective.
-
-Focus on:
-- 🤝 Equity split and ownership structure
-- 💼 Roles, responsibilities, and decision-making authority
-- 💰 Profit distribution and capital contributions
-- ⚖️ Exit strategy and buyout terms
-- 🚨 Risks: Unequal workload, decision deadlocks, unfair exits
-
-Tailor analysis to help the partner understand fairness of equity split and exit options.`,
-
-      both_views: `You are analyzing this contract from BOTH PARTIES' perspectives.
-
-For each major risk and obligation, show how BOTH parties are affected.
-
-In the "impactOn" field for risks, specify "employer" | "employee" | "both".
-In obligations, clearly separate into "employer" and "employee" arrays.
-
-Provide balanced analysis showing:
-- How each party benefits
-- How each party is at risk
-- Whether clauses are fair or one-sided`,
-    };
-
-    return basePerspectives[userRole || 'employee'];
-  }
-
 }

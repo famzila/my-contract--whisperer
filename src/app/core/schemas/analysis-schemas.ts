@@ -219,9 +219,6 @@ export const SUMMARY_SCHEMA = {
     summary: {
       type: "object",
       properties: {
-        // REMOVED: parties (duplicate with metadata.parties)
-        // REMOVED: role (duplicate with metadata.detectedRole)
-        
         keyResponsibilities: {
           type: "array",
           items: { type: "string" },
@@ -369,15 +366,10 @@ export type OmissionsAndQuestions = {
 };
 
 export type ContractSummary = {
-  // NEW: Quick overview from Summarizer API (optional)
   quickTake?: string;
   
-  // Structured details from Prompt API (NO duplicates with metadata)
   summary: {
-    // REMOVED: parties (duplicate with metadata.parties)
-    // REMOVED: role (duplicate with metadata.detectedRole)
-    
-    keyResponsibilities: string[]; // Renamed from 'responsibilities'
+    keyResponsibilities: string[];
     compensation: {
       baseSalary?: number | null;
       bonus?: string | null;
@@ -389,13 +381,13 @@ export type ContractSummary = {
       atWill?: string | null;
       forCause?: string | null;
       severance?: string | null;
-      noticeRequired?: string | null; // NEW: Important detail
+      noticeRequired?: string | null;
     };
     restrictions: {
       confidentiality?: string | null;
       nonCompete?: string | null;
       nonSolicitation?: string | null;
-      intellectualProperty?: string | null; // NEW: IP assignment
+      intellectualProperty?: string | null;
       other?: string | null;
     };
   };

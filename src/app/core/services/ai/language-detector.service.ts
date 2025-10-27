@@ -1,9 +1,10 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import type {
   LanguageDetector,
   LanguageDetectionResult,
   AICreateMonitor,
-} from '../../models/ai.types';
+} from '../../models/ai-analysis.model';
+import { LoggerService } from '../logger.service';
 
 /**
  * Service for Chrome Built-in Language Detector API
@@ -16,6 +17,7 @@ import type {
 })
 export class LanguageDetectorService {
   private detector: LanguageDetector | null = null;
+  private logger = inject(LoggerService);
 
   /**
    * Check if Language Detector API is available
@@ -23,7 +25,7 @@ export class LanguageDetectorService {
    */
   async isAvailable(): Promise<boolean> {
     if (!('LanguageDetector' in window)) {
-      console.warn('⚠️ [LanguageDetector] Chrome Built-in AI not available. Please enable Chrome AI features.');
+      this.logger.warn('⚠️ [LanguageDetector] Chrome Built-in AI not available. Please enable Chrome AI features.');
       return false;
     }
     return true;
@@ -58,7 +60,7 @@ export class LanguageDetectorService {
     const availability = await this.checkAvailability();
     
     if (availability === 'downloadable') {
-      console.log('📥 [LanguageDetector] Model needs download...');
+      this.logger.info('📥 [LanguageDetector] Model needs download...');
     }
 
     // Create detector with monitor for download progress
@@ -68,13 +70,13 @@ export class LanguageDetectorService {
           const percent = (e.loaded * 100).toFixed(1);
           // Only log significant progress milestones
           if (e.loaded === 0 || e.loaded === 1 || e.loaded % 0.25 === 0) {
-            console.log(`📥 [LanguageDetector] Loading model: ${percent}%`);
+            this.logger.info(`📥 [LanguageDetector] Loading model: ${percent}%`);
           }
         });
       },
     });
 
-    console.log('✅ [LanguageDetector] Detector ready');
+    this.logger.info('✅ [LanguageDetector] Detector ready');
     return this.detector;
   }
 
@@ -94,11 +96,11 @@ export class LanguageDetectorService {
       if (results && results.length > 0) {
         const topResult = results[0];
         
-        console.log(`🌍 [LanguageDetector] Detected: ${topResult.detectedLanguage} (${(topResult.confidence * 100).toFixed(1)}% confidence)`);
+        this.logger.info(`🌍 [LanguageDetector] Detected: ${topResult.detectedLanguage} (${(topResult.confidence * 100).toFixed(1)}% confidence)`);
         
         // Log other likely languages for debugging
         if (results.length > 1) {
-          console.log('📊 [LanguageDetector] Other possibilities:', 
+          this.logger.info('📊 [LanguageDetector] Other possibilities:', 
             results.slice(1, 4).map(r => `${r.detectedLanguage} (${(r.confidence * 100).toFixed(1)}%)`).join(', ')
           );
         }
@@ -106,10 +108,10 @@ export class LanguageDetectorService {
         return topResult.detectedLanguage;
       }
       
-      console.warn('⚠️ [LanguageDetector] No results returned');
+      this.logger.warn('⚠️ [LanguageDetector] No results returned');
       return null;
     } catch (error) {
-      console.error('❌ [LanguageDetector] Detection failed:', error);
+      this.logger.error('❌ [LanguageDetector] Detection failed:', error);
       return null;
     }
   }
@@ -127,13 +129,13 @@ export class LanguageDetectorService {
       const results = await detector.detect(text);
       
       if (results && results.length > 0) {
-        console.log(`🌍 [LanguageDetector] Detected ${results.length} possible languages`);
+        this.logger.info(`🌍 [LanguageDetector] Detected ${results.length} possible languages`);
         return results;
       }
       
       return [];
     } catch (error) {
-      console.error('❌ [LanguageDetector] Detection failed:', error);
+      this.logger.error('❌ [LanguageDetector] Detection failed:', error);
       return [];
     }
   }
@@ -154,10 +156,10 @@ export class LanguageDetectorService {
         return results[0].detectedLanguage;
       }
       
-      console.warn(`⚠️ [LanguageDetector] Confidence too low (${(results[0]?.confidence * 100).toFixed(1)}% < ${minConfidence * 100}%)`);
+      this.logger.warn(`⚠️ [LanguageDetector] Confidence too low (${(results[0]?.confidence * 100).toFixed(1)}% < ${minConfidence * 100}%)`);
       return null;
     } catch (error) {
-      console.error('❌ [LanguageDetector] Detection failed:', error);
+      this.logger.error('❌ [LanguageDetector] Detection failed:', error);
       return null;
     }
   }
@@ -169,7 +171,6 @@ export class LanguageDetectorService {
     if (this.detector) {
       this.detector.destroy();
       this.detector = null;
-      console.log('🗑️ [LanguageDetector] Detector destroyed');
     }
   }
 }

@@ -2,12 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import type {
   AIWriter,
   AIRewriter,
-  AIWriterCapabilities,
   AIWriterCreateOptions,
   AIRewriterCreateOptions,
   AIWriterOptions,
   AIRewriterOptions,
-} from '../../models/ai.types';
+  AICreateMonitor,
+  DownloadProgressEvent,
+} from '../../models/ai-analysis.model';
 import { LoggerService } from '../logger.service';
 
 /**
@@ -22,20 +23,16 @@ export class WriterService {
   private rewriter: AIRewriter | null = null;
   private logger = inject(LoggerService);
 
+
   /**
-   * Check if Writer API is available
+   * Check if Writer API is available (legacy method for backward compatibility)
    */
   async isWriterAvailable(): Promise<boolean> {
     if (!('Writer' in window)) {
+      this.logger.warn('Chrome Built-in Writer API not available. Please enable Chrome AI features.');
       return false;
     }
-
-    try {
-      const availability = await (window as any).Writer.availability();
-      return availability === 'available' || availability === 'downloadable' || availability === 'after-download';
-    } catch (error) {
-      return false;
-    }
+    return true;
   }
 
   /**
@@ -43,15 +40,10 @@ export class WriterService {
    */
   async isRewriterAvailable(): Promise<boolean> {
     if (!('Rewriter' in window)) {
+      this.logger.warn('Chrome Built-in Rewriter API not available. Please enable Chrome AI features.');
       return false;
     }
-
-    try {
-      const availability = await (window as any).Rewriter.availability();
-      return availability === 'available' || availability === 'downloadable' || availability === 'after-download';
-    } catch (error) {
-      return false;
-    }
+    return true;
   }
 
   /**
@@ -60,24 +52,23 @@ export class WriterService {
   async write(prompt: string, options?: AIWriterOptions): Promise<string> {
     this.logger.info('Writing with Writer API...');
 
-    const availability = await (window as any).Writer.availability();
-
-    if (availability === 'no') {
-      throw new Error('Writer API is not available');
+    if (!(await this.isWriterAvailable())) {
+      throw new Error('Writer API not available');
     }
 
+    const availability = await window.Writer!.availability();
+
     // Create writer with options
-    const createOptions: any = {
+    const createOptions: AIWriterCreateOptions = {
       tone: options?.tone || 'formal',
-      format: 'plain-text',
       length: options?.length || 'medium',
-      sharedContext: options?.sharedContext,
+      outputLanguage: options?.outputLanguage || 'en', // Default to English
     };
 
     // Add monitor for download progress if needed
-    if (availability === 'downloadable' || availability === 'after-download') {
-      createOptions.monitor = (m: any) => {
-        m.addEventListener('downloadprogress', (e: any) => {
+    if (availability === 'downloadable' || availability === 'downloading') {
+      createOptions.monitor = (m: AICreateMonitor) => {
+        m.addEventListener('downloadprogress', (e: DownloadProgressEvent) => {
           const percent = (e.loaded * 100).toFixed(1);
           this.logger.info(`📥 Downloading Writer model: ${percent}%`);
         });
@@ -85,12 +76,15 @@ export class WriterService {
     }
 
     this.logger.info(`Creating Writer session with options:`, createOptions);
-    const writer = await (window as any).Writer.create(createOptions);
+    const writer = await window.Writer!.create(createOptions);
     this.writer = writer;
 
     // Generate the content
     this.logger.info('Sending prompt to Writer API...');
-    const result = await writer.write(prompt, { signal: options?.signal });
+    const result = await writer.write(prompt, { 
+      signal: options?.signal,
+      outputLanguage: options?.outputLanguage || 'en'
+    });
 
     this.logger.info('Writer API response received');
     return result;
@@ -102,35 +96,38 @@ export class WriterService {
   async writeStreaming(prompt: string, options?: AIWriterOptions): Promise<ReadableStream> {
     this.logger.info('Writing with Writer API (streaming)...');
 
-    const availability = await (window as any).Writer.availability();
-
-    if (availability === 'no') {
-      throw new Error('Writer API is not available');
+    if (!(await this.isWriterAvailable())) {
+      throw new Error('Writer API not available');
     }
 
+    const availability = await window.Writer!.availability();
+
+
     // Create writer with options
-    const createOptions: any = {
+    const createOptions: AIWriterCreateOptions = {
       tone: options?.tone || 'formal',
-      format: 'plain-text',
       length: options?.length || 'medium',
-      sharedContext: options?.sharedContext,
+      outputLanguage: options?.outputLanguage || 'en', // Default to English
     };
 
     // Add monitor for download progress if needed
-    if (availability === 'downloadable' || availability === 'after-download') {
-      createOptions.monitor = (m: any) => {
-        m.addEventListener('downloadprogress', (e: any) => {
+    if (availability === 'downloadable' || availability === 'downloading') {
+      createOptions.monitor = (m: AICreateMonitor) => {
+        m.addEventListener('downloadprogress', (e: DownloadProgressEvent) => {
           const percent = (e.loaded * 100).toFixed(1);
           this.logger.info(`📥 Downloading Writer model: ${percent}%`);
         });
       };
     }
 
-    const writer = await (window as any).Writer.create(createOptions);
+    const writer = await window.Writer!.create(createOptions);
     this.writer = writer;
 
     // Generate the content with streaming
-    const stream = writer.writeStreaming(prompt, { signal: options?.signal });
+    const stream = writer.writeStreaming(prompt, { 
+      signal: options?.signal,
+      outputLanguage: options?.outputLanguage || 'en'
+    });
     return stream;
   }
 
@@ -140,33 +137,36 @@ export class WriterService {
   async rewrite(input: string, options?: AIRewriterOptions): Promise<string> {
     this.logger.info('Rewriting with Rewriter API...');
 
-    const availability = await (window as any).Rewriter.availability();
-
-    if (availability === 'no') {
-      throw new Error('Rewriter API is not available');
+    if (!(await this.isRewriterAvailable())) {
+      throw new Error('Rewriter API not available');
     }
 
+    const availability = await window.Rewriter!.availability();
+
     // Create rewriter with options
-    const createOptions: any = {
+    const createOptions: AIRewriterCreateOptions = {
       tone: options?.tone || 'as-is',
       length: options?.length || 'as-is',
     };
 
     // Add monitor for download progress if needed
-    if (availability === 'downloadable' || availability === 'after-download') {
-      createOptions.monitor = (m: any) => {
-        m.addEventListener('downloadprogress', (e: any) => {
+    if (availability === 'downloadable' || availability === 'downloading') {
+      createOptions.monitor = (m: AICreateMonitor) => {
+        m.addEventListener('downloadprogress', (e: DownloadProgressEvent) => {
           const percent = (e.loaded * 100).toFixed(1);
           this.logger.info(`📥 Downloading Rewriter model: ${percent}%`);
         });
       };
     }
 
-    const rewriter = await (window as any).Rewriter.create(createOptions);
+    const rewriter = await window.Rewriter!.create(createOptions);
     this.rewriter = rewriter;
 
     // Rewrite the content
-    const result = await rewriter.rewrite(input, { signal: options?.signal });
+    const result = await rewriter.rewrite(input, { 
+      signal: options?.signal,
+      outputLanguage: options?.outputLanguage || 'en'
+    });
     return result;
   }
 
@@ -206,33 +206,36 @@ export class WriterService {
   async rewriteStreaming(input: string, options?: AIRewriterOptions): Promise<ReadableStream> {
     this.logger.info('Rewriting with Rewriter API (streaming)...');
 
-    const availability = await (window as any).Rewriter.availability();
-
-    if (availability === 'no') {
-      throw new Error('Rewriter API is not available');
+    if (!(await this.isRewriterAvailable())) {
+      throw new Error('Rewriter API not available');
     }
 
+    const availability = await window.Rewriter!.availability();
+
     // Create rewriter with options
-    const createOptions: any = {
+    const createOptions: AIRewriterCreateOptions = {
       tone: options?.tone || 'as-is',
       length: options?.length || 'as-is',
     };
 
     // Add monitor for download progress if needed
-    if (availability === 'downloadable' || availability === 'after-download') {
-      createOptions.monitor = (m: any) => {
-        m.addEventListener('downloadprogress', (e: any) => {
+    if (availability === 'downloadable' || availability === 'downloading') {
+      createOptions.monitor = (m: AICreateMonitor) => {
+        m.addEventListener('downloadprogress', (e: DownloadProgressEvent) => {
           const percent = (e.loaded * 100).toFixed(1);
           this.logger.info(`📥 Downloading Rewriter model: ${percent}%`);
         });
       };
     }
 
-    const rewriter = await (window as any).Rewriter.create(createOptions);
+    const rewriter = await window.Rewriter!.create(createOptions);
     this.rewriter = rewriter;
 
     // Rewrite the content with streaming
-    const stream = rewriter.rewriteStreaming(input, { signal: options?.signal });
+    const stream = rewriter.rewriteStreaming(input, { 
+      signal: options?.signal,
+      outputLanguage: options?.outputLanguage || 'en'
+    });
     return stream;
   }
 

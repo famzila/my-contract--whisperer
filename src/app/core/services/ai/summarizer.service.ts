@@ -3,7 +3,7 @@ import type {
   AISummarizer,
   AISummarizerCreateOptions,
   AISummarizerOptions,
-} from '../../models/ai.types';
+} from '../../models/ai-analysis.model';
 import { LoggerService } from '../logger.service';
 import { getAiOutputLanguage } from '../../utils/language.util';
 
@@ -27,7 +27,7 @@ export class SummarizerService {
    */
   async isAvailable(): Promise<boolean> {
     // Simple check - just verify the API exists
-    if (!('Summarizer' in window) || !window.Summarizer) {
+    if (!window.Summarizer) {
       return false;
     }
     
