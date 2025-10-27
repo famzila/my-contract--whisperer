@@ -69,7 +69,7 @@
       type="info"
       [icon]="ZapIcon"
       [titleKey]="'analysis.summary.quickTake' | translate"
-      [message]="formatQuickTake(summary()!.quickTake!)"
+      [message]="summary()!.quickTake!"
     ></app-notice>
   </div>
   }
@@ -100,8 +100,7 @@
       @if (summary()?.summary?.compensation?.baseSalary) {
       <p>
         <strong>{{ 'analysis.summary.baseSalary' | translate }}:</strong> 
-        {{ summary()?.summary?.compensation?.baseSalary | currency:'USD':'symbol':'1.0-0' }}
-        <span class="text-sm text-gray-500 dark:text-gray-400">/ year</span>
+        {{ summary()?.summary?.compensation?.baseSalary }}
       </p>
       } @if (summary()?.summary?.compensation?.bonus) {
       <p>

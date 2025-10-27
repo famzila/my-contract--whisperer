@@ -84,7 +84,7 @@ export interface AISummarizerOptions {
   outputLanguage?: string; // e.g., 'en', 'es', 'ja'
 }
 
-export type AISummarizerType = 'tl;dr' | 'key-points' | 'teaser' | 'headline';
+export type AISummarizerType = 'tldr' | 'key-points' | 'teaser' | 'headline';
 export type AISummarizerFormat = 'plain-text' | 'markdown';
 export type AISummarizerLength = 'short' | 'medium' | 'long';
 

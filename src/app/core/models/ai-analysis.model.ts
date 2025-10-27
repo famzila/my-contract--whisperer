@@ -115,3 +115,46 @@ export interface Omission {
   priority: 'High' | 'Medium' | 'Low';
 }
 
+/**
+ * Summary data interface for the summary tab component
+ * Extends the base ContractSummary with additional fields
+ */
+export interface SummaryData {
+  // Quick overview from Summarizer API (optional)
+  quickTake?: string;
+  
+  // Structured details from Prompt API (NO duplicates with metadata)
+  summary: {
+    keyResponsibilities: string[]; // Renamed from 'responsibilities'
+    compensation: {
+      baseSalary?: number | null;
+      bonus?: string | null;
+      equity?: string | null;
+      other?: string | null;
+    };
+    benefits: string[];
+    termination: {
+      atWill?: string | null;
+      forCause?: string | null;
+      severance?: string | null;
+      noticeRequired?: string | null; // Important detail
+    };
+    restrictions: {
+      confidentiality?: string | null;
+      nonCompete?: string | null;
+      nonSolicitation?: string | null;
+      intellectualProperty?: string | null; // IP assignment
+      other?: string | null;
+    };
+  };
+}
+
+/**
+ * Perspective context for summary display
+ */
+export interface PerspectiveContext {
+  icon: any;
+  titleKey: string;
+  messageKey: string;
+}
+

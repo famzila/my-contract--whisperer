@@ -12,6 +12,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { ContractStore, EmailDraftStore, UiStore } from '../../core/stores';
 import { LanguageStore } from '../../core/stores/language.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
+import { PerspectiveContext } from '../../core/models/ai-analysis.model';
 import { LoadingSpinner } from '../../shared/components/loading-spinner/loading-spinner';
 import { TabsComponent, TabConfig } from '../../shared/components/tabs/tabs.component';
 import { DashboardHeaderComponent } from './components/dashboard-header/dashboard-header.component';
@@ -145,7 +146,7 @@ export class AnalysisDashboard implements OnInit {
       labelKey: 'analysis.tabs.risks',
       icon: this.AlertTriangleIcon,
       isLoading: this.isRisksLoading(),
-      badge: this.getRisks()?.length || 0,
+      badge: this.risks()?.length || 0,
     },
     {
       id: 'obligations',
@@ -158,14 +159,14 @@ export class AnalysisDashboard implements OnInit {
       labelKey: 'analysis.tabs.omissions',
       icon: this.FileXIcon,
       isLoading: this.isOmissionsLoading(),
-      badge: this.getOmissions()?.length || 0,
+      badge: this.omissions()?.length || 0,
     },
     {
       id: 'questions',
       labelKey: 'analysis.tabs.questions',
       icon: this.InfoIcon,
       isLoading: this.isOmissionsLoading(),
-      badge: this.getQuestions()?.length || 0,
+      badge: this.questions()?.length || 0,
     },
     {
       id: 'disclaimer',
@@ -189,7 +190,7 @@ export class AnalysisDashboard implements OnInit {
   }
 
   // Data getters - use progressive loading data if available, fallback to analysis
-  getMetadata() {
+  metadata = computed(() => {
     // Get progressive loading metadata
     const progressiveMetadata = this.contractStore.sectionsMetadata()?.data;
     if (progressiveMetadata) {
@@ -197,9 +198,9 @@ export class AnalysisDashboard implements OnInit {
     }
     
     return null;
-  }
+  });
 
-  getSummary() {
+  summary = computed(() => {
     // Get progressive loading summary
     const progressiveSummary = this.contractStore.sectionsSummary()?.data;
     if (progressiveSummary !== undefined) {
@@ -208,9 +209,9 @@ export class AnalysisDashboard implements OnInit {
     }
     
     return null;
-  }
+  });
 
-  getRisks() {
+  risks = computed(() => {
     // Get progressive loading risks
     const progressiveRisks = this.contractStore.sectionsRisks()?.data;
     if (progressiveRisks) {
@@ -218,9 +219,9 @@ export class AnalysisDashboard implements OnInit {
     }
     
     return [];
-  }
+  });
 
-  getObligations(): PerspectiveObligations | null {
+  obligations = computed((): PerspectiveObligations | null => {
     // Get progressive loading obligations
     const progressiveObligations = this.contractStore.sectionsObligations()?.data;
     
@@ -243,9 +244,9 @@ export class AnalysisDashboard implements OnInit {
     }
     
     return null;
-  }
+  });
 
-  getOmissions() {
+  omissions = computed(() => {
     // Get progressive loading omissions
     const progressiveOmissions = this.contractStore.sectionsOmissionsQuestions()?.data;
     if (progressiveOmissions) {
@@ -253,9 +254,9 @@ export class AnalysisDashboard implements OnInit {
     }
     
     return [];
-  }
+  });
 
-  getQuestions() {
+  questions = computed(() => {
     // Get progressive loading questions
     const progressiveQuestions = this.contractStore.sectionsOmissionsQuestions()?.data;
     if (progressiveQuestions) {
@@ -263,7 +264,7 @@ export class AnalysisDashboard implements OnInit {
     }
     
     return [];
-  }
+  });
 
   getDisclaimer() {
     return this.translate.instant('analysis.disclaimer.text');
@@ -271,33 +272,33 @@ export class AnalysisDashboard implements OnInit {
 
   // Risk filtering methods
   getHighRisks() {
-    return this.getRisks().filter((risk: any) => risk.severity === 'high');
+    return this.risks().filter((risk: any) => risk.severity === 'high');
   }
 
   getMediumRisks() {
-    return this.getRisks().filter((risk: any) => risk.severity === 'medium');
+    return this.risks().filter((risk: any) => risk.severity === 'medium');
   }
 
   getLowRisks() {
-    return this.getRisks().filter((risk: any) => risk.severity === 'low');
+    return this.risks().filter((risk: any) => risk.severity === 'low');
   }
 
   // Omission filtering methods
   getHighPriorityOmissions() {
-    return this.getOmissions().filter((omission: any) => omission.priority === 'high');
+    return this.omissions().filter((omission: any) => omission.priority === 'high');
   }
 
   getMediumPriorityOmissions() {
-    return this.getOmissions().filter((omission: any) => omission.priority === 'medium');
+    return this.omissions().filter((omission: any) => omission.priority === 'medium');
   }
 
   getLowPriorityOmissions() {
-    return this.getOmissions().filter((omission: any) => omission.priority === 'low');
+    return this.omissions().filter((omission: any) => omission.priority === 'low');
   }
 
   // Perspective and context methods
   getPerspectiveBadge() {
-    const metadata = this.getMetadata();
+    const metadata = this.metadata();
     const role = metadata?.analyzedForRole;
 
     if (!role || role === 'both_views') {
@@ -376,8 +377,8 @@ export class AnalysisDashboard implements OnInit {
     };
   }
 
-  getPerspectiveContext() {
-    const metadata = this.getMetadata();
+  getPerspectiveContext(): PerspectiveContext | null {
+    const metadata = this.metadata();
     const role = metadata?.analyzedForRole;
 
     if (!role || role === 'both_views') {
@@ -465,7 +466,7 @@ export class AnalysisDashboard implements OnInit {
   }
 
   copyAllQuestions() {
-    const questions = this.getQuestions();
+    const questions = this.questions();
     const questionsText = questions
       .map((q: string, index: number) => `${index + 1}. ${q}`)
       .join('\n\n');
@@ -479,8 +480,8 @@ export class AnalysisDashboard implements OnInit {
    * Delegates to EmailDraftStore with smart context detection
    */
   async draftProfessionalEmail(): Promise<void> {
-    const metadata = this.getMetadata();
-    const questions = this.getQuestions();
+    const metadata = this.metadata();
+    const questions = this.questions();
     
     if (!metadata || !questions.length) return;
     
@@ -517,7 +518,7 @@ export class AnalysisDashboard implements OnInit {
    * @returns true if user is likely the contract provider (hide email draft feature)
    */
   isContractProvider(): boolean {
-    const metadata = this.getMetadata();
+    const metadata = this.metadata();
     const role = metadata?.analyzedForRole?.toLowerCase();
     
     if (!role) return false;

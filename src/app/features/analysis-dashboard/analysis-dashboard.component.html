@@ -2,7 +2,7 @@
   <div class="max-w-6xl mx-auto px-4 py-8">
     <!-- Header with Metadata -->
     <app-dashboard-header
-      [metadata]="getMetadata()"
+      [metadata]="metadata()"
       [isMockMode]="isMockMode()"
       [perspectiveBadge]="getPerspectiveBadge()"
       [wasTranslated]="wasTranslated()"
@@ -59,7 +59,7 @@
     <app-tabs [tabs]="tabConfigs()" [activeTab]="selectedTab()" (tabSelected)="selectTab($event)">
       @if (selectedTab() === 'summary') {
         <app-summary-tab
-          [summary]="getSummary()"
+          [summary]="summary()"
           [isLoading]="isSummaryLoading()"
           [retryCount]="summaryRetryCount()"
           [isRetrying]="summaryIsRetrying()"
@@ -67,7 +67,7 @@
         </app-summary-tab>
       } @else if (selectedTab() === 'risks') {
         <app-risks-tab
-          [risks]="getRisks()"
+          [risks]="risks()"
           [isLoading]="isRisksLoading()"
           [retryCount]="risksRetryCount()"
           [isRetrying]="risksIsRetrying()"
@@ -77,14 +77,14 @@
         </app-risks-tab>
       } @else if (selectedTab() === 'obligations') {
         <app-obligations-tab 
-          [obligations]="getObligations()" 
+          [obligations]="obligations()" 
           [isLoading]="isObligationsLoading()"
           [retryCount]="obligationsRetryCount()"
           [isRetrying]="obligationsIsRetrying()">
         </app-obligations-tab>
       } @else if (selectedTab() === 'omissions') {
         <app-omissions-tab
-          [omissions]="getOmissions()"
+          [omissions]="omissions()"
           [isLoading]="isOmissionsLoading()"
           [retryCount]="omissionsRetryCount()"
           [isRetrying]="omissionsIsRetrying()"
@@ -94,7 +94,7 @@
         </app-omissions-tab>
       } @else if (selectedTab() === 'questions') {
         <app-questions-tab
-          [questions]="getQuestions()"
+          [questions]="questions()"
           [isLoading]="isOmissionsLoading()"
           [retryCount]="omissionsRetryCount()"
           [isRetrying]="omissionsIsRetrying()"

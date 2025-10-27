@@ -8,7 +8,7 @@ import {
   Copy, 
   Check, 
   Mail,
-  HelpCircle,
+  CircleQuestionMark,
   Sparkles
 } from '../../../../shared/icons/lucide-icons';
 import { Notice } from "../../../../shared/components/notice/notice";
@@ -40,7 +40,7 @@ export class QuestionsTabComponent {
   CopyIcon = Copy;
   CheckIcon = Check;
   MailIcon = Mail;
-  HelpCircleIcon = HelpCircle;
+  HelpCircleIcon = CircleQuestionMark;
   SparklesIcon = Sparkles;
 }
 

@@ -101,9 +101,9 @@ export class SummarizerService {
   }
 
   /**
-   * Generate executive summary (short, key points in TL;DR format)
+   * Generate executive summary (short TL;DR format)
    * 
-   * This method generates a concise summary using the Summarizer API.
+   * This method generates a concise summary using the Summarizer API with tldr type.
    * The output language is automatically determined:
    * - If outputLanguage is supported by Gemini Nano (en, es, ja), uses it directly
    * - Otherwise, falls back to English
@@ -112,7 +112,7 @@ export class SummarizerService {
    * 
    * @param text - The text to summarize (contract content)
    * @param outputLanguage - Desired output language (optional, will use getAiOutputLanguage fallback)
-   * @returns Promise<string> - Summary in markdown format with bullet points
+   * @returns Promise<string> - Summary in plain text format (1 sentence for short length)
    */
   async generateExecutiveSummary(text: string, outputLanguage?: string): Promise<string> {
     const language = getAiOutputLanguage(outputLanguage);
@@ -130,9 +130,9 @@ export class SummarizerService {
     }
     
     return await this.summarize(text, {
-      type: 'key-points',
+      type: 'tldr',
       length: 'short',
-      format: 'markdown',
+      format: 'plain-text',
     });
   }
 
