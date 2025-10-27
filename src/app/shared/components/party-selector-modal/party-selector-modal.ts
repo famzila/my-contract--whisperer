@@ -24,7 +24,7 @@ import {
   ChevronRight
 } from '../../../shared/icons/lucide-icons';
 import { Notice } from '../notice/notice';
-import type { PartyDetectionResult, UserRole } from '../../../core/stores/onboarding.store';
+import type { PartyDetectionResult, UserRole } from '../../../core/models/ai-analysis.model';
 
 interface PartyOption {
   value: UserRole;

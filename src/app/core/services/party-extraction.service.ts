@@ -4,7 +4,7 @@
  */
 import { Injectable, inject } from '@angular/core';
 import { PromptService } from './ai/prompt.service';
-import type { PartyDetectionResult, DetectedParty } from '../stores/onboarding.store';
+import type { PartyDetectionResult, DetectedParty } from '../models/ai-analysis.model';
 
 /**
  * Raw extraction result from AI

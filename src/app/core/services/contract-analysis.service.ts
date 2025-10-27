@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, merge, concat, defer, from, EMPTY, map, tap, catchError, switchMap, shareReplay, takeUntil, retry, timer, Subject, combineLatest } from 'rxjs';
+import { Observable, of, merge, defer, from, concat, map, tap, catchError, switchMap, shareReplay, retry, timer, Subject, combineLatest } from 'rxjs';
 import { ContractParserService, ParsedContract } from './contract-parser.service';
 import { AiOrchestratorService } from './ai/ai-orchestrator.service';
 import { PromptService } from './ai/prompt.service';
@@ -9,11 +9,11 @@ import { TranslatorService } from './ai/translator.service';
 import { TranslationCacheService } from './translation-cache.service';
 import { OfflineStorageService } from './storage/offline-storage.service';
 import { LoggerService } from './logger.service';
-import { AppConfig } from '../config/app.config';
+import { LANGUAGES, AI_CONFIG } from '../config/application.config';
+import { isGeminiNanoSupported } from '../utils/language.util';
 import { Contract, ContractAnalysis } from '../models/contract.model';
-import { AnalysisContext, DEFAULT_ANALYSIS_CONTEXT } from '../models/analysis-context.model';
+import { AnalysisContext } from '../models/ai-analysis.model';
 import * as Schemas from '../schemas/analysis-schemas';
-import { isGeminiNanoSupported, LANGUAGES } from '../constants/languages';
 
 /**
  * Contract Analysis Service
@@ -43,11 +43,7 @@ export class ContractAnalysisService {
   /**
    * Retry configuration for section extraction
    */
-  private readonly RETRY_CONFIG = {
-    maxAttempts: 3,
-    initialDelayMs: 1000,
-    backoffMultiplier: 2,
-  };
+  private readonly RETRY_CONFIG = AI_CONFIG.RETRY;
 
   /**
    * ========================================

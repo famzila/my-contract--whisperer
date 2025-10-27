@@ -26,9 +26,9 @@ import { TranslationCacheService } from '../services/translation-cache.service';
 import { AiOrchestratorService } from '../services/ai/ai-orchestrator.service';
 import { LanguageStore } from './language.store';
 import { OnboardingStore } from './onboarding.store';
-import { isGeminiNanoSupported } from '../constants/languages';
-import { AppConfig } from '../config/app.config';
-import { MOCK_CONTRACT, MOCK_LEASE_DATA } from '../mocks/mock-analysis.data';
+import { AppConfig } from '../config/application.config';
+import { isGeminiNanoSupported } from '../utils/language.util';
+import { MOCK_CONTRACT, MOCK_LEASE_DATA } from '../../../../public/mocks/mock-analysis.data';
 
 /**
  * Section loading state for progressive analysis with proper typing
@@ -951,7 +951,7 @@ export const ContractStore = signalStore(
       logger.info('🚀 [ContractStore] Initializing store...');
       
       // Initialize with mock data if in mock mode
-      if (AppConfig.useMockAI) {
+      if (AppConfig.AI.USE_MOCK_AI) {
         logger.info('🎨 [ContractStore] Mock mode enabled - loading mock data');
         
         const mockContract: Contract = MOCK_CONTRACT;

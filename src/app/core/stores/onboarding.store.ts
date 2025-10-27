@@ -9,54 +9,20 @@ import { patchState } from '@ngrx/signals';
 import { TranslatorService } from '../services/ai/translator.service';
 import { TranslateService } from '@ngx-translate/core';
 import { LoggerService } from '../services/logger.service';
-import { AppConfig } from '../config/app.config';
-import { MOCK_ONBOARDING_STATE } from '../mocks/mock-analysis.data';
+import { AppConfig } from '../config/application.config';
+import { MOCK_ONBOARDING_STATE } from '../../../../public/mocks/mock-analysis.data';
+import type { UserRole, PartyDetectionResult } from '../models/ai-analysis.model';
 
 /**
  * Onboarding steps
  */
-export type OnboardingStep = 
+type OnboardingStep = 
   | 'upload'           // Step 1: Upload contract
   | 'validating'       // Step 2: Validate contract
   | 'languageSelect'   // Step 3: Select language preference
   | 'partySelect'      // Step 4: Select your role/party
   | 'analyzing'        // Step 5: Analyzing contract
   | 'complete';        // Step 6: Analysis complete
-
-/**
- * User role in the contract
- */
-export type UserRole = 
-  | 'employer' 
-  | 'employee' 
-  | 'client' 
-  | 'contractor' 
-  | 'landlord' 
-  | 'tenant' 
-  | 'partner'
-  | 'both_views'       // Compare both perspectives
-  | null;
-
-/**
- * Party information detected from contract
- */
-export interface DetectedParty {
-  name: string;
-  role: string;        // e.g., "Employer", "Employee"
-  location?: string;
-}
-
-/**
- * Party detection result
- */
-export interface PartyDetectionResult {
-  confidence: 'high' | 'medium' | 'low';
-  parties: {
-    party1: DetectedParty;
-    party2: DetectedParty;
-  } | null;
-  contractType: 'bilateral' | 'multilateral' | 'unilateral';
-}
 
 /**
  * Onboarding store state
@@ -353,7 +319,7 @@ export const OnboardingStore = signalStore(
       logger.info('🚀 [OnboardingStore] Initializing store...');
       
       // Initialize with mock data if in mock mode
-      if (AppConfig.useMockAI) {
+      if (AppConfig.AI.USE_MOCK_AI) {
         logger.info('🎨 [OnboardingStore] Mock mode enabled - loading mock data');
         
         patchState(store, MOCK_ONBOARDING_STATE as OnboardingState);

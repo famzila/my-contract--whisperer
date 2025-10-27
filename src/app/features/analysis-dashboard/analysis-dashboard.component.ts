@@ -23,8 +23,7 @@ import { OmissionsTabComponent } from './components/omissions-tab/omissions-tab.
 import { QuestionsTabComponent } from './components/questions-tab/questions-tab.component';
 import { DisclaimerTabComponent } from './components/disclaimer-tab/disclaimer-tab.component';
 
-import { AppConfig } from '../../core/config/app.config';
-import { isAppLanguageSupported, getLanguageTranslationKey } from '../../core/constants/languages';
+import { isAppLanguageSupported, getLanguageTranslationKey } from '../../core/utils/language.util';
 import { mapObligationsToPerspective, PerspectiveObligations } from '../../core/utils/obligation-mapper.util';
 import {
   Clipboard,

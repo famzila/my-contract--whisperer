@@ -1,7 +1,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { LANGUAGES, DEFAULT_LANGUAGE } from './core/constants/languages';
+import { LANGUAGES } from './core/config/application.config';
 
 @Component({
   selector: 'app-root',

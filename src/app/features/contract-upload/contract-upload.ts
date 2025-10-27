@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { LoggerService } from '../../core/services/logger.service';
 import { LucideAngularModule, Sparkles } from 'lucide-angular';
@@ -27,11 +26,13 @@ import { UiStore } from '../../core/stores/ui.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { LanguageStore } from '../../core/stores/language.store';
 import {
+  LANGUAGES,
+} from '../../core/config/application.config';
+import {
   isAppLanguageSupported,
   isGeminiNanoSupported,
-  getLanguageTranslationKey,
-  LANGUAGES,
-} from '../../core/constants/languages';
+  getLanguageTranslationKey
+} from '../../core/utils/language.util';
 import { Notice } from "../../shared/components/notice/notice";
 
 type UploadMode = 'file' | 'text';

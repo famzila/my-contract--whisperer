@@ -11,8 +11,15 @@ import { TranslatorService } from '../services/ai/translator.service';
 import { LanguageDetectorService } from '../services/ai/language-detector.service';
 import { LanguageUtilsService } from '../utils/language.util';
 import { LoggerService } from '../services/logger.service';
-import { LANGUAGES, DEFAULT_LANGUAGE, isRTL, isAppLanguageSupported, isGeminiNanoSupported } from '../constants/languages';
-import type { Language, LanguageState, TranslationCache } from '../models/language.model';
+import { 
+  LANGUAGES, 
+  DEFAULT_LANGUAGE
+} from '../config/application.config';
+import { 
+  isRTL, 
+  isAppLanguageSupported, 
+} from '../utils/language.util';
+import type { Language, LanguageState } from '../models/language.model';
 
 
 /**

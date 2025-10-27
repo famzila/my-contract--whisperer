@@ -1,14 +1,15 @@
 /**
- * Language Utilities
- * Consolidated language-related utilities following Angular best practices
- * 
- * Pure functions: No dependencies, can be used anywhere
- * Injectable service: For stateful operations (localStorage, logging)
+ * Language Utility Functions
+ * Pure utility functions for language-related operations
  */
 
-import { Injectable, inject } from '@angular/core';
-import { LoggerService } from '../services/logger.service';
-import { DEFAULT_LANGUAGE, isGeminiNanoSupported, isAppLanguageSupported } from '../constants/languages';
+import { 
+  DEFAULT_LANGUAGE, 
+  LANGUAGE_TRANSLATION_KEYS,
+  RTL_LANGUAGES,
+  GEMINI_NANO_SUPPORTED_LANGUAGES,
+  SUPPORTED_APP_LANGUAGES
+} from '../config/application.config';
 import type { Language } from '../models/language.model';
 
 // ============================================================================
@@ -16,103 +17,84 @@ import type { Language } from '../models/language.model';
 // ============================================================================
 
 /**
- * Language name mapping for all supported languages
+ * Check if a language code is RTL (Right-to-Left)
  */
-export const LANGUAGE_NAMES: Record<string, Language> = {
-  'en': { code: 'en', name: 'English', nativeName: 'English' },
-  'ar': { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
-  'fr': { code: 'fr', name: 'French', nativeName: 'Français' },
-  'es': { code: 'es', name: 'Spanish', nativeName: 'Español' },
-  'de': { code: 'de', name: 'German', nativeName: 'Deutsch' },
-  'ja': { code: 'ja', name: 'Japanese', nativeName: '日本語' },
-  'zh': { code: 'zh', name: 'Chinese', nativeName: '中文' },
-  'ko': { code: 'ko', name: 'Korean', nativeName: '한국어' },
-};
-
-/**
- * Get user-friendly language name from language code
- * @param languageCode - The language code (e.g., 'en', 'ar', 'fr')
- * @returns The friendly language name or the code if not found
- */
-export function getLanguageName(languageCode: string): string {
-  const language = LANGUAGE_NAMES[languageCode];
-  return language ? language.name : languageCode;
+export function isRTL(languageCode: string): boolean {
+  return (RTL_LANGUAGES as readonly string[]).includes(languageCode);
 }
 
 /**
- * Get native language name from language code
- * @param languageCode - The language code (e.g., 'en', 'ar', 'fr')
- * @returns The native language name or the code if not found
+ * Check if language is supported by Gemini Nano for direct analysis
  */
-export function getNativeLanguageName(languageCode: string): string {
-  const language = LANGUAGE_NAMES[languageCode];
-  return language ? language.nativeName : languageCode;
+export function isGeminiNanoSupported(langCode: string): boolean {
+  return (GEMINI_NANO_SUPPORTED_LANGUAGES as readonly string[]).includes(langCode);
 }
 
 /**
- * Get language info object from language code
- * @param languageCode - The language code (e.g., 'en', 'ar', 'fr')
- * @returns The language info object or null if not found
+ * Check if language is supported for app UI
  */
-export function getLanguageInfo(languageCode: string): Language | null {
-  return LANGUAGE_NAMES[languageCode] || null;
+export function isAppLanguageSupported(langCode: string): boolean {
+  return (SUPPORTED_APP_LANGUAGES as readonly string[]).includes(langCode);
 }
 
 /**
- * Check if a language is supported by Gemini Nano for direct analysis
- * @param languageCode - The language code to check
- * @returns True if supported by Gemini Nano
+ * Get translation key for a language code
  */
-export function canAnalyzeLanguage(languageCode: string): boolean {
-  return isGeminiNanoSupported(languageCode);
+export function getLanguageTranslationKey(languageCode: string): string {
+  return LANGUAGE_TRANSLATION_KEYS[languageCode as keyof typeof LANGUAGE_TRANSLATION_KEYS] || languageCode.toUpperCase();
 }
 
 /**
- * Check if a language is supported for app UI (i18n translations available)
- * @param languageCode - The language code to check
- * @returns True if supported for app UI
+ * Get the best language for analysis based on Gemini Nano support
+ * Returns the target language if supported, otherwise falls back to English
  */
-export function canDisplayLanguage(languageCode: string): boolean {
-  return isAppLanguageSupported(languageCode);
-}
-
-/**
- * Get the appropriate output language for AI analysis
- * Uses same logic as ContractAnalysisService for consistency
- * @param targetLanguage - The desired output language
- * @returns The language to use for AI output (supported by Gemini Nano or fallback to 'en')
- */
-export function getAiOutputLanguage(targetLanguage?: string): string {
+export function getBestAnalysisLanguage(targetLanguage?: string): string {
   if (!targetLanguage) return DEFAULT_LANGUAGE;
   
   // If target language is supported by Gemini Nano, use it
-  // Otherwise fallback to English (same as contract analysis logic)
+  // Otherwise, fall back to English (which is always supported)
   return isGeminiNanoSupported(targetLanguage) ? targetLanguage : DEFAULT_LANGUAGE;
 }
 
 /**
- * Determine if post-translation is needed for AI results
- * @param targetLanguage - The desired output language
- * @returns True if results need to be post-translated
+ * Check if a language needs post-translation (not supported by Gemini Nano)
  */
 export function needsPostTranslation(targetLanguage?: string): boolean {
-  if (!targetLanguage) return false;
-  return !isGeminiNanoSupported(targetLanguage) && targetLanguage !== DEFAULT_LANGUAGE;
+  return !isGeminiNanoSupported(targetLanguage || '') && targetLanguage !== DEFAULT_LANGUAGE;
+}
+
+/**
+ * Get language name from code (for display purposes)
+ */
+export function getLanguageName(languageCode: string): string {
+  const languageNames: Record<string, string> = {
+    'en': 'English',
+    'fr': 'French',
+    'ar': 'Arabic',
+    'es': 'Spanish',
+    'de': 'German',
+    'ja': 'Japanese',
+    'zh': 'Chinese',
+    'ko': 'Korean',
+  };
+  
+  return languageNames[languageCode] || languageCode.toUpperCase();
+}
+
+/**
+ * Get AI output language (alias for getBestAnalysisLanguage)
+ */
+export function getAiOutputLanguage(targetLanguage?: string): string {
+  return getBestAnalysisLanguage(targetLanguage);
 }
 
 // ============================================================================
-// INJECTABLE SERVICE (For stateful operations)
+// INJECTABLE SERVICE: For stateful operations (localStorage, logging)
 // ============================================================================
 
-/**
- * LocalStorage key for language preference
- */
-const LANGUAGE_STORAGE_KEY = 'contract-whisperer-language';
+import { Injectable, inject } from '@angular/core';
+import { LoggerService } from '../services/logger.service';
 
-/**
- * Language utilities service for stateful operations
- * Handles localStorage operations and language-related utilities that require dependency injection
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -120,74 +102,83 @@ export class LanguageUtilsService {
   private logger = inject(LoggerService);
 
   /**
-   * Get saved language from localStorage
-   * @returns The saved language code or default language
+   * Get saved language preference from localStorage
    */
-  getSavedLanguage(): string {
+  getSavedLanguagePreference(): string {
     try {
-      const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+      const saved = localStorage.getItem('preferred-language');
       return saved || DEFAULT_LANGUAGE;
     } catch (error) {
-      this.logger.warn('Failed to get saved language from localStorage:', error);
+      this.logger.warn('Failed to get saved language preference', error);
       return DEFAULT_LANGUAGE;
     }
   }
 
   /**
-   * Save language to localStorage
-   * @param languageCode - The language code to save
+   * Save language preference to localStorage
    */
-  saveLanguage(languageCode: string): void {
+  saveLanguagePreference(languageCode: string): void {
     try {
-      localStorage.setItem(LANGUAGE_STORAGE_KEY, languageCode);
-      this.logger.info(`Language preference saved: ${languageCode}`);
+      localStorage.setItem('preferred-language', languageCode);
+      this.logger.debug('Language preference saved', { languageCode });
     } catch (error) {
-      this.logger.warn('Failed to save language preference to localStorage:', error);
+      this.logger.warn('Failed to save language preference', error);
     }
   }
 
   /**
-   * Clear language from localStorage
+   * Get browser language preference
+   */
+  getBrowserLanguage(): string {
+    try {
+      const browserLang = navigator.language.split('-')[0];
+      return isAppLanguageSupported(browserLang) ? browserLang : DEFAULT_LANGUAGE;
+    } catch (error) {
+      this.logger.warn('Failed to get browser language', error);
+      return DEFAULT_LANGUAGE;
+    }
+  }
+
+  /**
+   * Get the best language to use (saved preference > browser > default)
+   */
+  getBestLanguageToUse(): string {
+    const saved = this.getSavedLanguagePreference();
+    if (saved && isAppLanguageSupported(saved)) {
+      return saved;
+    }
+    
+    const browser = this.getBrowserLanguage();
+    if (browser && isAppLanguageSupported(browser)) {
+      return browser;
+    }
+    
+    return DEFAULT_LANGUAGE;
+  }
+
+  /**
+   * Save language preference (alias for saveLanguagePreference)
+   */
+  saveLanguage(languageCode: string): void {
+    this.saveLanguagePreference(languageCode);
+  }
+
+  /**
+   * Get saved language preference (alias for getSavedLanguagePreference)
+   */
+  getSavedLanguage(): string {
+    return this.getSavedLanguagePreference();
+  }
+
+  /**
+   * Clear saved language preference
    */
   clearLanguage(): void {
     try {
-      localStorage.removeItem(LANGUAGE_STORAGE_KEY);
-      this.logger.info('Language preference cleared from localStorage');
+      localStorage.removeItem('preferred-language');
+      this.logger.debug('Language preference cleared');
     } catch (error) {
-      this.logger.warn('Failed to clear language preference from localStorage:', error);
+      this.logger.warn('Failed to clear language preference', error);
     }
-  }
-
-  /**
-   * Validate if language code is supported
-   * @param languageCode - The language code to validate
-   * @param supportedLanguages - Array of supported languages
-   * @returns True if the language is supported
-   */
-  isLanguageSupported(languageCode: string, supportedLanguages: Language[]): boolean {
-    return supportedLanguages.some(lang => lang.code === languageCode);
-  }
-
-  /**
-   * Get language validation info
-   * @param languageCode - The language code to validate
-   * @returns Object with validation results
-   */
-  getLanguageValidationInfo(languageCode: string): {
-    isValid: boolean;
-    canAnalyze: boolean;
-    canDisplay: boolean;
-    name: string;
-    nativeName: string;
-  } {
-    const languageInfo = getLanguageInfo(languageCode);
-    
-    return {
-      isValid: !!languageInfo,
-      canAnalyze: canAnalyzeLanguage(languageCode),
-      canDisplay: canDisplayLanguage(languageCode),
-      name: getLanguageName(languageCode),
-      nativeName: getNativeLanguageName(languageCode),
-    };
   }
 }

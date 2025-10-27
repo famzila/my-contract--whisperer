@@ -12,7 +12,7 @@ import { TranslatorService } from '../services/ai/translator.service';
 import { LoggerService } from '../services/logger.service';
 import { generateMockEmail, mapToneToRewriterAPI, mapLengthToRewriterAPI } from '../utils/email.util';
 import { getLanguageName } from '../utils/language.util';
-import { AppConfig } from '../config/app.config';
+import { AppConfig } from '../config/application.config';
 import type { ContractMetadata } from '../schemas/analysis-schemas';
 
 /**
@@ -157,7 +157,7 @@ export const EmailDraftStore = signalStore(
         // Check if Writer API is available
         const isAvailable = await writerService.isWriterAvailable();
         
-        if (!isAvailable || AppConfig.useMockAI) {
+        if (!isAvailable || AppConfig.AI.USE_MOCK_AI) {
           // Use mock email if Writer API not available or in mock mode
           logger.info('📧 Using mock email template (Writer API not available or mock mode enabled)');
           const mockEmail = generateMockEmail(recipientName, senderName, senderRole, recipientRole, questions, contractLanguage);
@@ -240,7 +240,7 @@ export const EmailDraftStore = signalStore(
         // Check if Rewriter API is available
         const isAvailable = await writerService.isRewriterAvailable();
         
-        if (!isAvailable || AppConfig.useMockAI) {
+        if (!isAvailable || AppConfig.AI.USE_MOCK_AI) {
           // Fallback to Writer API in mock mode
           logger.info(`🔄 Using Writer API for rewriting in ${languageName} (mock mode or Rewriter unavailable)`);
           

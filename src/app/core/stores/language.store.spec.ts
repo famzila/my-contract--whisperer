@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { LanguageStore } from './language.store';
-import { LANGUAGES, DEFAULT_LANGUAGE } from '../constants/languages';
+import { LANGUAGES, DEFAULT_LANGUAGE } from '../config/application.config';
 
 describe('LanguageStore', () => {
   let store: LanguageStore;
