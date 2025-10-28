@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, DestroyRef } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import type {
   Translator,
@@ -6,6 +6,7 @@ import type {
   AICapabilities,
 } from '../../models/ai-analysis.model';
 import { LoggerService } from '../logger.service';
+import { Subject } from 'rxjs';
 
 /**
  * Service for Chrome Built-in Translator API
@@ -15,16 +16,36 @@ import { LoggerService } from '../logger.service';
   providedIn: 'root',
 })
 export class TranslatorService {
-  private translators = new Map<string, Translator>();
+  private destroyRef = inject(DestroyRef);
   private translateService = inject(TranslateService);
-  private logger = inject(LoggerService); 
+  private logger = inject(LoggerService);
+  private translators = new Map<string, Translator>();
+  private readonly destroy$ = new Subject<void>();
+  
+  constructor() {
+    // Register cleanup callback
+    this.destroyRef.onDestroy(() => {
+      this.destroy$.next();
+      this.destroy$.complete();
+      this.destroyAll();
+    });
+  } 
 
   /**
    * Check if Translation API is available
    * Per official docs: https://developer.chrome.com/docs/ai/translator-api
    */
   async isAvailable(): Promise<boolean> {
-    return 'Translator' in window;
+    try {
+      if(!window.Translator) {
+        this.logger.warn('Chrome Built-in Translator API not available. Please enable Chrome AI features.');
+        return false;
+      }
+      return true;
+    } catch (error) {
+      this.logger.error('Failed to check Translator API availability', error);
+      return false;
+    }
   }
 
   /**
@@ -193,6 +214,24 @@ export class TranslatorService {
     sourceLanguage: string,
     targetLanguage: string
   ): Promise<string> {
+    // Input validation
+    if (!text || text.trim().length === 0) {
+      throw new Error('Text to translate cannot be empty');
+    }
+    
+    if (!sourceLanguage || !targetLanguage) {
+      throw new Error('Source and target languages must be specified');
+    }
+    
+    if (sourceLanguage === targetLanguage) {
+      this.logger.info(`Same language (${sourceLanguage}), returning original text`);
+      return text;
+    }
+    
+    if (text.length > 10000) {
+      this.logger.warn(`Text length (${text.length}) exceeds recommended limit of 10000 characters`);
+    }
+
     try {
       const translator = await this.createTranslator({
         sourceLanguage,
@@ -278,23 +317,6 @@ export class TranslatorService {
   }
 
   /**
-   * Detect language (basic implementation)
-   */
-  detectLanguage(text: string): string {
-    // Simple heuristic: check for Arabic, French, or default to English
-    const arabicPattern = /[\u0600-\u06FF]/;
-    const frenchPattern = /[àâäéèêëïîôùûüÿçÀÂÄÉÈÊËÏÎÔÙÛÜŸÇ]/;
-
-    if (arabicPattern.test(text)) {
-      return 'ar';
-    } else if (frenchPattern.test(text)) {
-      return 'fr';
-    }
-
-    return 'en';
-  }
-
-  /**
    * Destroy all translators
    */
   destroyAll(): void {
@@ -302,19 +324,6 @@ export class TranslatorService {
       translator.destroy();
     }
     this.translators.clear();
-  }
-
-  /**
-   * Destroy a specific translator
-   */
-  destroy(sourceLanguage: string, targetLanguage: string): void {
-    const key = `${sourceLanguage}-${targetLanguage}`;
-    const translator = this.translators.get(key);
-    
-    if (translator) {
-      translator.destroy();
-      this.translators.delete(key);
-    }
   }
 }
 

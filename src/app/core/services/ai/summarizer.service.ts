@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, DestroyRef } from '@angular/core';
 import type {
   AISummarizer,
   AISummarizerCreateOptions,
@@ -6,6 +6,7 @@ import type {
 } from '../../models/ai-analysis.model';
 import { LoggerService } from '../logger.service';
 import { getAiOutputLanguage } from '../../utils/language.util';
+import { Subject } from 'rxjs';
 
 /**
  * Service for Chrome Built-in Summarizer API
@@ -17,23 +18,39 @@ import { getAiOutputLanguage } from '../../utils/language.util';
   providedIn: 'root',
 })
 export class SummarizerService {
+  private destroyRef = inject(DestroyRef);
+  private logger = inject(LoggerService);
   private summarizer: AISummarizer | null = null;
   private currentOutputLanguage: string | null = null;
-  private logger = inject(LoggerService);
+  private readonly destroy$ = new Subject<void>();
+  
+  constructor() {
+    // Register cleanup callback
+    this.destroyRef.onDestroy(() => {
+      this.destroy$.next();
+      this.destroy$.complete();
+      this.destroy();
+    });
+  }
 
   /**
    * Check if Summarizer API is available
    * Note: This method only checks if the API exists, it doesn't create any sessions
    */
   async isAvailable(): Promise<boolean> {
-    // Simple check - just verify the API exists
-    if (!window.Summarizer) {
+    try {
+      // Simple check - just verify the API exists
+      if (!window.Summarizer) {
+        return false;
+      }
+      
+      // Don't call availability() as it might trigger internal API usage
+      // Just return true if the API exists
+      return true;
+    } catch (error) {
+      this.logger.error('Failed to check Summarizer API availability', error);
       return false;
     }
-    
-    // Don't call availability() as it might trigger internal API usage
-    // Just return true if the API exists
-    return true;
   }
 
   /**

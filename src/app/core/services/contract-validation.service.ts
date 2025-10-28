@@ -4,27 +4,32 @@
  */
 import { Injectable, inject } from '@angular/core';
 import { PromptService } from './ai/prompt.service';
-
-/**
- * Validation result
- */
-export interface ContractValidationResult {
-  isContract: boolean;
-  confidence: number;          // 0-100
-  documentType: string;        // "employment_contract", "essay", "email", etc.
-  reason?: string;             // Why it's not a contract (if applicable)
-}
+import { LoggerService } from './logger.service';
+import { ContractValidationResult } from '../models/contract.model';
+import { CONTRACT_VALIDATION_SCHEMA } from '../schemas/analysis-schemas';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ContractValidationService {
   private promptService = inject(PromptService);
+  private logger = inject(LoggerService);
 
   /**
    * Validate if document is a contract
    */
   async validateContract(text: string): Promise<ContractValidationResult> {
+    // Input validation
+    if (!text || text.trim().length === 0) {
+      throw new Error('Text cannot be empty');
+    }
+    if (text.length < 50) {
+      this.logger.warn(`Text length (${text.length}) is very short for contract validation`);
+    }
+    if (text.length > 100000) {
+      this.logger.warn(`Text length (${text.length}) exceeds recommended limit of 100000 characters`);
+    }
+    
     // Quick heuristic check first (fast)
     const quickCheck = this.quickHeuristicCheck(text);
     
@@ -93,7 +98,7 @@ export class ContractValidationService {
       return {
         isContract: true,
         confidence: Math.min(95, 70 + contractScore * 5),
-        documentType: 'contract',
+        documentType: 'service_agreement', // Generic contract type
       };
     }
     
@@ -111,7 +116,7 @@ export class ContractValidationService {
     return {
       isContract: false,
       confidence: 50,
-      documentType: 'unknown',
+      documentType: 'other',
       reason: 'Uncertain - needs AI validation',
     };
   }
@@ -125,24 +130,16 @@ export class ContractValidationService {
       
       if (!isAvailable) {
         // Fallback to heuristic if AI not available
-        console.warn('⚠️ AI not available, using heuristic validation');
+        this.logger.warn('AI not available, using heuristic validation');
         return this.quickHeuristicCheck(text);
       }
 
-      // Create analysis session with initial system prompt
+      // Create analysis session with structured output using schema
       const session = await this.promptService.createSession({
         initialPrompts: [
           {
             role: 'system',
             content: `You are a legal document classifier. Analyze documents and determine if they are contracts.
-        
-Respond ONLY with a JSON object (no markdown, no explanation):
-{
-  "isContract": true/false,
-  "confidence": 0-100,
-  "documentType": "employment_contract" | "rental_agreement" | "nda" | "service_agreement" | "essay" | "email" | "article" | "recipe" | "other",
-  "reason": "brief explanation if not a contract"
-}
 
 A contract has:
 - Two or more parties identified
@@ -156,7 +153,9 @@ Not a contract:
 - Emails, letters
 - Recipes, instructions
 - Stories, fiction
-- Academic papers`,
+- Academic papers
+
+Classify the document and provide your analysis.`,
           },
         ],
       });
@@ -165,11 +164,13 @@ Not a contract:
       const sampleText = text.substring(0, 2000);
       const prompt = `Classify this document:\n\n${sampleText}`;
       
-      const response = await session.prompt(prompt);
+      // Use structured output with schema
+      const response = await session.prompt(prompt, {
+        responseConstraint: CONTRACT_VALIDATION_SCHEMA
+      });
       
-      // Parse JSON response
-      const cleaned = this.cleanJsonResponse(response);
-      const result = JSON.parse(cleaned);
+      // Parse structured response (should be valid JSON due to schema)
+      const result = JSON.parse(response);
       
       // Cleanup session
       session.destroy();
@@ -181,47 +182,32 @@ Not a contract:
         reason: result.reason,
       };
     } catch (error) {
-      console.error('❌ AI validation failed:', error);
+      this.logger.error('AI validation failed:', error);
       
       // Fallback to heuristic
       return this.quickHeuristicCheck(text);
     }
   }
 
-  /**
-   * Clean JSON response (remove markdown code blocks if present)
-   */
-  private cleanJsonResponse(response: string): string {
-    let cleaned = response.trim();
-    
-    // Remove markdown code blocks
-    if (cleaned.startsWith('```json')) {
-      cleaned = cleaned.replace(/^```json\n/, '').replace(/\n```$/, '');
-    } else if (cleaned.startsWith('```')) {
-      cleaned = cleaned.replace(/^```\n/, '').replace(/\n```$/, '');
-    }
-    
-    return cleaned.trim();
-  }
 
   /**
    * Guess document type from patterns
    */
-  private guessDocumentType(lowerText: string): string {
+  private guessDocumentType(lowerText: string): 'employment_contract' | 'rental_agreement' | 'nda' | 'service_agreement' | 'purchase_agreement' | 'lease_agreement' | 'partnership_agreement' | 'essay' | 'email' | 'article' | 'recipe' | 'story' | 'academic_paper' | 'other' {
     if (lowerText.includes('dear') && lowerText.includes('sincerely')) {
-      return 'email_or_letter';
+      return 'email';
     }
     if (lowerText.includes('abstract') || lowerText.includes('introduction')) {
       return 'academic_paper';
     }
     if (lowerText.includes('chapter') || lowerText.includes('once upon a time')) {
-      return 'story_or_book';
+      return 'story';
     }
     if (lowerText.includes('recipe') || lowerText.includes('ingredients')) {
       return 'recipe';
     }
     if (lowerText.includes('step 1') || lowerText.includes('step 2')) {
-      return 'instructions_or_tutorial';
+      return 'article';
     }
     
     return 'other';

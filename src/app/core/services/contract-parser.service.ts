@@ -1,22 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import * as mammoth from 'mammoth';
-
-/**
- * Contract file types supported
- */
-export type ContractFileType = 'text/plain' | 'application/pdf' | 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-
-/**
- * Parsed contract result
- */
-export interface ParsedContract {
-  text: string;
-  fileName: string;
-  fileSize: number;
-  fileType: string;
-  parsedAt: Date;
-}
+import { ContractFileType, ParsedContract } from '../models/contract.model';
 
 /**
  * Service for parsing contract files and extracting text
@@ -162,7 +147,8 @@ export class ContractParserService {
           pdf.getPage(pageNum).then(async (page) => {
             const textContent = await page.getTextContent();
             return textContent.items
-              .map((item: any) => item.str)
+              .filter((item): item is any => 'str' in item)
+              .map(item => item.str)
               .join(' ');
           })
         );

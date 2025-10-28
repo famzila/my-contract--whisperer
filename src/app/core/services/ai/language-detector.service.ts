@@ -1,10 +1,11 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, DestroyRef } from '@angular/core';
 import type {
   LanguageDetector,
   LanguageDetectionResult,
   AICreateMonitor,
 } from '../../models/ai-analysis.model';
 import { LoggerService } from '../logger.service';
+import { Subject } from 'rxjs';
 
 /**
  * Service for Chrome Built-in Language Detector API
@@ -17,18 +18,34 @@ import { LoggerService } from '../logger.service';
 })
 export class LanguageDetectorService {
   private detector: LanguageDetector | null = null;
+  private destroyRef = inject(DestroyRef);
   private logger = inject(LoggerService);
+  private readonly destroy$ = new Subject<void>();
+  
+  constructor() {
+    // Register cleanup callback
+    this.destroyRef.onDestroy(() => {
+      this.destroy$.next();
+      this.destroy$.complete();
+      this.destroy();
+    });
+  }
 
   /**
    * Check if Language Detector API is available
    * Per official docs: https://developer.chrome.com/docs/ai/language-detection
    */
   async isAvailable(): Promise<boolean> {
-    if (!('LanguageDetector' in window)) {
-      this.logger.warn('⚠️ [LanguageDetector] Chrome Built-in AI not available. Please enable Chrome AI features.');
+    try {
+      if (!window.LanguageDetector) {
+        this.logger.warn('⚠️ [LanguageDetector] Chrome Built-in AI not available. Please enable Chrome AI features.');
+        return false;
+      }
+      return true;
+    } catch (error) {
+      this.logger.error('Failed to check LanguageDetector availability', error);
       return false;
     }
-    return true;
   }
 
   /**
@@ -109,54 +126,6 @@ export class LanguageDetectorService {
       }
       
       this.logger.warn('⚠️ [LanguageDetector] No results returned');
-      return null;
-    } catch (error) {
-      this.logger.error('❌ [LanguageDetector] Detection failed:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Detect the language with full confidence rankings
-   * Returns all detected languages ranked by confidence
-   * 
-   * @param text - The text to analyze
-   * @returns Array of language detection results with confidence scores
-   */
-  async detectWithConfidence(text: string): Promise<LanguageDetectionResult[]> {
-    try {
-      const detector = await this.createDetector();
-      const results = await detector.detect(text);
-      
-      if (results && results.length > 0) {
-        this.logger.info(`🌍 [LanguageDetector] Detected ${results.length} possible languages`);
-        return results;
-      }
-      
-      return [];
-    } catch (error) {
-      this.logger.error('❌ [LanguageDetector] Detection failed:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Detect language with threshold filtering
-   * Only returns result if confidence is above threshold
-   * 
-   * @param text - The text to analyze
-   * @param minConfidence - Minimum confidence threshold (0.0 to 1.0)
-   * @returns The detected language code or null if confidence is too low
-   */
-  async detectWithThreshold(text: string, minConfidence: number = 0.5): Promise<string | null> {
-    try {
-      const results = await this.detectWithConfidence(text);
-      
-      if (results.length > 0 && results[0].confidence >= minConfidence) {
-        return results[0].detectedLanguage;
-      }
-      
-      this.logger.warn(`⚠️ [LanguageDetector] Confidence too low (${(results[0]?.confidence * 100).toFixed(1)}% < ${minConfidence * 100}%)`);
       return null;
     } catch (error) {
       this.logger.error('❌ [LanguageDetector] Detection failed:', error);

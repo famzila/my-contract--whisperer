@@ -210,6 +210,105 @@ export const OMISSIONS_QUESTIONS_SCHEMA = {
 } as const;
 
 // ============================================================================
+// 7. PARTY EXTRACTION SCHEMA
+// ============================================================================
+export const PARTY_EXTRACTION_SCHEMA = {
+  type: "object",
+  description: "Extract parties from contract text using Named Entity Recognition",
+  properties: {
+    parties: {
+      type: "array",
+      description: "List of parties found in the contract",
+      items: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            description: "Company or person name"
+          },
+          type: {
+            type: "string",
+            enum: ["organization", "person"],
+            description: "Type of party"
+          },
+          role: {
+            type: "string",
+            enum: ["Employer", "Employee", "Landlord", "Tenant", "Client", "Contractor", "Partner"],
+            description: "Role of the party in the contract"
+          },
+          location: {
+            type: ["string", "null"],
+            description: "City, State/Country if found"
+          }
+        },
+        required: ["name", "type", "role"]
+      },
+      minItems: 1,
+      maxItems: 10
+    },
+    contractType: {
+      type: "string",
+      enum: ["employment", "rental", "service", "nda", "partnership", "other"],
+      description: "Type of contract based on party relationships"
+    },
+    confidence: {
+      type: "number",
+      description: "Confidence level (0-100)",
+      minimum: 0,
+      maximum: 100
+    }
+  },
+  required: ["parties", "contractType", "confidence"],
+  additionalProperties: false
+} as const;
+
+// ============================================================================
+// 6. CONTRACT VALIDATION SCHEMA
+// ============================================================================
+export const CONTRACT_VALIDATION_SCHEMA = {
+  type: "object",
+  description: "Validate if document is a contract and classify document type",
+  properties: {
+    isContract: {
+      type: "boolean",
+      description: "Whether the document is a contract"
+    },
+    confidence: {
+      type: "number",
+      description: "Confidence level (0-100)",
+      minimum: 0,
+      maximum: 100
+    },
+    documentType: {
+      type: "string",
+      description: "Type of document",
+      enum: [
+        "employment_contract",
+        "rental_agreement", 
+        "nda",
+        "service_agreement",
+        "purchase_agreement",
+        "lease_agreement",
+        "partnership_agreement",
+        "essay",
+        "email",
+        "article",
+        "recipe",
+        "story",
+        "academic_paper",
+        "other"
+      ]
+    },
+    reason: {
+      type: "string",
+      description: "Brief explanation if not a contract"
+    }
+  },
+  required: ["isContract", "confidence", "documentType"],
+  additionalProperties: false
+} as const;
+
+// ============================================================================
 // 5. SUMMARY SCHEMA
 // ============================================================================
 export const SUMMARY_SCHEMA = {
@@ -322,6 +421,7 @@ export type ContractMetadata = {
   };
   detectedLanguage: string;
   analyzedForRole: string;
+  analyzedInLanguage?: string;
 };
 
 export type RisksAnalysis = {
@@ -365,6 +465,24 @@ export type OmissionsAndQuestions = {
   questions: string[];
 };
 
+export type PartyExtractionResult = {
+  parties: Array<{
+    name: string;
+    type: 'organization' | 'person';
+    role: 'Employer' | 'Employee' | 'Landlord' | 'Tenant' | 'Client' | 'Contractor' | 'Partner';
+    location: string | null;
+  }>;
+  contractType: 'employment' | 'rental' | 'service' | 'nda' | 'partnership' | 'other';
+  confidence: number;
+};
+
+export type ContractValidationResult = {
+  isContract: boolean;
+  confidence: number;
+  documentType: 'employment_contract' | 'rental_agreement' | 'nda' | 'service_agreement' | 'purchase_agreement' | 'lease_agreement' | 'partnership_agreement' | 'essay' | 'email' | 'article' | 'recipe' | 'story' | 'academic_paper' | 'other';
+  reason?: string;
+};
+
 export type ContractSummary = {
   quickTake?: string;
   
@@ -391,6 +509,10 @@ export type ContractSummary = {
       other?: string | null;
     };
   };
+  
+  fromYourPerspective?: string;
+  keyBenefits?: string[];
+  keyConcerns?: string[];
 };
 
 // ============================================================================

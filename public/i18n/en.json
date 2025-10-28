@@ -431,7 +431,7 @@
     "storageItem4": "No cookies tracking your contract content",
     "storageItem5": "No analytics on your document content",
     "onlyLocalStorage": "Only your browser's local storage contains:",
-    "onlyLocalStorageDescription": "Interface preferences, language settings, and theme choices.",
+    "onlyLocalStorageDescription": "Interface preferences, language settings, theme choices, and analysis results translations.",
     "localAIProcessing": "Local AI Processing",
     "localAIProcessingDescription": "All AI processing happens on your device using Chrome's built-in AI:",
     "processingItem1": "Gemini Nano AI model runs locally in Chrome",

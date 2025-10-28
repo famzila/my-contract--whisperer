@@ -1,6 +1,6 @@
-import { Injectable, inject } from '@angular/core';
-import { Observable, from, defer } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Injectable, inject, DestroyRef } from '@angular/core';
+import { Observable, from, defer, finalize } from 'rxjs';
+import { map, catchError, takeUntil } from 'rxjs/operators';
 import type {
   AILanguageModel,
   AILanguageModelCreateOptions,
@@ -10,6 +10,8 @@ import type {
 import * as Schemas from '../../schemas/analysis-schemas';
 import { LoggerService } from '../logger.service';
 import { PromptBuilderService } from './prompt-builder.service';
+import { Subject } from 'rxjs';
+import { APPLICATION_CONFIG } from '../../config/application.config';
 
 /**
  * Service for Chrome Built-in Prompt API (Gemini Nano)
@@ -22,18 +24,34 @@ import { PromptBuilderService } from './prompt-builder.service';
 })
 export class PromptService {
   private session: AILanguageModel | null = null;
+  private destroyRef = inject(DestroyRef);
   private logger = inject(LoggerService);
   private promptBuilder = inject(PromptBuilderService);
+  private readonly destroy$ = new Subject<void>();
+  
+  constructor() {
+    // Register cleanup callback
+    this.destroyRef.onDestroy(() => {
+      this.destroy$.next();
+      this.destroy$.complete();
+      this.destroy();
+    });
+  }
 
   /**
    * Check if Prompt API is available
    */
   async isAvailable(): Promise<boolean> {
-    if (!window.LanguageModel) {
-      this.logger.warn('Chrome Built-in AI not available. Please enable Chrome AI features.');
+    try {
+      if (!window.LanguageModel) {
+        this.logger.warn('Chrome Built-in AI not available. Please enable Chrome AI features.');
+        return false;
+      }
+      return true;
+    } catch (error) {
+      this.logger.error('Failed to check Prompt API availability', error);
       return false;
     }
-    return true;
   }
 
   /**
@@ -51,10 +69,10 @@ export class PromptService {
 
     // Fallback defaults if API not available
     return {
-      defaultTemperature: 1,
-      maxTemperature: 2,
-      defaultTopK: 3,
-      maxTopK: 128,
+      defaultTemperature: APPLICATION_CONFIG.AI.LANGUAGE_MODEL_PARAMS.DEFAULT_TEMPERATURE,
+        maxTemperature: APPLICATION_CONFIG.AI.LANGUAGE_MODEL_PARAMS.MAX_TEMPERATURE,
+        defaultTopK: APPLICATION_CONFIG.AI.LANGUAGE_MODEL_PARAMS.DEFAULT_TOP_K,
+        maxTopK: APPLICATION_CONFIG.AI.LANGUAGE_MODEL_PARAMS.MAX_TOP_K,
     };
   }
 
@@ -131,6 +149,15 @@ export class PromptService {
    * Send a prompt and get response
    */
   async prompt(input: string, options?: AIPromptOptions): Promise<string> {
+    // Input validation
+    if (!input || input.trim().length === 0) {
+      throw new Error('Prompt input cannot be empty');
+    }
+    
+    if (input.length > 10000) {
+      this.logger.warn(`Prompt length (${input.length}) exceeds recommended limit of 10000 characters`);
+    }
+
     if (!this.session) {
       await this.createSession();
     }
@@ -142,52 +169,6 @@ export class PromptService {
     return await this.session.prompt(input, options);
   }
 
-  /**
-   * Send a prompt and get streaming response
-   */
-  promptStreaming(input: string, options?: AIPromptOptions): ReadableStream {
-    if (!this.session) {
-      throw new Error('Session not initialized. Call createSession() first.');
-    }
-
-    return this.session.promptStreaming(input, options);
-  }
-
-  /**
-   * Extract clauses from contract text with comprehensive analysis
-   * Returns JSON string that can be parsed into AIAnalysisResponse
-   */
-  async extractClauses(contractText: string): Promise<string> {
-    const prompt = this.promptBuilder.buildClauseExtractionPrompt(contractText);
-
-    this.logger.info(`Sending analysis request (${contractText.length} chars)...`);
-    const result = await this.prompt(prompt);
-    
-    this.logger.info(`Received response (${result.length} chars)`);
-    
-    // Clean up response in case AI adds markdown code blocks
-    let cleanedResult = result.trim();
-    
-    // Remove markdown code blocks if present
-    if (cleanedResult.startsWith('```json')) {
-      cleanedResult = cleanedResult.replace(/```json\n?/g, '').replace(/```\n?$/g, '');
-    } else if (cleanedResult.startsWith('```')) {
-      cleanedResult = cleanedResult.replace(/```\n?/g, '');
-    }
-    
-    cleanedResult = cleanedResult.trim();
-    
-    // Only log if JSON parsing fails (for debugging)
-    try {
-      JSON.parse(cleanedResult);
-      this.logger.info('Valid JSON response received');
-    } catch (e) {
-      this.logger.error('Invalid JSON response:');
-      this.logger.error(cleanedResult.substring(0, 500) + '...');
-    }
-    
-    return cleanedResult;
-  }
 
   /**
    * Ask a question about the contract

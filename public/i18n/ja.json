@@ -433,7 +433,7 @@
     "storageItem4": "契約書コンテンツを追跡するクッキーなし",
     "storageItem5": "文書コンテンツに関する分析情報なし",
     "onlyLocalStorage": "あなたのブラウザのローカルストレージにのみ含まれる情報:",
-    "onlyLocalStorageDescription": "インターフェース設定、言語設定、テーマの選択。",
+    "onlyLocalStorageDescription": "インターフェース設定、言語設定、テーマの選択、分析結果の翻訳。",
     "localAIProcessing": "ローカルAI処理",
     "localAIProcessingDescription": "すべてのAI処理は、Chromeに組み込まれたAIを使用してあなたのデバイス上で行われます:",
     "processingItem1": "Gemini Nano AIモデルはChrome内でローカルに実行されます",

@@ -53,7 +53,7 @@
 } @else if (hasQuestions) {
 <!-- Questions List -->
 <div class="space-y-4">
-  @for (question of questions() || []; track $index) {
+  @for (question of cleanedQuestions(); track $index) {
   <div class="bg-white dark:bg-slate-800 border border-divider p-6 rounded-xl hover:shadow-md transition-shadow">
     <div class="flex items-start justify-between gap-4">
       <div class="flex items-start gap-3 flex-1">

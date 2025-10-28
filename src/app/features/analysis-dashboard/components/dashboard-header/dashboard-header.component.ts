@@ -5,6 +5,7 @@ import { LucideAngularModule, Upload } from 'lucide-angular';
 import { Button } from '../../../../shared/components/button/button';
 import { SeverityBadge } from '../../../../shared/components/severity-badge/severity-badge';
 import { LanguageStore } from '../../../../core/stores/language.store';
+import { getRoleTranslationKey } from '../../../../core/utils/role.util';
 import { 
   Theater, 
   Globe, 
@@ -101,17 +102,13 @@ export class DashboardHeaderComponent {
    * Translate role name to current language
    */
   translateRole(role: string): string {
-    const roleMap: Record<string, string> = {
-      'Employer': this.translate.instant('roles.employer'),
-      'Employee': this.translate.instant('roles.employee'),
-      'Client': this.translate.instant('roles.client'),
-      'Contractor': this.translate.instant('roles.contractor'),
-      'Landlord': this.translate.instant('roles.landlord'),
-      'Tenant': this.translate.instant('roles.tenant'),
-      'Partner': this.translate.instant('roles.partner'),
-    };
+    const translationKey = getRoleTranslationKey(role);
     
-    return roleMap[role] || role; // Return original if not found
+    if (translationKey && translationKey !== role) {
+      return this.translate.instant(translationKey);
+    }
+    
+    return role; // Return original if not found
   }
 
 }

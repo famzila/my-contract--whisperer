@@ -21,8 +21,7 @@ type OnboardingStep =
   | 'validating'       // Step 2: Validate contract
   | 'languageSelect'   // Step 3: Select language preference
   | 'partySelect'      // Step 4: Select your role/party
-  | 'analyzing'        // Step 5: Analyzing contract
-  | 'complete';        // Step 6: Analysis complete
+  | 'analyzing';       // Step 5: Analyzing contract
 
 /**
  * Onboarding store state
@@ -49,7 +48,6 @@ interface OnboardingState {
   pendingContractText: string | null;
   
   // Progress tracking
-  canProceed: boolean;
   isProcessing: boolean;
   error: string | null;
 }
@@ -69,7 +67,6 @@ const initialState: OnboardingState = {
   detectedParties: null,
   selectedRole: null,
   pendingContractText: null,
-  canProceed: false,
   isProcessing: false,
   error: null,
 };
@@ -88,7 +85,7 @@ export const OnboardingStore = signalStore(
      * Get progress percentage (0-100)
      */
     progressPercentage: computed(() => {
-      const steps: OnboardingStep[] = ['upload', 'validating', 'languageSelect', 'partySelect', 'analyzing', 'complete'];
+      const steps: OnboardingStep[] = ['upload', 'validating', 'languageSelect', 'partySelect', 'analyzing'];
       const currentIndex = steps.indexOf(currentStep());
       return Math.round((currentIndex / (steps.length - 1)) * 100);
     }),
@@ -133,71 +130,11 @@ export const OnboardingStore = signalStore(
       return valid && languageSelected && partiesDetected && noRoleSelected;
     }),
     
-    /**
-     * Get party options for selection
-     */
-    partyOptions: computed(() => {
-      const parties = detectedParties();
-      if (!parties || !parties.parties) return [];
-      
-      return [
-        {
-          value: 'party1',
-          label: `${parties.parties.party1.name} (${parties.parties.party1.role || 'Party 1'})`,
-          icon: getIconForRole(parties.parties.party1.role || 'Party 1'),
-        },
-        {
-          value: 'party2',
-          label: `${parties.parties.party2.name} (${parties.parties.party2.role || 'Party 2'})`,
-          icon: getIconForRole(parties.parties.party2.role || 'Party 2'),
-        },
-        {
-          value: 'both_views',
-          label: 'Compare Both Perspectives', // Will be translated in the component
-          icon: '👀',
-        },
-      ];
-    }),
-    
-    /**
-     * Check if ready to analyze
-     */
-    readyToAnalyze: computed(() => {
-      return (
-        isValidContract() === true &&
-        selectedOutputLanguage() !== null &&
-        selectedRole() !== null
-      );
-    }),
+   
   })),
   
   // Methods
   withMethods((store, translatorService = inject(TranslatorService), translate = inject(TranslateService), logger = inject(LoggerService)) => ({
-    /**
-     * Move to next step
-     */
-    nextStep: () => {
-      const current = store.currentStep();
-      const steps: OnboardingStep[] = ['upload', 'validating', 'languageSelect', 'partySelect', 'analyzing', 'complete'];
-      const currentIndex = steps.indexOf(current);
-      
-      if (currentIndex < steps.length - 1) {
-        patchState(store, { currentStep: steps[currentIndex + 1] });
-      }
-    },
-    
-    /**
-     * Go back to previous step
-     */
-    previousStep: () => {
-      const current = store.currentStep();
-      const steps: OnboardingStep[] = ['upload', 'validating', 'languageSelect', 'partySelect', 'analyzing', 'complete'];
-      const currentIndex = steps.indexOf(current);
-      
-      if (currentIndex > 0) {
-        patchState(store, { currentStep: steps[currentIndex - 1] });
-      }
-    },
     
     /**
      * Set validation result
@@ -298,13 +235,6 @@ export const OnboardingStore = signalStore(
     },
     
     /**
-     * Complete onboarding
-     */
-    complete: () => {
-      patchState(store, { currentStep: 'complete' });
-    },
-    
-    /**
      * Reset to initial state
      */
     reset: () => {
@@ -341,21 +271,4 @@ export const OnboardingStore = signalStore(
     }
   })
 );
-
-/**
- * Helper: Get icon for role
- */
-function getIconForRole(role: string): string {
-  const roleMap: Record<string, string> = {
-    'Employer': '🏢',
-    'Employee': '🧑‍💻',
-    'Client': '💼',
-    'Contractor': '🔧',
-    'Landlord': '🏠',
-    'Tenant': '🔑',
-    'Partner': '🤝',
-  };
-  
-  return roleMap[role] || '📄';
-}
 

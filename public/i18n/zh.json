@@ -433,7 +433,7 @@
     "storageItem4": "无跟踪合同内容的 Cookie",
     "storageItem5": "无关于您的文档内容的分析",
     "onlyLocalStorage": "只有您的浏览器本地存储包含：",
-    "onlyLocalStorageDescription": "界面偏好、语言设置和主题选择。",
+    "onlyLocalStorageDescription": "界面偏好、语言设置、主题选择和分析结果翻译。",
     "localAIProcessing": "本地 AI 处理",
     "localAIProcessingDescription": "所有 AI 处理都使用 Chrome 内置的 AI 在您的设备上进行：",
     "processingItem1": "Gemini Nano AI 模型在 Chrome 中本地运行",

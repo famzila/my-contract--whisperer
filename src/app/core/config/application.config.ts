@@ -45,6 +45,18 @@ export const LANGUAGE_CONFIG = {
     'zh': 'languages.chinese',
     'ko': 'languages.korean',
   } as const,
+
+  // Complete language information for UI components
+  LANGUAGE_INFO: {
+    'en': { name: 'English', nativeName: 'English', flag: '🇬🇧' },
+    'es': { name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
+    'fr': { name: 'French', nativeName: 'Français', flag: '🇫🇷' },
+    'ar': { name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
+    'de': { name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
+    'zh': { name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
+    'ja': { name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
+    'ko': { name: 'Korean', nativeName: '한국어', flag: '🇰🇷' },
+  } as const,
 } as const;
 
 /**
@@ -73,13 +85,33 @@ export const AI_CONFIG = {
    */
   USE_MOCK_AI: false, // Toggle this to switch between mock and real AI
 
+  // defaultTemperature: 1,
+  //     maxTemperature: 2,
+  //     defaultTopK: 3,
+  //     maxTopK: 128,
+  LANGUAGE_MODEL_PARAMS: {
+    DEFAULT_TEMPERATURE: 1,
+    MAX_TEMPERATURE: 2,
+    DEFAULT_TOP_K: 3,
+    MAX_TOP_K: 128,
+  },
+  WRITER_DEFAULT_PARAMS: {
+    DEFAULT_TONE: 'formal',
+    DEFAULT_LENGTH: 'medium',
+    DEFAULT_OUTPUT_LANGUAGE: 'en',
+  },
+  REWRITER_DEFAULT_PARAMS: {
+    DEFAULT_TONE: 'as-is',
+    DEFAULT_LENGTH: 'as-is',
+    DEFAULT_OUTPUT_LANGUAGE: 'en',
+  },
   /**
    * Retry configuration for section extraction
    */
   RETRY: {
-    maxAttempts: 3,
-    initialDelayMs: 1000,
-    backoffMultiplier: 2,
+    MAX_ATTEMPTS: 3,
+    INITIAL_DELAY_MS: 1000,
+    BACKOFF_MULTIPLIER: 2,
   },
 
   /**
@@ -114,6 +146,28 @@ export const AI_CONFIG = {
 } as const;
 
 /**
+ * Storage Configuration
+ */
+export const STORAGE_CONFIG = {
+  CONTRACT_CACHE: {
+    CACHE_KEY: 'contract_analysis_cache'
+  },
+  // Translation cache settings
+  TRANSLATION_CACHE: {
+    MAX_CONTRACTS: 5, // Keep last 5 contracts
+    MAX_AGE_DAYS: 7, // Cache for 7 days
+  },
+  
+  // Offline storage settings
+  OFFLINE_STORAGE: {
+    DB_NAME: 'ContractWhispererOffline',
+    DB_VERSION: 1,
+    STORE_NAME: 'contracts',
+    MAX_CONTRACTS: 10, // FIFO eviction limit
+  },
+} as const;
+
+/**
  * Analysis Context Configuration
  */
 export const ANALYSIS_CONTEXT_CONFIG = {
@@ -139,12 +193,22 @@ export const ANALYSIS_CONTEXT_CONFIG = {
 } as const;
 
 /**
+ * UI Configuration
+ */
+export const UI_CONFIG = {
+  DEFAULT_THEME: 'dark',
+  DEFAULT_THEME_STORAGE_KEY: 'contract-whisperer-theme',
+} as const;
+
+/**
  * Main Application Configuration
  */
 export const APPLICATION_CONFIG = {
   LANGUAGE: LANGUAGE_CONFIG,
   AI: AI_CONFIG,
   ANALYSIS_CONTEXT: ANALYSIS_CONTEXT_CONFIG,
+  STORAGE: STORAGE_CONFIG,
+  UI: UI_CONFIG,
 } as const;
 
 // Export individual configs for backward compatibility
@@ -154,7 +218,29 @@ export const RTL_LANGUAGES = LANGUAGE_CONFIG.RTL_LANGUAGES;
 export const GEMINI_NANO_SUPPORTED_LANGUAGES = LANGUAGE_CONFIG.GEMINI_NANO_SUPPORTED;
 export const SUPPORTED_APP_LANGUAGES = LANGUAGE_CONFIG.SUPPORTED_APP_LANGUAGES;
 export const LANGUAGE_TRANSLATION_KEYS = LANGUAGE_CONFIG.TRANSLATION_KEYS;
+export const LANGUAGE_INFO = LANGUAGE_CONFIG.LANGUAGE_INFO;
 export const DEFAULT_ANALYSIS_CONTEXT = ANALYSIS_CONTEXT_CONFIG.DEFAULT;
+
+/**
+ * Get supported languages as Language objects for UI components
+ * This replaces the duplicated SUPPORTED_LANGUAGES arrays in other files
+ */
+export function getSupportedLanguages(): Array<{ code: string; name: string; nativeName: string; flag: string }> {
+  return Object.entries(LANGUAGE_INFO).map(([code, info]) => ({
+    code,
+    name: info.name,
+    nativeName: info.nativeName,
+    flag: info.flag,
+  }));
+}
+
+/**
+ * Get language name from code (for display purposes)
+ * This replaces the duplicated languageNames objects in other files
+ */
+export function getLanguageName(languageCode: string): string {
+  return LANGUAGE_INFO[languageCode as keyof typeof LANGUAGE_INFO]?.name || languageCode.toUpperCase();
+}
 
 // Legacy exports for backward compatibility
 export const AppConfig = APPLICATION_CONFIG;

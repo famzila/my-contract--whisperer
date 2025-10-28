@@ -1,6 +1,8 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Observable, fromEvent, merge, of } from 'rxjs';
 import { map, startWith, shareReplay } from 'rxjs/operators';
+import { LoggerService } from './logger.service';
+import { AiOrchestratorService } from './ai/ai-orchestrator.service';
 
 /**
  * Offline Detection Service
@@ -10,6 +12,8 @@ import { map, startWith, shareReplay } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class OfflineDetectionService {
+  private logger = inject(LoggerService);
+  private aiOrchestratorService = inject(AiOrchestratorService);
   // Signal-based online/offline state
   private _isOnline = signal<boolean>(navigator.onLine);
   private _aiAvailable = signal<boolean>(false);
@@ -36,7 +40,7 @@ export class OfflineDetectionService {
     );
     
     // Check AI availability on initialization
-    this.checkAIAvailability();
+    this.aiOrchestratorService.checkAvailability();
   }
 
   /**
@@ -44,57 +48,24 @@ export class OfflineDetectionService {
    */
   private setupNetworkListeners(): void {
     window.addEventListener('online', () => {
-      console.log('🌐 Network: Back online');
+      this.logger.info('Network: Back online');
       this._isOnline.set(true);
       // Re-check AI availability when back online
-      this.checkAIAvailability();
+      this.aiOrchestratorService.checkAvailability();
     });
 
     window.addEventListener('offline', () => {
-      console.log('📴 Network: Gone offline');
+      this.logger.info('Network: Gone offline');
       this._isOnline.set(false);
     });
   }
 
-  /**
-   * Check if AI (Gemini Nano) is available
-   */
-  async checkAIAvailability(): Promise<boolean> {
-    try {
-      // Check if Chrome Built-in AI is available
-      if ('ai' in window && 'languageModel' in (window as any).ai) {
-        const ai = (window as any).ai;
-        const capabilities = await ai.languageModel.capabilities();
-        const isAvailable = capabilities && capabilities.supportedTasks && 
-          capabilities.supportedTasks.includes('generateText');
-        
-        this._aiAvailable.set(isAvailable);
-        console.log(`🤖 AI Status: ${isAvailable ? 'Available' : 'Unavailable'}`);
-        return isAvailable;
-      } else {
-        this._aiAvailable.set(false);
-        console.log('🤖 AI Status: Chrome Built-in AI not available');
-        return false;
-      }
-    } catch (error) {
-      console.warn('🤖 AI Status: Error checking AI availability:', error);
-      this._aiAvailable.set(false);
-      return false;
-    }
-  }
 
   /**
    * Get current online status
    */
   isCurrentlyOnline(): boolean {
     return this.isOnline();
-  }
-
-  /**
-   * Get current AI availability
-   */
-  isCurrentlyAIAvailable(): boolean {
-    return this.aiAvailable();
   }
 
   /**
@@ -115,13 +86,6 @@ export class OfflineDetectionService {
       fullyOffline: !online && !aiAvailable,
       canAnalyze: aiAvailable, // Can analyze if AI is available (regardless of network)
     };
-  }
-
-  /**
-   * Force refresh AI availability check
-   */
-  async refreshAIStatus(): Promise<boolean> {
-    return await this.checkAIAvailability();
   }
 }
 

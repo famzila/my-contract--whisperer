@@ -433,7 +433,7 @@
     "storageItem4": "계약서 내용을 추적하는 쿠키 없음",
     "storageItem5": "문서 내용에 대한 분석 정보 없음",
     "onlyLocalStorage": "귀하의 브라우저 로컬 저장소에만 포함되는 정보:",
-    "onlyLocalStorageDescription": "인터페이스 기본 설정, 언어 설정 및 테마 선택.",
+    "onlyLocalStorageDescription": "인터페이스 기본 설정, 언어 설정 및 테마 선택, 분석 결과 번역",
     "localAIProcessing": "로컬 AI 처리",
     "localAIProcessingDescription": "모든 AI 처리는 Chrome의 내장 AI를 사용하여 귀하의 장치에서 발생합니다:",
     "processingItem1": "Gemini Nano AI 모델은 Chrome에서 로컬로 실행됩니다",

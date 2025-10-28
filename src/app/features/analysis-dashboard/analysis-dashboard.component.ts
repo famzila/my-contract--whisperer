@@ -319,10 +319,9 @@ export class AnalysisDashboard implements OnInit {
     // Handle party1/party2 roles - use actual party names
     if (role === 'party1' && metadata?.parties?.party1) {
       const party = metadata.parties.party1;
-      const translatedRole = this.translate.instant(`roles.${party.role?.toLowerCase() || 'unknown'}`);
       return {
         icon: this.ClipboardIcon,
-        text: this.translate.instant('analysis.badge.fromPerspective', { name: translatedRole }),
+        text: this.translate.instant('analysis.badge.fromPerspective', { name: party.name }),
         className:
           'px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200',
       };
@@ -330,10 +329,9 @@ export class AnalysisDashboard implements OnInit {
 
     if (role === 'party2' && metadata?.parties?.party2) {
       const party = metadata.parties.party2;
-      const translatedRole = this.translate.instant(`roles.${party.role?.toLowerCase() || 'unknown'}`);
       return {
         icon: this.InfoIcon,
-        text: this.translate.instant('analysis.badge.fromPerspective', { name: translatedRole }),
+        text: this.translate.instant('analysis.badge.fromPerspective', { name: party.name }),
         className:
           'px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full border border-purple-200',
       };
@@ -345,10 +343,9 @@ export class AnalysisDashboard implements OnInit {
       
       // Check if role matches party1's role (case-insensitive)
       if (party1?.role && party1.role.toLowerCase() === role.toLowerCase()) {
-        const translatedRole = this.translate.instant(`roles.${party1.role.toLowerCase()}`);
         return {
           icon: this.ClipboardIcon,
-          text: this.translate.instant('analysis.badge.fromPerspective', { name: translatedRole }),
+          text: this.translate.instant('analysis.badge.fromPerspective', { name: party1.name }),
           className:
             'px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200',
         };
@@ -356,10 +353,9 @@ export class AnalysisDashboard implements OnInit {
       
       // Check if role matches party2's role (case-insensitive)
       if (party2?.role && party2.role.toLowerCase() === role.toLowerCase()) {
-        const translatedRole = this.translate.instant(`roles.${party2.role.toLowerCase()}`);
         return {
           icon: this.InfoIcon,
-          text: this.translate.instant('analysis.badge.fromPerspective', { name: translatedRole }),
+          text: this.translate.instant('analysis.badge.fromPerspective', { name: party2.name }),
           className:
             'px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full border border-purple-200',
         };
@@ -443,15 +439,9 @@ export class AnalysisDashboard implements OnInit {
     return this.translate.instant(translationKey);
   }
 
-  switchAppToAnalysisLanguage(): void {
-    const detectedLang = this.languageStore.detectedContractLanguage();
-    if (detectedLang && isAppLanguageSupported(detectedLang)) {
-      this.languageStore.setPreferredLanguage(detectedLang);
-    }
-  }
-
-  // Action methods
   uploadNew() {
+    //reset the contract store
+    this.contractStore.reset();
     this.router.navigate(['/upload']);
   }
 
@@ -459,7 +449,6 @@ export class AnalysisDashboard implements OnInit {
     this.showingOriginal.update(v => !v);
   }
 
-  // Question and email methods
   copyQuestion(question: string) {
     navigator.clipboard.writeText(question);
   }

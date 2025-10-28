@@ -7,27 +7,47 @@ import { signalStore, withState, withComputed, withMethods, withHooks } from '@n
 import { computed, inject } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { ModalConfig, ModalService } from '../services/modal.service';
-import { LoggerService } from '../services/logger.service';
+import { APPLICATION_CONFIG } from '../config/application.config';
+import type { ContractMetadata } from '../schemas/analysis-schemas';
+
+/**
+ * Email draft data for modal
+ */
+interface EmailDraftData {
+  emailContent: string | null;
+  isRewriting: boolean;
+  showRewriteOptions: boolean;
+  rewriteOptions: {
+    tone: 'formal' | 'neutral' | 'casual';
+    length: 'short' | 'medium' | 'long';
+  };
+}
+
+/**
+ * Language mismatch data for modal
+ */
+interface LanguageMismatchData {
+  detectedLanguage: string | null;
+  preferredLanguage: string;
+  isContractLanguageSupported: boolean;
+  isContractLanguageAvailableInUI: boolean;
+  canAnalyzeDirectly: boolean;
+  needsPreTranslation: boolean;
+  onSelectUserLanguage: () => void;
+  getLanguageName: (code: string) => string;
+  getLanguageFlag: (code: string) => string;
+}
 
 /**
  * Toast notification
  */
-export interface Toast {
+interface Toast {
   id: string;
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
   duration?: number;
 }
 
-/**
- * Modal state
- */
-export interface ModalState {
-  isOpen: boolean;
-  title?: string;
-  content?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-}
 
 /**
  * UI store state shape
@@ -36,27 +56,16 @@ interface UiState {
   // Theme
   theme: 'light' | 'dark' | 'auto';
   
-  // Modals
-  helpModal: ModalState;
-  settingsModal: ModalState;
-  
   // Toasts
   toasts: Toast[];
-  
-  // Sidebar
-  isSidebarOpen: boolean;
-  
 }
 
 /**
  * Initial state
  */
 const initialState: UiState = {
-  theme: 'dark',
-  helpModal: { isOpen: false },
-  settingsModal: { isOpen: false },
+  theme: APPLICATION_CONFIG.UI.DEFAULT_THEME,
   toasts: [],
-  isSidebarOpen: true,
 };
 
 /**
@@ -73,7 +82,7 @@ export const UiStore = signalStore(
   })),
   
   // Methods
-  withMethods((store, modalService = inject(ModalService), logger = inject(LoggerService)) => ({
+  withMethods((store, modalService = inject(ModalService)) => ({
     /**
      * Set theme
      */
@@ -88,7 +97,7 @@ export const UiStore = signalStore(
       }
       
       // Save to localStorage immediately
-      localStorage.setItem('contract-whisperer-theme', theme);
+      localStorage.setItem(APPLICATION_CONFIG.UI.DEFAULT_THEME_STORAGE_KEY, theme);
     },
     
     /**
@@ -107,44 +116,9 @@ export const UiStore = signalStore(
       }
       
       // Save to localStorage immediately
-      localStorage.setItem('contract-whisperer-theme', newTheme);
+      localStorage.setItem(APPLICATION_CONFIG.UI.DEFAULT_THEME_STORAGE_KEY, newTheme);
     },
     
-    /**
-     * Open help modal
-     */
-    openHelpModal: (title?: string, content?: string) => {
-      patchState(store, {
-        helpModal: { isOpen: true, title, content, size: 'lg' },
-      });
-    },
-    
-    /**
-     * Close help modal
-     */
-    closeHelpModal: () => {
-      patchState(store, {
-        helpModal: { isOpen: false },
-      });
-    },
-    
-    /**
-     * Open settings modal
-     */
-    openSettingsModal: () => {
-      patchState(store, {
-        settingsModal: { isOpen: true, title: 'Settings', size: 'md' },
-      });
-    },
-    
-    /**
-     * Close settings modal
-     */
-    closeSettingsModal: () => {
-      patchState(store, {
-        settingsModal: { isOpen: false },
-      });
-    },
     
     /**
      * Show toast notification
@@ -183,14 +157,6 @@ export const UiStore = signalStore(
     clearToasts: () => {
       patchState(store, { toasts: [] });
     },
-    
-    /**
-     * Toggle sidebar
-     */
-    toggleSidebar: () => {
-      patchState(store, { isSidebarOpen: !store.isSidebarOpen() });
-    },
-    
     
     /**
      * Reset UI state
@@ -239,14 +205,14 @@ export const UiStore = signalStore(
     /**
      * Open Email Draft Modal
      */
-    openEmailDraft: (emailData: any, config?: ModalConfig) => {
+    openEmailDraft: (emailData: EmailDraftData, config?: ModalConfig) => {
       return modalService.openEmailDraft(emailData, config);
     },
 
     /**
      * Open Language Mismatch Modal
      */
-    openLanguageMismatch: (languageData: any, config?: ModalConfig) => {
+    openLanguageMismatch: (languageData: LanguageMismatchData, config?: ModalConfig) => {
       return modalService.openLanguageMismatch(languageData, config);
     },
 
@@ -263,7 +229,7 @@ export const UiStore = signalStore(
   withHooks({
     onInit(store) {
       // Load saved theme from localStorage
-      const savedTheme = (localStorage.getItem('contract-whisperer-theme') || 'dark') as 'light' | 'dark' | 'auto';
+      const savedTheme = (localStorage.getItem(APPLICATION_CONFIG.UI.DEFAULT_THEME_STORAGE_KEY) || APPLICATION_CONFIG.UI.DEFAULT_THEME) as 'light' | 'dark' | 'auto';
       patchState(store, { theme: savedTheme });
       
       // Apply theme to document immediately

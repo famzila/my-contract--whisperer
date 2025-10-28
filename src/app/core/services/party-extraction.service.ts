@@ -4,32 +4,32 @@
  */
 import { Injectable, inject } from '@angular/core';
 import { PromptService } from './ai/prompt.service';
+import { LoggerService } from './logger.service';
 import type { PartyDetectionResult, DetectedParty } from '../models/ai-analysis.model';
-
-/**
- * Raw extraction result from AI
- */
-interface RawExtractionResult {
-  parties: Array<{
-    name: string;
-    type: 'organization' | 'person';
-    role?: string;
-    location?: string;
-  }>;
-  contractType: string;
-  confidence: number;
-}
+import { PARTY_EXTRACTION_SCHEMA, PartyExtractionResult } from '../schemas/analysis-schemas';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PartyExtractionService {
   private promptService = inject(PromptService);
+  private logger = inject(LoggerService);
 
   /**
    * Extract parties from contract text
    */
   async extractParties(contractText: string): Promise<PartyDetectionResult> {
+    // Input validation
+    if (!contractText || contractText.trim().length === 0) {
+      throw new Error('Contract text cannot be empty');
+    }
+    if (contractText.length < 100) {
+      this.logger.warn(`Contract text length (${contractText.length}) is very short for party extraction`);
+    }
+    if (contractText.length > 200000) {
+      this.logger.warn(`Contract text length (${contractText.length}) exceeds recommended limit of 200000 characters`);
+    }
+    
     // Try AI extraction first
     const aiResult = await this.aiExtraction(contractText);
     
@@ -39,7 +39,7 @@ export class PartyExtractionService {
     }
     
     // Fallback to rule-based extraction
-    console.warn('⚠️ AI extraction confidence low, using rule-based fallback');
+    this.logger.warn('⚠️ AI extraction confidence low, using rule-based fallback');
     return this.ruleBasedExtraction(contractText);
   }
 
@@ -51,11 +51,11 @@ export class PartyExtractionService {
       const isAvailable = await this.promptService.isAvailable();
       
       if (!isAvailable) {
-        console.warn('⚠️ Prompt API not available, using rule-based extraction');
+        this.logger.warn('⚠️ Prompt API not available, using rule-based extraction');
         return null;
       }
 
-      // Create extraction session
+      // Create extraction session with structured output using schema
       const session = await this.promptService.createSession({
         initialPrompts: [
           {
@@ -64,25 +64,13 @@ export class PartyExtractionService {
 
 Extract parties from contracts and identify their roles.
 
-Respond ONLY with JSON (no markdown, no explanation):
-{
-  "parties": [
-    {
-      "name": "Company or Person Name",
-      "type": "organization" | "person",
-      "role": "Employer" | "Employee" | "Landlord" | "Tenant" | "Client" | "Contractor" | "Partner",
-      "location": "City, State/Country (if found)"
-    }
-  ],
-  "contractType": "employment" | "rental" | "service" | "nda" | "partnership" | "other",
-  "confidence": 0-100
-}
-
 Rules:
 - Extract exactly 2 parties for bilateral contracts
 - Identify relationship (employer-employee, landlord-tenant, client-contractor)
 - Extract addresses if present
-- Set confidence based on clarity of party information`,
+- Set confidence based on clarity of party information
+
+Analyze the contract and provide your extraction results.`,
           },
         ],
       });
@@ -91,17 +79,19 @@ Rules:
       const sampleText = contractText.substring(0, 3000);
       const prompt = `Extract parties from this contract:\n\n${sampleText}`;
       
-      const response = await session.prompt(prompt);
+      // Use structured output with schema
+      const response = await session.prompt(prompt, {
+        responseConstraint: PARTY_EXTRACTION_SCHEMA
+      });
       session.destroy();
       
-      // Parse JSON response
-      const cleaned = this.cleanJsonResponse(response);
-      const result: RawExtractionResult = JSON.parse(cleaned);
+      // Parse structured response (should be valid JSON due to schema)
+      const result: PartyExtractionResult = JSON.parse(response);
       
       // Transform to PartyDetectionResult
       return this.transformAIResult(result);
     } catch (error) {
-      console.error('❌ AI extraction failed:', error);
+      this.logger.error('AI extraction failed:', error);
       return null;
     }
   }
@@ -358,7 +348,7 @@ Rules:
   /**
    * Transform AI result to PartyDetectionResult
    */
-  private transformAIResult(result: RawExtractionResult): PartyDetectionResult {
+  private transformAIResult(result: PartyExtractionResult): PartyDetectionResult {
     if (!result.parties || result.parties.length < 2) {
       return {
         confidence: 'low',
@@ -404,20 +394,5 @@ Rules:
     };
   }
 
-  /**
-   * Clean JSON response (remove markdown code blocks if present)
-   */
-  private cleanJsonResponse(response: string): string {
-    let cleaned = response.trim();
-    
-    // Remove markdown code blocks
-    if (cleaned.startsWith('```json')) {
-      cleaned = cleaned.replace(/^```json\n/, '').replace(/\n```$/, '');
-    } else if (cleaned.startsWith('```')) {
-      cleaned = cleaned.replace(/^```\n/, '').replace(/\n```$/, '');
-    }
-    
-    return cleaned.trim();
-  }
 }
 

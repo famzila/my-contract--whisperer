@@ -17,6 +17,26 @@ import type {
   UserRole
 } from './ai.types';
 
+// Import types from analysis-schemas.ts for use in this file
+import type {
+  ContractMetadata,
+  ContractSummary,
+  RisksAnalysis,
+  ObligationsAnalysis,
+  OmissionsAndQuestions,
+  ContractValidationResult
+} from '../schemas/analysis-schemas';
+
+// Re-export types from analysis-schemas.ts to maintain backward compatibility
+export type {
+  ContractMetadata,
+  ContractSummary,
+  RisksAnalysis,
+  ObligationsAnalysis,
+  OmissionsAndQuestions,
+  ContractValidationResult
+} from '../schemas/analysis-schemas';
+
 // Re-export UserRole for backward compatibility
 export type { UserRole };
 
@@ -36,6 +56,35 @@ export interface AnalysisContext {
   // Additional context (for future use)
   userCountry?: string;               // User's jurisdiction
   contractJurisdiction?: string;      // Contract's governing jurisdiction
+}
+
+/**
+ * Analysis section types for streaming
+ */
+export type AnalysisSection = 'metadata' | 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions' | 'complete';
+
+/**
+ * Analysis result data types
+ */
+export type AnalysisData = 
+  | ContractMetadata
+  | ContractSummary
+  | RiskFlag[]
+  | Obligations
+  | Omission[]
+  | Record<string, unknown>  // For merged objects and flexible data
+  | string  // For quickTake and other string results
+  | null;
+
+/**
+ * Analysis streaming result interface
+ */
+export interface AnalysisStreamingResult {
+  section: AnalysisSection;
+  data: AnalysisData;
+  progress: number;
+  retryCount?: number;
+  isRetrying?: boolean;
 }
 
 /**
@@ -90,62 +139,8 @@ export interface ContextWarning {
   message: string;
 }
 
-export interface ContractMetadata {
-  contractType: string;
-  effectiveDate: string | null;
-  endDate: string | null;           // 👈 Contract expiration/termination date
-  duration: string | null;           // 👈 Human-readable duration (e.g., "12 months")
-  autoRenew: boolean | null;         // 👈 Does contract auto-renew?
-  jurisdiction: string | null;
-  parties: {
-    party1: Party;
-    party2: Party;
-    // Legacy support (deprecated)
-    employer?: Party;
-    employee?: Party;
-  };
-  
-  // Context fields (for perspective-aware analysis)
-  detectedLanguage?: string;         // 👈 Contract's original language
-  analyzedForRole?: string;          // 👈 Which role analysis is tailored for
-  analyzedInLanguage?: string;       // 👈 Language of analysis output
-}
 
 
-export interface ContractSummary {
-  // Quick overview from Summarizer API (optional)
-  quickTake?: string;
-  
-  // Structured details from Prompt API (NO duplicates with metadata)
-  summary: {
-    keyResponsibilities: string[]; // Renamed from 'responsibilities'
-    compensation: {
-      baseSalary?: number | null;
-      bonus?: string | null;
-      equity?: string | null;
-      other?: string | null;
-    };
-    benefits: string[];
-    termination: {
-      atWill?: string | null;
-      forCause?: string | null;
-      severance?: string | null;
-      noticeRequired?: string | null; // Important detail
-    };
-    restrictions: {
-      confidentiality?: string | null;
-      nonCompete?: string | null;
-      nonSolicitation?: string | null;
-      intellectualProperty?: string | null; // IP assignment
-      other?: string | null;
-    };
-  };
-  
-  // Perspective-aware fields (for UI display)
-  fromYourPerspective?: string;  // Summary from selected perspective
-  keyBenefits?: string[];        // Key benefits from selected perspective
-  keyConcerns?: string[];        // Key concerns from selected perspective
-}
 
 
 export interface RiskFlag {

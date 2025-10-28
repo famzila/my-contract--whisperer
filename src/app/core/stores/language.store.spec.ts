@@ -4,7 +4,7 @@ import { LanguageStore } from './language.store';
 import { LANGUAGES, DEFAULT_LANGUAGE } from '../config/application.config';
 
 describe('LanguageStore', () => {
-  let store: LanguageStore;
+  let store: InstanceType<typeof LanguageStore>;
   let translateService: jasmine.SpyObj<TranslateService>;
 
   beforeEach(() => {
@@ -105,9 +105,6 @@ describe('LanguageStore', () => {
     expect(store.isRTL()).toBe(false); // Default is English (LTR)
     
     store.setPreferredLanguage(LANGUAGES.ARABIC);
-    expect(store.isRTL()).toBe(true);
-    
-    store.setPreferredLanguage(LANGUAGES.HEBREW);
     expect(store.isRTL()).toBe(true);
     
     store.setPreferredLanguage(LANGUAGES.ENGLISH);

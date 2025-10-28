@@ -433,7 +433,7 @@
     "storageItem4": "Keine Cookies, die Ihren Vertragsinhalt verfolgen",
     "storageItem5": "Keine Analysen zu Ihrem Dokumentinhalt",
     "onlyLocalStorage": "Nur der lokale Speicher Ihres Browsers enthält:",
-    "onlyLocalStorageDescription": "Oberflächenpräferenzen, Spracheinstellungen und Themenauswahl.",
+    "onlyLocalStorageDescription": "Oberflächenpräferenzen, Spracheinstellungen, Themenauswahl und Übersetzungen der Analyseergebnisse.",
     "localAIProcessing": "Lokale KI-Verarbeitung",
     "localAIProcessingDescription": "Die gesamte KI-Verarbeitung erfolgt auf Ihrem Gerät unter Verwendung der in Chrome integrierten KI:",
     "processingItem1": "Das Gemini Nano KI-Modell läuft lokal in Chrome",

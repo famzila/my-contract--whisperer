@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LoggerService } from '../services/logger.service';
+import { TranslationUtilityService } from '../services/translation-utility.service';
+import { mapPartyRoleToUserRole } from '../utils/role.util';
 import type { Contract } from '../models/contract.model';
 import type { 
   ContractMetadata, 
@@ -19,7 +21,8 @@ import type {
   ContractSummary 
 } from '../schemas/analysis-schemas';
 import { ContractAnalysisService } from '../services/contract-analysis.service';
-import { ContractParserService, type ParsedContract } from '../services/contract-parser.service';
+import { ContractParserService } from '../services/contract-parser.service';
+import { ParsedContract } from '../models/contract.model';
 import { ContractValidationService } from '../services/contract-validation.service';
 import { PartyExtractionService } from '../services/party-extraction.service';
 import { TranslationCacheService } from '../services/translation-cache.service';
@@ -71,10 +74,6 @@ interface ContractState {
   
   // RxJS streaming cleanup
   destroySubject: Subject<void> | null;
-  
-  // AI Services Status
-  aiServicesAvailable: boolean;
-  aiServicesChecked: boolean;
 }
 
 /**
@@ -97,8 +96,6 @@ const initialState: ContractState = {
   isTranslating: false,
   translatingToLanguage: null,
   destroySubject: null,
-  aiServicesAvailable: false,
-  aiServicesChecked: false,
 };
 
 /**
@@ -179,6 +176,7 @@ export const ContractStore = signalStore(
     validationService = inject(ContractValidationService),
     partyExtractionService = inject(PartyExtractionService),
     translationCache = inject(TranslationCacheService),
+    translationUtility = inject(TranslationUtilityService),
     aiOrchestrator = inject(AiOrchestratorService),
     translate = inject(TranslateService),
     router = inject(Router),
@@ -186,35 +184,14 @@ export const ContractStore = signalStore(
     logger = inject(LoggerService)
   ) => ({
     /**
-     * Parse text into contract format
-     */
-    parseTextToContract: (text: string, source: string = 'manual-input') => {
-      try {
-        return parserService.parseText(text, source);
-      } catch (error) {
-        logger.error('Failed to parse contract text', error);
-        throw error;
-      }
-    },
-
-    /**
      * Check Chrome AI services availability
      */
     async checkAiAvailability() {
       try {
-        patchState(store, { aiServicesChecked: false });
         const status = await aiOrchestrator.checkAvailability();
-        patchState(store, { 
-          aiServicesAvailable: status.allAvailable,
-          aiServicesChecked: true 
-        });
         return status;
       } catch (error) {
         logger.error('Failed to check AI availability', error);
-        patchState(store, { 
-          aiServicesAvailable: false,
-          aiServicesChecked: true 
-        });
         throw error;
       }
     },
@@ -536,7 +513,7 @@ export const ContractStore = signalStore(
             switch (result.section) {
               case 'metadata':
                 patchState(store, {
-                  sectionsMetadata: { data: result.data, loading: false, error: null },
+                  sectionsMetadata: { data: result.data as ContractMetadata | null, loading: false, error: null },
                   analysisProgress: result.progress,
                   contract, // Store contract immediately with metadata
                   isUploading: false, // Clear upload state - we're navigating away!
@@ -559,7 +536,7 @@ export const ContractStore = signalStore(
               case 'summary':
                 patchState(store, {
                   sectionsSummary: { 
-                    data: result.data, 
+                    data: result.data as ContractSummary | null, 
                     loading: result.isRetrying || false, 
                     error: null,
                     retryCount: result.retryCount,
@@ -572,7 +549,7 @@ export const ContractStore = signalStore(
               case 'risks':
                 patchState(store, {
                   sectionsRisks: { 
-                    data: result.data, 
+                    data: result.data as RisksAnalysis | null, 
                     loading: result.isRetrying || false, 
                     error: null,
                     retryCount: result.retryCount,
@@ -585,7 +562,7 @@ export const ContractStore = signalStore(
               case 'obligations':
                 patchState(store, {
                   sectionsObligations: { 
-                    data: result.data, 
+                    data: result.data as ObligationsAnalysis | null, 
                     loading: result.isRetrying || false, 
                     error: null,
                     retryCount: result.retryCount,
@@ -598,7 +575,7 @@ export const ContractStore = signalStore(
               case 'omissionsAndQuestions':
                 patchState(store, {
                   sectionsOmissionsQuestions: { 
-                    data: result.data, 
+                    data: result.data as OmissionsAndQuestions | null, 
                     loading: result.isRetrying || false, 
                     error: null,
                     retryCount: result.retryCount,
@@ -784,11 +761,11 @@ export const ContractStore = signalStore(
         
         // Translate from source to target (with null checks)
         const [metadata, summary, risks, obligations, omissions] = await Promise.all([
-          sourceAnalysis.metadata ? analysisService.postTranslateMetadata(sourceAnalysis.metadata, targetLanguage) : null,
-          sourceAnalysis.summary ? analysisService.postTranslateSummary(sourceAnalysis.summary, targetLanguage) : null,
-          sourceAnalysis.risks ? analysisService.postTranslateRisks(sourceAnalysis.risks, targetLanguage) : null,
-          sourceAnalysis.obligations ? analysisService.postTranslateObligations(sourceAnalysis.obligations, targetLanguage) : null,
-          sourceAnalysis.omissions ? analysisService.postTranslateOmissionsAndQuestions(sourceAnalysis.omissions, targetLanguage) : null,
+          sourceAnalysis.metadata ? translationUtility.translateMetadata(sourceAnalysis.metadata, targetLanguage, sourceLanguage) : null,
+          sourceAnalysis.summary ? translationUtility.translateSummary(sourceAnalysis.summary, targetLanguage) : null,
+          sourceAnalysis.risks ? translationUtility.translateRisks(sourceAnalysis.risks, targetLanguage) : null,
+          sourceAnalysis.obligations ? translationUtility.translateObligations(sourceAnalysis.obligations, targetLanguage) : null,
+          sourceAnalysis.omissions ? translationUtility.translateOmissionsAndQuestions(sourceAnalysis.omissions, targetLanguage) : null,
         ]);
         
         // Store in cache
@@ -921,19 +898,7 @@ export const ContractStore = signalStore(
      * UserRole: 'landlord', 'tenant', 'employer', 'employee', etc. (lowercase)
      */
     mapPartyRoleToUserRole(partyRole: string): string {
-      const roleMap: Record<string, string> = {
-        Landlord: 'landlord',
-        Tenant: 'tenant',
-        Employer: 'employer',
-        Employee: 'employee',
-        Client: 'client',
-        Contractor: 'contractor',
-        Partner: 'partner',
-        Lessor: 'landlord',
-        Lessee: 'tenant',
-      };
-
-      return roleMap[partyRole] || partyRole.toLowerCase();
+      return mapPartyRoleToUserRole(partyRole);
     },
 
     /**

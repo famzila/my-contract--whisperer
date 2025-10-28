@@ -13,7 +13,8 @@ import { LanguageUtilsService } from '../utils/language.util';
 import { LoggerService } from '../services/logger.service';
 import { 
   LANGUAGES, 
-  DEFAULT_LANGUAGE
+  DEFAULT_LANGUAGE,
+  getSupportedLanguages
 } from '../config/application.config';
 import { 
   isRTL, 
@@ -23,18 +24,9 @@ import type { Language, LanguageState } from '../models/language.model';
 
 
 /**
- * Supported languages configuration
+ * Supported languages configuration - now centralized in application.config.ts
  */
-const SUPPORTED_LANGUAGES: Language[] = [
-  { code: LANGUAGES.ENGLISH, name: 'English', nativeName: 'English', flag: '🇬🇧' },
-  { code: LANGUAGES.SPANISH, name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
-  { code: LANGUAGES.FRENCH, name: 'French', nativeName: 'Français', flag: '🇫🇷' },
-  { code: LANGUAGES.ARABIC, name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
-  { code: LANGUAGES.GERMAN, name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
-  { code: LANGUAGES.CHINESE, name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
-  { code: LANGUAGES.JAPANESE, name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
-  { code: LANGUAGES.KOREAN, name: 'Korean', nativeName: '한국어', flag: '🇰🇷' },
-];
+const SUPPORTED_LANGUAGES: Language[] = getSupportedLanguages();
 
 
 /**
@@ -60,14 +52,6 @@ export const LanguageStore = signalStore(
   
   // Computed values
   withComputed(({ detectedContractLanguage, preferredLanguage, availableLanguages }) => ({
-    /**
-     * Check if translation is needed
-     */
-    needsTranslation: computed(() => {
-      const detected = detectedContractLanguage();
-      const preferred = preferredLanguage();
-      return detected && detected !== preferred;
-    }),
     
     /**
      * Get detected language info
@@ -176,92 +160,6 @@ export const LanguageStore = signalStore(
       logger.info(`🗣️ Preferred language set to: ${languageCode} (saved to localStorage)`);
     },
     
-    /**
-     * Translate text to preferred language
-     */
-    translateText: async (text: string, sourceLanguage?: string): Promise<string> => {
-      const targetLang = store.preferredLanguage();
-      const sourceLang = sourceLanguage || store.detectedContractLanguage() || 'en';
-      
-      // No translation needed if same language
-      if (sourceLang === targetLang) {
-        return text;
-      }
-      
-      // Check cache first
-      const cacheKey = `${text.substring(0, 100)}-${targetLang}`;
-      const cached = store.translationCache()[cacheKey];
-      if (cached) {
-        logger.info('📦 Using cached translation');
-        return cached;
-      }
-      
-      // Translate
-      patchState(store, { isTranslating: true, translationError: null });
-      
-      try {
-        const translated = await translatorService.translate(text, sourceLang, targetLang);
-        
-        // Cache the result
-        patchState(store, { 
-          translationCache: {
-            ...store.translationCache(),
-            [cacheKey]: translated,
-          },
-          isTranslating: false,
-        });
-        
-        logger.info(`✅ Translation completed: ${sourceLang} → ${targetLang}`);
-        return translated;
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Translation failed';
-        patchState(store, { 
-          isTranslating: false,
-          translationError: errorMsg,
-        });
-        
-        logger.error('❌ Translation error:', errorMsg);
-        
-        // Return original text as fallback
-        return text;
-      }
-    },
-    
-    /**
-     * Translate multiple texts in batch (optimized)
-     */
-    translateBatch: async (texts: string[], sourceLanguage?: string): Promise<string[]> => {
-      const targetLang = store.preferredLanguage();
-      const sourceLang = sourceLanguage || store.detectedContractLanguage() || 'en';
-      
-      if (sourceLang === targetLang) {
-        return texts;
-      }
-      
-      patchState(store, { isTranslating: true, translationError: null });
-      
-      try {
-        const translations = await Promise.all(
-          texts.map(text => translatorService.translate(text, sourceLang, targetLang))
-        );
-        
-        patchState(store, { isTranslating: false });
-        logger.info(`✅ Batch translation completed: ${texts.length} items`);
-        
-        return translations;
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Batch translation failed';
-        patchState(store, { 
-          isTranslating: false,
-          translationError: errorMsg,
-        });
-        
-        logger.error('❌ Batch translation error:', errorMsg);
-        
-        // Return original texts as fallback
-        return texts;
-      }
-    },
     
     /**
      * Dismiss language banner
@@ -278,100 +176,7 @@ export const LanguageStore = signalStore(
       logger.info('🗑️ Translation cache cleared');
     },
     
-    /**
-     * Get language by code
-     */
-    getLanguage: (code: string): Language | undefined => {
-      return store.availableLanguages().find(lang => lang.code === code);
-    },
     
-    /**
-     * Set analysis language and synchronize app UI language
-     * CRITICAL: Ensures app UI language always matches analysis results language
-     * 
-     * @param languageCode - The language code for analysis
-     * @returns The actual language that will be used (may fallback to English)
-     */
-    setAnalysisLanguage: (languageCode: string): string => {
-      logger.info(`\n🌍 [Language Sync] Setting analysis language to: ${languageCode}`);
-      
-      // Check if language is supported for app UI
-      if (isAppLanguageSupported(languageCode)) {
-        logger.info(`✅ [Language Sync] ${languageCode} is supported for app UI`);
-        
-        // Switch app UI to this language
-        translateService.use(languageCode);
-        
-        // Apply RTL if needed
-        if (isRTL(languageCode)) {
-          document.documentElement.setAttribute('dir', 'rtl');
-        } else {
-          document.documentElement.setAttribute('dir', 'ltr');
-        }
-                
-        // Update language store
-        patchState(store, { 
-          preferredLanguage: languageCode,
-          showLanguageBanner: false,
-        });
-        
-        // Save to localStorage
-        languageUtils.saveLanguage(languageCode);
-        
-        logger.info(`✅ [Language Sync] App UI switched to ${languageCode}\n`);
-        return languageCode;
-      } else {
-        // Fallback to English
-        logger.warn(`⚠️ [Language Sync] ${languageCode} not supported for app UI, falling back to English`);
-        
-        translateService.use(LANGUAGES.ENGLISH);
-        
-        patchState(store, { 
-          preferredLanguage: LANGUAGES.ENGLISH,
-          showLanguageBanner: false,
-        });
-        
-        languageUtils.saveLanguage(LANGUAGES.ENGLISH);
-        
-        logger.info(`✅ [Language Sync] App UI set to English (fallback)\n`);
-        return LANGUAGES.ENGLISH;
-      }
-    },
-    
-    /**
-     * Check if translation is available between languages
-     */
-    async canTranslate(sourceLang: string, targetLang: string) {
-      try {
-        return await translatorService.canTranslate(sourceLang, targetLang);
-      } catch (error) {
-        logger.error('Failed to check translation availability', error);
-        throw error;
-      }
-    },
-    
-    /**
-     * Download language pack (requires user gesture)
-     */
-    async downloadLanguagePack(sourceLang: string, targetLang: string) {
-      try {
-        const capabilities = await translatorService.canTranslate(sourceLang, targetLang);
-        
-        if (capabilities.available === 'downloadable') {
-          logger.info(`Downloading language pack: ${sourceLang} → ${targetLang}`);
-          await translatorService.createTranslator({ 
-            sourceLanguage: sourceLang, 
-            targetLanguage: targetLang 
-          });
-          logger.info('Language pack downloaded successfully');
-        }
-        
-        return capabilities;
-      } catch (error) {
-        logger.error(`Failed to download language pack: ${sourceLang} → ${targetLang}`, error);
-        throw error;
-      }
-    },
     
     /**
      * Create translator session

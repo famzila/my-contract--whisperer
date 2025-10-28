@@ -1,19 +1,22 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, of, merge, defer, from, concat, map, tap, catchError, switchMap, shareReplay, retry, timer, Subject, combineLatest } from 'rxjs';
-import { ContractParserService, ParsedContract } from './contract-parser.service';
-import { AiOrchestratorService } from './ai/ai-orchestrator.service';
+import { ParsedContract } from '../models/contract.model';
 import { PromptService } from './ai/prompt.service';
 import { SummarizerService } from './ai/summarizer.service';
-import { TranslationOrchestratorService } from './translation-orchestrator.service';
 import { TranslatorService } from './ai/translator.service';
 import { TranslationCacheService } from './translation-cache.service';
+import { TranslationUtilityService } from './translation-utility.service';
 import { OfflineStorageService } from './storage/offline-storage.service';
 import { LoggerService } from './logger.service';
 import { LANGUAGES, AI_CONFIG } from '../config/application.config';
 import { isGeminiNanoSupported } from '../utils/language.util';
 import { Contract, ContractAnalysis } from '../models/contract.model';
-import { AnalysisContext } from '../models/ai-analysis.model';
-import * as Schemas from '../schemas/analysis-schemas';
+import { 
+  AnalysisContext, 
+  AnalysisSection, 
+  AnalysisData, 
+  AnalysisStreamingResult 
+} from '../models/ai-analysis.model';
 
 /**
  * Contract Analysis Service
@@ -30,13 +33,11 @@ import * as Schemas from '../schemas/analysis-schemas';
   providedIn: 'root',
 })
 export class ContractAnalysisService {
-  private aiOrchestrator = inject(AiOrchestratorService);
   private promptService = inject(PromptService);
   private summarizerService = inject(SummarizerService);
-  private parser = inject(ContractParserService);
-  private translationOrchestrator = inject(TranslationOrchestratorService);
   private translator = inject(TranslatorService);
   private translationCache = inject(TranslationCacheService);
+  private translationUtility = inject(TranslationUtilityService);
   private logger = inject(LoggerService);
   private offlineStorage = inject(OfflineStorageService);
 
@@ -52,31 +53,19 @@ export class ContractAnalysisService {
    * Wraps an observable with retry logic and emits retry events
    * Returns an observable that emits both retry notifications and final result
    */
-  private withRetryAndNotify$<T>(
-    sectionName: 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions',
+  private withRetryAndNotify$<T extends AnalysisData>(
+    sectionName: AnalysisSection,
     source$: Observable<T>,
     progress: number
-  ): Observable<{
-    section: typeof sectionName;
-    data: T | null;
-    progress: number;
-    retryCount?: number;
-    isRetrying?: boolean;
-  }> {
-    const retrySubject = new Subject<{
-      section: typeof sectionName;
-      data: null;
-      progress: number;
-      retryCount: number;
-      isRetrying: true;
-    }>();
+  ): Observable<AnalysisStreamingResult> {
+    const retrySubject = new Subject<AnalysisStreamingResult>();
 
     const result$ = source$.pipe(
       retry({
-        count: this.RETRY_CONFIG.maxAttempts,
+        count: this.RETRY_CONFIG.MAX_ATTEMPTS,
         delay: (error, retryCount) => {
-          const delay = this.RETRY_CONFIG.initialDelayMs * Math.pow(this.RETRY_CONFIG.backoffMultiplier, retryCount - 1);
-          console.log(`⚠️ [Retry] ${sectionName} failed, retrying in ${delay}ms (attempt ${retryCount}/${this.RETRY_CONFIG.maxAttempts})`, error);
+          const delay = this.RETRY_CONFIG.INITIAL_DELAY_MS * Math.pow(this.RETRY_CONFIG.BACKOFF_MULTIPLIER, retryCount - 1);
+          this.logger.warn(`⚠️ [Retry] ${sectionName} failed, retrying in ${delay}ms (attempt ${retryCount}/${this.RETRY_CONFIG.MAX_ATTEMPTS})`, error);
           
           // Emit retry notification
           retrySubject.next({
@@ -116,23 +105,17 @@ export class ContractAnalysisService {
     parsedContract: ParsedContract,
     analysisContext: AnalysisContext,
     contract: Contract
-  ): Observable<{
-    section: 'metadata' | 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions' | 'complete';
-    data: any;
-    progress: number;
-    retryCount?: number;
-    isRetrying?: boolean;
-  }> {
+  ): Observable<AnalysisStreamingResult> {
     // Determine languages
     const outputLanguage = analysisContext.analyzedInLanguage || undefined;
     const contractLanguage = analysisContext.contractLanguage || LANGUAGES.ENGLISH;
     
     // Check if pre-translation is needed
-    const needsPreTranslation = !this.canAnalyzeLanguage(contractLanguage);
+    const needsPreTranslation = !isGeminiNanoSupported(contractLanguage);
     
     if (needsPreTranslation) {
-      console.log(`⚠️ [Analysis] Contract language "${contractLanguage}" not supported by Gemini Nano`);
-      console.log(`🌍 [Analysis] Pre-translating to English for analysis...`);
+      this.logger.warn(`Contract language "${contractLanguage}" not supported by Gemini Nano`);
+      this.logger.info(`Pre-translating to English for analysis...`);
       
       // Pre-translate contract → Analyze in English → Post-translate results
       return this.analyzeWithPreTranslation$(parsedContract, analysisContext, contract, contractLanguage, outputLanguage);
@@ -151,11 +134,7 @@ export class ContractAnalysisService {
     outputLanguage: string | undefined,
     contractLanguage: string,
     contract: Contract
-  ): Observable<{
-    section: 'metadata' | 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions' | 'complete';
-    data: any;
-    progress: number;
-  }> {
+  ): Observable<AnalysisStreamingResult> {
     // Check if output language is supported by Gemini Nano
     // If user wants results in unsupported language (e.g., Arabic), we need to:
     // 1. Analyze in English (or contract language if supported)
@@ -165,11 +144,11 @@ export class ContractAnalysisService {
     const geminiOutputLanguage = isOutputLanguageSupported ? outputLanguage : LANGUAGES.ENGLISH;
     const needsPostTranslation = !isOutputLanguageSupported;
     
-    console.log(`🚀 [Direct Analysis] Contract: ${contractLanguage}, Target: ${targetLanguage}, Gemini Output: ${geminiOutputLanguage}, Post-translate: ${needsPostTranslation}`);
+    this.logger.info(`Direct Analysis - Contract: ${contractLanguage}, Target: ${targetLanguage}, Gemini Output: ${geminiOutputLanguage}, Post-translate: ${needsPostTranslation}`);
     
     // Create session once and share it
     const session$ = of(null).pipe(
-      tap(() => console.log(`🚀 Starting direct analysis (Gemini output: ${geminiOutputLanguage})...`)),
+      tap(() => this.logger.info(`Starting direct analysis (Gemini output: ${geminiOutputLanguage})...`)),
       switchMap(() => this.promptService.createSession({ 
         userRole: analysisContext.userRole || null,
         contractLanguage: contractLanguage,
@@ -187,7 +166,7 @@ export class ContractAnalysisService {
       )),
       // Post-translate if needed
       switchMap(metadata => needsPostTranslation && outputLanguage
-        ? defer(() => from(this.postTranslateMetadata(metadata, outputLanguage)))
+        ? defer(() => from(this.translationUtility.translateMetadata(metadata, outputLanguage)))
         : of(metadata)
       ),
       map(metadata => ({
@@ -195,9 +174,9 @@ export class ContractAnalysisService {
         data: metadata,
         progress: 20
       })),
-      tap(result => console.log('✅ Metadata complete', result)),
+      tap(result => this.logger.info('Metadata complete', result)),
       catchError(error => {
-        console.error('❌ Metadata extraction failed:', error);
+        this.logger.error('Metadata extraction failed:', error);
         throw error; // Metadata is critical, so we throw
       })
     );
@@ -209,7 +188,7 @@ export class ContractAnalysisService {
       switchMap(() => from(
         this.summarizerService.generateExecutiveSummary(parsedContract.text, geminiOutputLanguage)
       )),
-      // 🔑 NEW: Cache English Quick Take BEFORE post-translation
+      // Cache English Quick Take BEFORE post-translation
       tap(quickTakeText => {
         if (needsPostTranslation && quickTakeText) {
           this.cacheIntermediateEnglishSection(contract.id, 'quickTake', quickTakeText);
@@ -230,14 +209,14 @@ export class ContractAnalysisService {
         'summary',
         this.promptService.extractSummary$(parsedContract.text, geminiOutputLanguage).pipe(
           switchMap(summary => needsPostTranslation && outputLanguage
-            ? defer(() => from(this.postTranslateSummary(summary, outputLanguage)))
+            ? defer(() => from(this.translationUtility.translateSummary(summary, outputLanguage)))
             : of(summary)
           )
         ),
         40
       )),
       catchError(error => {
-        console.error('❌ Structured summary extraction failed after retries:', error);
+        this.logger.error('Structured summary extraction failed after retries:', error);
         return of({ section: 'summary' as const, data: null, progress: 40 });
       })
     );
@@ -247,7 +226,7 @@ export class ContractAnalysisService {
       map(([quickTake, structuredResult]) => ({
         section: structuredResult.section,
         data: structuredResult.data ? {
-          ...structuredResult.data,
+          ...structuredResult.data as Record<string, unknown>,
           quickTake // Add quick take to result
         } : null,
         progress: structuredResult.progress,
@@ -256,7 +235,7 @@ export class ContractAnalysisService {
       })),
       tap(result => {
         if (!result.isRetrying) {
-          console.log('✅ Hybrid summary complete (Quick Take + Structured)', result);
+          this.logger.info('Hybrid summary complete (Quick Take + Structured)', result);
         }
       })
     );
@@ -266,7 +245,7 @@ export class ContractAnalysisService {
         'risks',
         this.promptService.extractRisks$(parsedContract.text, geminiOutputLanguage).pipe(
           switchMap(risks => needsPostTranslation && outputLanguage
-            ? defer(() => from(this.postTranslateRisks(risks, outputLanguage)))
+            ? defer(() => from(this.translationUtility.translateRisks(risks, outputLanguage)))
             : of(risks)
           )
         ),
@@ -274,11 +253,11 @@ export class ContractAnalysisService {
       )),
       tap(result => {
         if (!result.isRetrying) {
-          console.log('✅ Risks complete', result);
+          this.logger.info('Risks complete', result);
         }
       }),
       catchError(error => {
-        console.error('❌ Risks extraction failed after retries:', error);
+        this.logger.error('Risks extraction failed after retries:', error);
         // Return null data - UI will show error message
         return of({ section: 'risks' as const, data: null, progress: 60 });
       })
@@ -289,7 +268,7 @@ export class ContractAnalysisService {
         'obligations',
         this.promptService.extractObligations$(parsedContract.text, geminiOutputLanguage).pipe(
           switchMap(obligations => needsPostTranslation && outputLanguage
-            ? defer(() => from(this.postTranslateObligations(obligations, outputLanguage)))
+            ? defer(() => from(this.translationUtility.translateObligations(obligations, outputLanguage)))
             : of(obligations)
           )
         ),
@@ -297,11 +276,11 @@ export class ContractAnalysisService {
       )),
       tap(result => {
         if (!result.isRetrying) {
-          console.log('✅ Obligations complete', result);
+          this.logger.info('Obligations complete', result);
         }
       }),
       catchError(error => {
-        console.error('❌ Obligations extraction failed after retries:', error);
+        this.logger.error('Obligations extraction failed after retries:', error);
         // Return null data - UI will show error message
         return of({ section: 'obligations' as const, data: null, progress: 80 });
       })
@@ -312,7 +291,7 @@ export class ContractAnalysisService {
         'omissionsAndQuestions',
         this.promptService.extractOmissionsAndQuestions$(parsedContract.text, geminiOutputLanguage).pipe(
           switchMap(omissionsAndQuestions => needsPostTranslation && outputLanguage
-            ? defer(() => from(this.postTranslateOmissionsAndQuestions(omissionsAndQuestions, outputLanguage)))
+            ? defer(() => from(this.translationUtility.translateOmissionsAndQuestions(omissionsAndQuestions, outputLanguage)))
             : of(omissionsAndQuestions)
           )
         ),
@@ -320,11 +299,11 @@ export class ContractAnalysisService {
       )),
       tap(result => {
         if (!result.isRetrying) {
-          console.log('✅ Omissions/Questions complete', result);
+          this.logger.info('Omissions/Questions complete', result);
         }
       }),
       catchError(error => {
-        console.error('❌ Omissions/Questions extraction failed after retries:', error);
+        this.logger.error('Omissions/Questions extraction failed after retries:', error);
         // Return null data - UI will show error message
         return of({ section: 'omissionsAndQuestions' as const, data: null, progress: 90 });
       })
@@ -364,11 +343,7 @@ export class ContractAnalysisService {
     contract: Contract,
     originalLanguage: string,
     targetLanguage: string | undefined
-  ): Observable<{
-    section: 'metadata' | 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions' | 'complete';
-    data: any;
-    progress: number;
-  }> {
+  ): Observable<AnalysisStreamingResult> {
     const finalTargetLanguage = targetLanguage || originalLanguage;
     
     // Check if target language is supported by Gemini Nano for output
@@ -376,21 +351,21 @@ export class ContractAnalysisService {
     const geminiOutputLanguage = isTargetLanguageSupported ? finalTargetLanguage : LANGUAGES.ENGLISH;
     const needsPostTranslation = !isTargetLanguageSupported && finalTargetLanguage !== LANGUAGES.ENGLISH;
     
-    console.log(`📋 [Pre-translation Flow] Original: ${originalLanguage}, Target: ${finalTargetLanguage}, Gemini Output: ${geminiOutputLanguage}, Post-translate: ${needsPostTranslation}`);
+    this.logger.info(`Pre-translation Flow - Original: ${originalLanguage}, Target: ${finalTargetLanguage}, Gemini Output: ${geminiOutputLanguage}, Post-translate: ${needsPostTranslation}`);
     
     // Step 1: Pre-translate contract to English
-    console.log(`📝 [Pre-translation] Starting translation: ${originalLanguage} → ${LANGUAGES.ENGLISH}`);
-    console.log(`📄 [Pre-translation] Original text preview: "${parsedContract.text.substring(0, 200)}..."`);
+    this.logger.info(`Starting translation: ${originalLanguage} → ${LANGUAGES.ENGLISH}`);
+    this.logger.info(`Original text preview: "${parsedContract.text.substring(0, 200)}..."`);
     
     const translatedContract$ = defer(() => 
       from(this.translator.translate(parsedContract.text, originalLanguage, LANGUAGES.ENGLISH))
     ).pipe(
       tap(translatedText => {
-        console.log(`✅ [Pre-translation] Contract translated to English (${translatedText.length} chars)`);
-        console.log(`📄 [Pre-translation] Translated text preview: "${translatedText.substring(0, 200)}..."`);
+        this.logger.info(`Contract translated to English (${translatedText.length} chars)`);
+        this.logger.info(`Translated text preview: "${translatedText.substring(0, 200)}..."`);
       }),
       catchError(error => {
-        console.error('❌ [Pre-translation] Failed:', error);
+        this.logger.error('Pre-translation failed:', error);
         throw new Error(`Pre-translation failed: ${error.message}`);
       }),
       shareReplay(1)
@@ -409,8 +384,8 @@ export class ContractAnalysisService {
     // Step 3: Extract all sections in target language (if supported) or English
     const metadata$ = translatedContract$.pipe(
       switchMap(translatedText => {
-        console.log(`🎯 [Pre-translation] Sending to Gemini Nano with outputLanguage: ${geminiOutputLanguage}`);
-        console.log(`📄 [Pre-translation] Text being analyzed (preview): "${translatedText.substring(0, 200)}..."`);
+        this.logger.info(`Sending to Gemini Nano with outputLanguage: ${geminiOutputLanguage}`);
+        this.logger.info(`Text being analyzed (preview): "${translatedText.substring(0, 200)}..."`);
         return session$.pipe(
           switchMap(() => this.promptService.extractMetadata$(
             translatedText,
@@ -419,7 +394,7 @@ export class ContractAnalysisService {
           ))
         );
       }),
-      // 🔑 NEW: Cache English metadata BEFORE post-translation
+      // Cache English metadata BEFORE post-translation
       tap(englishMetadata => {
         if (needsPostTranslation) {
           this.cacheIntermediateEnglishSection(contract.id, 'metadata', englishMetadata);
@@ -427,7 +402,7 @@ export class ContractAnalysisService {
       }),
       // Step 4: Post-translate metadata if target language is not supported by Gemini
       switchMap(metadata => needsPostTranslation
-        ? defer(() => from(this.postTranslateMetadata(metadata, finalTargetLanguage)))
+        ? defer(() => from(this.translationUtility.translateMetadata(metadata, finalTargetLanguage)))
         : of(metadata)
       ),
       map(metadata => ({
@@ -436,9 +411,9 @@ export class ContractAnalysisService {
         progress: 20,
         resultLanguage: needsPostTranslation ? finalTargetLanguage : geminiOutputLanguage  // Track actual language of results
       })),
-      tap(result => console.log('✅ Metadata complete (pre-translated)', result)),
+      tap(result => this.logger.info('Metadata complete (pre-translated)', result)),
       catchError(error => {
-        console.error('❌ Metadata extraction failed:', error);
+        this.logger.error('Metadata extraction failed:', error);
         throw error;
       })
     );
@@ -450,7 +425,7 @@ export class ContractAnalysisService {
       switchMap(translatedText => from(
         this.summarizerService.generateExecutiveSummary(translatedText, geminiOutputLanguage)
       )),
-      // 🔑 NEW: Cache English Quick Take BEFORE post-translation
+      // Cache English Quick Take BEFORE post-translation
       tap(quickTakeText => {
         if (needsPostTranslation && quickTakeText) {
           this.cacheIntermediateEnglishSection(contract.id, 'quickTake', quickTakeText);
@@ -471,14 +446,14 @@ export class ContractAnalysisService {
         switchMap(() => this.withRetryAndNotify$(
           'summary',
           this.promptService.extractSummary$(translatedText, geminiOutputLanguage).pipe(
-            // 🔑 NEW: Cache English summary BEFORE post-translation
+            // Cache English summary BEFORE post-translation
             tap(englishSummary => {
               if (needsPostTranslation) {
                 this.cacheIntermediateEnglishSection(contract.id, 'summary', englishSummary);
               }
             }),
             switchMap(summary => needsPostTranslation
-              ? defer(() => from(this.postTranslateSummary(summary, finalTargetLanguage)))
+              ? defer(() => from(this.translationUtility.translateSummary(summary, finalTargetLanguage)))
               : of(summary)
             )
           ),
@@ -486,7 +461,7 @@ export class ContractAnalysisService {
         ))
       )),
       catchError(error => {
-        console.error('❌ Structured summary extraction failed after retries:', error);
+        this.logger.error('Structured summary extraction failed after retries:', error);
         return of({ section: 'summary' as const, data: null, progress: 40 });
       })
     );
@@ -496,7 +471,7 @@ export class ContractAnalysisService {
       map(([quickTake, structuredResult]) => ({
         section: structuredResult.section,
         data: structuredResult.data ? {
-          ...structuredResult.data,
+          ...structuredResult.data as Record<string, unknown>,
           quickTake: quickTake || undefined // Add quick take to result (or undefined if failed)
         } : null,
         progress: structuredResult.progress,
@@ -505,7 +480,7 @@ export class ContractAnalysisService {
       })),
       tap(result => {
         if (!result.isRetrying) {
-          console.log('✅ Hybrid summary complete (pre-translated + post-translated)', result);
+          this.logger.info('Hybrid summary complete (pre-translated + post-translated)', result);
         }
       })
     );
@@ -515,14 +490,14 @@ export class ContractAnalysisService {
         switchMap(() => this.withRetryAndNotify$(
           'risks',
           this.promptService.extractRisks$(translatedText, geminiOutputLanguage).pipe(
-            // 🔑 NEW: Cache English risks BEFORE post-translation
+            // Cache English risks BEFORE post-translation
             tap(englishRisks => {
               if (needsPostTranslation) {
                 this.cacheIntermediateEnglishSection(contract.id, 'risks', englishRisks);
               }
             }),
             switchMap(risks => needsPostTranslation
-              ? defer(() => from(this.postTranslateRisks(risks, finalTargetLanguage)))
+              ? defer(() => from(this.translationUtility.translateRisks(risks, finalTargetLanguage)))
               : of(risks)
             )
           ),
@@ -531,11 +506,11 @@ export class ContractAnalysisService {
       )),
       tap(result => {
         if (!result.isRetrying) {
-          console.log('✅ Risks complete (pre-translated + post-translated)', result);
+          this.logger.info('Risks complete (pre-translated + post-translated)', result);
         }
       }),
       catchError(error => {
-        console.error('❌ Risks extraction failed after retries:', error);
+        this.logger.error('Risks extraction failed after retries:', error);
         return of({ section: 'risks' as const, data: null, progress: 60 });
       })
     );
@@ -545,14 +520,14 @@ export class ContractAnalysisService {
         switchMap(() => this.withRetryAndNotify$(
           'obligations',
           this.promptService.extractObligations$(translatedText, geminiOutputLanguage).pipe(
-            // 🔑 NEW: Cache English obligations BEFORE post-translation
+            // Cache English obligations BEFORE post-translation
             tap(englishObligations => {
               if (needsPostTranslation) {
                 this.cacheIntermediateEnglishSection(contract.id, 'obligations', englishObligations);
               }
             }),
             switchMap(obligations => needsPostTranslation
-              ? defer(() => from(this.postTranslateObligations(obligations, finalTargetLanguage)))
+              ? defer(() => from(this.translationUtility.translateObligations(obligations, finalTargetLanguage)))
               : of(obligations)
             )
           ),
@@ -561,11 +536,11 @@ export class ContractAnalysisService {
       )),
       tap(result => {
         if (!result.isRetrying) {
-          console.log('✅ Obligations complete (pre-translated + post-translated)', result);
+          this.logger.info('Obligations complete (pre-translated + post-translated)', result);
         }
       }),
       catchError(error => {
-        console.error('❌ Obligations extraction failed after retries:', error);
+        this.logger.error('Obligations extraction failed after retries:', error);
         return of({ section: 'obligations' as const, data: null, progress: 80 });
       })
     );
@@ -575,14 +550,14 @@ export class ContractAnalysisService {
         switchMap(() => this.withRetryAndNotify$(
           'omissionsAndQuestions',
           this.promptService.extractOmissionsAndQuestions$(translatedText, geminiOutputLanguage).pipe(
-            // 🔑 NEW: Cache English omissions/questions BEFORE post-translation
+            // Cache English omissions/questions BEFORE post-translation
             tap(englishOmissions => {
               if (needsPostTranslation) {
                 this.cacheIntermediateEnglishSection(contract.id, 'omissionsAndQuestions', englishOmissions);
               }
             }),
             switchMap(omissionsAndQuestions => needsPostTranslation
-              ? defer(() => from(this.postTranslateOmissionsAndQuestions(omissionsAndQuestions, finalTargetLanguage)))
+              ? defer(() => from(this.translationUtility.translateOmissionsAndQuestions(omissionsAndQuestions, finalTargetLanguage)))
               : of(omissionsAndQuestions)
             )
           ),
@@ -591,11 +566,11 @@ export class ContractAnalysisService {
       )),
       tap(result => {
         if (!result.isRetrying) {
-          console.log('✅ Omissions/Questions complete (pre-translated + post-translated)', result);
+          this.logger.info('✅ Omissions/Questions complete (pre-translated + post-translated)', result);
         }
       }),
       catchError(error => {
-        console.error('❌ Omissions/Questions extraction failed after retries:', error);
+        this.logger.error('Omissions/Questions extraction failed after retries:', error);
         return of({ section: 'omissionsAndQuestions' as const, data: null, progress: 90 });
       })
     );
@@ -613,254 +588,14 @@ export class ContractAnalysisService {
   }
 
   /**
-   * Check if a language can be analyzed directly by Gemini Nano
-   */
-  private canAnalyzeLanguage(languageCode: string): boolean {
-    return isGeminiNanoSupported(languageCode);
-  }
-
-  /**
    * ========================================
    * Post-Translation Helper Methods
    * ========================================
    * Translate English analysis results to target language
    */
 
-  async postTranslateMetadata(
-    metadata: Schemas.ContractMetadata,
-    targetLanguage: string
-  ): Promise<Schemas.ContractMetadata> {
-    console.log(`🌍 [Post-translation] Translating metadata to ${targetLanguage}...`);
-    
-    return {
-      ...metadata,
-      contractType: await this.translator.translateFromEnglish(metadata.contractType, targetLanguage),
-      jurisdiction: metadata.jurisdiction ? await this.translator.translateFromEnglish(metadata.jurisdiction, targetLanguage) : null,
-      parties: {
-        party1: {
-          ...metadata.parties.party1,
-          role: await this.translator.translateFromEnglish(metadata.parties.party1.role, targetLanguage),
-        },
-        party2: {
-          ...metadata.parties.party2,
-          role: await this.translator.translateFromEnglish(metadata.parties.party2.role, targetLanguage),
-        },
-      },
-    };
-  }
 
 
-  async postTranslateSummary(
-    summary: Schemas.ContractSummary,
-    targetLanguage: string
-  ): Promise<Schemas.ContractSummary> {
-    console.log(`🌍 [Post-translation] Translating summary to ${targetLanguage}...`);
-    
-    // Translate quick take if present
-    const quickTake = summary.quickTake 
-      ? await this.translator.translateFromEnglish(summary.quickTake, targetLanguage)
-      : undefined;
-    
-    return {
-      quickTake,
-      summary: {
-        keyResponsibilities: await Promise.all(
-          summary.summary.keyResponsibilities.map((r: string) => this.translator.translateFromEnglish(r, targetLanguage))
-        ),
-        compensation: {
-          baseSalary: summary.summary.compensation.baseSalary,
-          bonus: summary.summary.compensation.bonus ? await this.translator.translateFromEnglish(summary.summary.compensation.bonus, targetLanguage) : null,
-          equity: summary.summary.compensation.equity ? await this.translator.translateFromEnglish(summary.summary.compensation.equity, targetLanguage) : null,
-          other: summary.summary.compensation.other ? await this.translator.translateFromEnglish(summary.summary.compensation.other, targetLanguage) : null,
-        },
-        benefits: await Promise.all(
-          summary.summary.benefits.map((b: string) => this.translator.translateFromEnglish(b, targetLanguage))
-        ),
-        termination: {
-          atWill: summary.summary.termination.atWill ? await this.translator.translateFromEnglish(summary.summary.termination.atWill, targetLanguage) : null,
-          forCause: summary.summary.termination.forCause ? await this.translator.translateFromEnglish(summary.summary.termination.forCause, targetLanguage) : null,
-          severance: summary.summary.termination.severance ? await this.translator.translateFromEnglish(summary.summary.termination.severance, targetLanguage) : null,
-          noticeRequired: summary.summary.termination.noticeRequired ? await this.translator.translateFromEnglish(summary.summary.termination.noticeRequired, targetLanguage) : null,
-        },
-        restrictions: {
-          confidentiality: summary.summary.restrictions.confidentiality ? await this.translator.translateFromEnglish(summary.summary.restrictions.confidentiality, targetLanguage) : null,
-          nonCompete: summary.summary.restrictions.nonCompete ? await this.translator.translateFromEnglish(summary.summary.restrictions.nonCompete, targetLanguage) : null,
-          nonSolicitation: summary.summary.restrictions.nonSolicitation ? await this.translator.translateFromEnglish(summary.summary.restrictions.nonSolicitation, targetLanguage) : null,
-          intellectualProperty: summary.summary.restrictions.intellectualProperty ? await this.translator.translateFromEnglish(summary.summary.restrictions.intellectualProperty, targetLanguage) : null,
-          other: summary.summary.restrictions.other ? await this.translator.translateFromEnglish(summary.summary.restrictions.other, targetLanguage) : null,
-        },
-      },
-    };
-  }
-
-  async postTranslateRisks(
-    risks: Schemas.RisksAnalysis,
-    targetLanguage: string
-  ): Promise<Schemas.RisksAnalysis> {
-    console.log(`🌍 [Post-translation] Translating risks to ${targetLanguage}...`);
-    
-    return {
-      risks: await Promise.all(
-        risks.risks.map(async risk => ({
-          ...risk,
-          title: await this.translator.translateFromEnglish(risk.title, targetLanguage),
-          description: await this.translator.translateFromEnglish(risk.description, targetLanguage),
-          impact: await this.translator.translateFromEnglish(risk.impact, targetLanguage),
-        }))
-      ),
-    };
-  }
-
-  async postTranslateObligations(
-    obligations: Schemas.ObligationsAnalysis,
-    targetLanguage: string
-  ): Promise<Schemas.ObligationsAnalysis> {
-    this.logger.info(`🌍 [Post-translation] Translating obligations to ${targetLanguage}...`);
-    
-    type PartyObligation = Schemas.ObligationsAnalysis['obligations']['party1'][0];
-    
-    const translateObligation = async (obl: PartyObligation): Promise<PartyObligation> => ({
-      ...obl,
-      duty: await this.translator.translateFromEnglish(obl.duty, targetLanguage),
-      frequency: obl.frequency ? await this.translator.translateFromEnglish(obl.frequency, targetLanguage) : null,
-      startDate: obl.startDate ? await this.translator.translateFromEnglish(obl.startDate, targetLanguage) : null,
-      duration: obl.duration ? await this.translator.translateFromEnglish(obl.duration, targetLanguage) : null,
-      scope: obl.scope ? await this.translator.translateFromEnglish(obl.scope, targetLanguage) : null,
-    });
-    
-    return {
-      obligations: {
-        party1: await Promise.all(obligations.obligations.party1.map(translateObligation)),
-        party2: await Promise.all(obligations.obligations.party2.map(translateObligation)),
-      },
-    };
-  }
-
-  async postTranslateOmissionsAndQuestions(
-    omissionsAndQuestions: Schemas.OmissionsAndQuestions,
-    targetLanguage: string
-  ): Promise<Schemas.OmissionsAndQuestions> {
-    console.log(`🌍 [Post-translation] Translating omissions/questions to ${targetLanguage}...`);
-    
-    return {
-      omissions: await Promise.all(
-        omissionsAndQuestions.omissions.map(async omission => ({
-          ...omission,
-          item: await this.translator.translateFromEnglish(omission.item, targetLanguage),
-          impact: await this.translator.translateFromEnglish(omission.impact, targetLanguage),
-        }))
-      ),
-      questions: await Promise.all(
-        omissionsAndQuestions.questions.map(q => this.translator.translateFromEnglish(q, targetLanguage))
-      ),
-    };
-  }
-
-  /**
-   * Create mock analysis for testing/demo when AI is not available
-   */
-  private createMockAnalysis(contractId: string, contractText: string): ContractAnalysis {
-    return {
-      id: contractId,
-      summary: `Mock Analysis: This is a sample analysis for demonstration purposes. 
-      
-Key Points:
-• Contract has been processed using mock data
-• Risk assessment based on common contract patterns
-• Obligations and omissions identified from sample data
-
-Note: This is mock data. Enable Chrome Built-in AI for real analysis.`,
-      clauses: [],
-      riskScore: 45,
-      obligations: [],
-      omissions: [],
-      questions: [],
-      analyzedAt: new Date(),
-    };
-  }
-
-  /**
-   * Create mock analysis from structured mock data
-   */
-  private createMockAnalysisFromStructuredData(contractId: string): ContractAnalysis {
-    console.log('🎭 Creating analysis from structured mock data');
-    
-    return {
-      id: contractId,
-      summary: JSON.stringify({
-        metadata: {
-          contractType: 'Employment Agreement',
-          effectiveDate: '2025-01-01',
-          endDate: '2025-12-31',
-          jurisdiction: 'California, USA',
-          parties: {
-            party1: { name: 'Acme Corp', role: 'Employer' },
-            party2: { name: 'John Doe', role: 'Employee' }
-          },
-          analyzedForRole: 'employee'
-        },
-        summary: {
-          parties: 'Acme Corp (Employer) and John Doe (Employee)',
-          role: 'Full-time employment relationship',
-          responsibilities: ['Software development', 'Code reviews', 'Team collaboration'],
-          compensation: { baseSalary: '80000', bonus: 'Performance-based' },
-          benefits: ['Health insurance', '401k matching', 'Paid time off'],
-          termination: { atWill: 'Either party can terminate with 2 weeks notice' }
-        },
-        risks: {
-          risks: [
-            {
-              title: 'At-Will Employment',
-              description: 'Employment can be terminated at any time without cause',
-              severity: 'medium',
-              impact: 'Job security may be uncertain',
-              icon: 'AlertTriangle'
-            }
-          ]
-        },
-        obligations: {
-          obligations: {
-            employer: [
-              { duty: 'Pay salary', amount: 80000, frequency: 'Monthly' }
-            ],
-            employee: [
-              { duty: 'Perform job duties', scope: 'Software development' }
-            ]
-          }
-        },
-        omissionsAndQuestions: {
-          omissions: [
-            { item: 'Remote work policy', impact: 'Important for work-life balance', priority: 'medium' }
-          ],
-          questions: [
-            'What is the remote work policy?',
-            'Are there opportunities for professional development?'
-          ]
-        }
-      }, null, 2),
-      clauses: [],
-      riskScore: 45,
-      obligations: [],
-      omissions: [],
-      questions: [
-        'What is the remote work policy?',
-        'Are there opportunities for professional development?'
-      ],
-      metadata: {
-        contractType: 'Employment Agreement',
-        effectiveDate: '2025-01-01',
-        endDate: '2025-12-31',
-        jurisdiction: 'California, USA',
-        parties: {
-          party1: { name: 'Acme Corp', role: 'Employer' },
-          party2: { name: 'John Doe', role: 'Employee' }
-        },
-        analyzedForRole: 'employee'
-      },
-      disclaimer: 'I am an AI assistant, not a lawyer. This information is for educational purposes only. Consult a qualified attorney for legal advice.',
-      analyzedAt: new Date(),
-    };
-  }
 
   /**
    * Cache intermediate English section during pre-translation
@@ -870,7 +605,7 @@ Note: This is mock data. Enable Chrome Built-in AI for real analysis.`,
   private cacheIntermediateEnglishSection(
     contractId: string,
     section: 'metadata' | 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions' | 'quickTake',
-    data: any
+    data: AnalysisData | string
   ): void {
     try {
       // Get existing English cache or create structure
@@ -900,17 +635,33 @@ Note: This is mock data. Enable Chrome Built-in AI for real analysis.`,
         case 'omissionsAndQuestions':
           existingCache.omissions = data;
           break;
-        case 'quickTake':
-          existingCache.quickTake = data;
+        case 'quickTake':          
+          // Store quickTake as part of summary structure for consistency
+          if (existingCache.summary && typeof existingCache.summary === 'object') {
+            // If summary already exists, add quickTake to it
+            (existingCache.summary as any).quickTake = data;
+          } else {
+            // If no summary yet, create a partial summary structure with quickTake
+            existingCache.summary = {
+              quickTake: data,
+              summary: {
+                keyResponsibilities: [],
+                compensation: { baseSalary: null, bonus: null, equity: null, other: null },
+                benefits: [],
+                termination: { atWill: null, forCause: null, severance: null, noticeRequired: null },
+                restrictions: { confidentiality: null, nonCompete: null, nonSolicitation: null, intellectualProperty: null, other: null }
+              }
+            };
+          }
           break;
       }
       
       // Store incremental English results
       this.translationCache.storeAnalysis(contractId, 'en', existingCache);
-      console.log(`💾 [Pre-translation Cache] Stored English ${section} (before post-translation)`);
+      this.logger.info(`💾 [Pre-translation Cache] Stored English ${section} (before post-translation)`);
     } catch (error) {
       // Don't fail pipeline if caching fails
-      console.warn(`⚠️ [Pre-translation Cache] Failed to cache English ${section}:`, error);
+      this.logger.warn(`⚠️ [Pre-translation Cache] Failed to cache English ${section}:`, error);
     }
   }
 
@@ -926,54 +677,13 @@ Note: This is mock data. Enable Chrome Built-in AI for real analysis.`,
   async saveAnalysisToOfflineStorage(contract: Contract, analysis: ContractAnalysis): Promise<void> {
     try {
       await this.offlineStorage.saveContract(contract, analysis);
-      console.log(`💾 [Offline Storage] Saved analysis for contract: ${contract.id}`);
+      this.logger.info(`💾 [Offline Storage] Saved analysis for contract: ${contract.id}`);
     } catch (error) {
-      console.warn(`⚠️ [Offline Storage] Failed to save analysis:`, error);
+      this.logger.warn(`⚠️ [Offline Storage] Failed to save analysis:`, error);
       // Don't fail the analysis pipeline if offline storage fails
     }
   }
 
-  /**
-   * Load cached analysis from offline storage
-   */
-  async loadCachedAnalysis(contractId: string): Promise<ContractAnalysis | null> {
-    try {
-      const cachedContract = await this.offlineStorage.getContract(contractId);
-      if (cachedContract) {
-        console.log(`📱 [Offline Storage] Loaded cached analysis for contract: ${contractId}`);
-        return cachedContract.analysis;
-      }
-      return null;
-    } catch (error) {
-      console.warn(`⚠️ [Offline Storage] Failed to load cached analysis:`, error);
-      return null;
-    }
-  }
 
-  /**
-   * Check if contract analysis is cached
-   */
-  async isAnalysisCached(contractId: string): Promise<boolean> {
-    try {
-      const cachedContract = await this.offlineStorage.getContract(contractId);
-      return cachedContract !== null;
-    } catch (error) {
-      console.warn(`⚠️ [Offline Storage] Failed to check cache status:`, error);
-      return false;
-    }
-  }
-
-  /**
-   * Get list of cached contracts
-   */
-  async getCachedContracts(): Promise<Contract[]> {
-    try {
-      const cachedContracts = await this.offlineStorage.listContracts();
-      return cachedContracts.map(cached => cached.contract);
-    } catch (error) {
-      console.warn(`⚠️ [Offline Storage] Failed to get cached contracts:`, error);
-      return [];
-    }
-  }
 
 }

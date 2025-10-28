@@ -25,6 +25,7 @@ import {
 } from '../../../shared/icons/lucide-icons';
 import { Notice } from '../notice/notice';
 import type { PartyDetectionResult, UserRole } from '../../../core/models/ai-analysis.model';
+import { getRoleIcon, getRoleTranslationKey } from '../../../core/utils/role.util';
 
 interface PartyOption {
   value: UserRole;
@@ -203,33 +204,27 @@ export class PartySelectorModal {
    * Translate role name from English to current language
    */
   private translateRoleName(role: string): string {
-    const roleMap: Record<string, string> = {
-      'Employer': this.translate.instant('roles.employer'),
-      'Employee': this.translate.instant('roles.employee'),
-      'Client': this.translate.instant('roles.client'),
-      'Contractor': this.translate.instant('roles.contractor'),
-      'Landlord': this.translate.instant('roles.landlord'),
-      'Tenant': this.translate.instant('roles.tenant'),
-      'Partner': this.translate.instant('roles.partner'),
-    };
+    if (!role) return role;
     
-    return roleMap[role] || role; // Return original if not found
+    const translationKey = getRoleTranslationKey(role);
+    
+    if (translationKey && translationKey !== role) {
+      return this.translate.instant(translationKey);
+    }
+    
+    // Debug logging to help identify issues
+    const normalizedRole = role.trim();
+    if (normalizedRole !== 'Party 1' && normalizedRole !== 'Party 2') {
+      console.warn(`[PartySelector] Role not translated: "${role}" -> "${role}"`);
+    }
+    
+    return role;
   }
 
   /**
    * Get icon for role
    */
   private getIconForRole(role: string): any {
-    const roleMap: Record<string, any> = {
-      'Employer': this.Building2Icon,
-      'Employee': this.UserIcon,
-      'Client': this.BriefcaseIcon,
-      'Contractor': this.WrenchIcon,
-      'Landlord': this.HomeIcon,
-      'Tenant': this.KeyIcon,
-      'Partner': this.HandshakeIcon,
-    };
-    
-    return roleMap[role] || this.FileTextIcon;
+    return getRoleIcon(role) || this.FileTextIcon;
   }
 }

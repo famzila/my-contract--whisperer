@@ -1,5 +1,6 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, Renderer2, RendererFactory2 } from '@angular/core';
 import { Dialog, DialogRef } from '@angular/cdk/dialog';
+import { LoggerService } from './logger.service';
 import { SampleContractModal } from '../../shared/components/sample-contract-modal/sample-contract-modal';
 import { HowItWorksModal } from '../../shared/components/how-it-works-modal/how-it-works-modal';
 import { PrivacyPolicyModal } from '../../shared/components/privacy-policy-modal/privacy-policy-modal';
@@ -16,7 +17,7 @@ export interface ModalConfig {
   panelClass?: string;
   hasBackdrop?: boolean;
   disableClose?: boolean;
-  data?: any;
+  data?: unknown;
 }
 
 @Injectable({
@@ -24,6 +25,9 @@ export interface ModalConfig {
 })
 export class ModalService {
   private dialog = inject(Dialog);
+  private logger = inject(LoggerService);
+  private rendererFactory = inject(RendererFactory2);
+  private renderer = this.rendererFactory.createRenderer(null, null);
 
   /**
    * Open Sample Contract Modal
@@ -103,7 +107,13 @@ export class ModalService {
   /**
    * Open Email Draft Modal
    */
-  openEmailDraft(emailData: any, config?: ModalConfig): DialogRef<any, any> {
+  openEmailDraft(emailData: unknown, config?: ModalConfig): DialogRef<unknown, EmailDraftModal> {
+    // Input validation
+    if (emailData === null || emailData === undefined) {
+      throw new Error('Email data cannot be null or undefined');
+    }
+    
+    this.logger.info('Opening email draft modal');
     return this.dialog.open(EmailDraftModal, {
       width: '90vw',
       maxWidth: '48rem', // 3xl = 48rem
@@ -119,7 +129,13 @@ export class ModalService {
   /**
    * Open Language Mismatch Modal
    */
-  openLanguageMismatch(languageData: any, config?: ModalConfig): DialogRef<any, any> {
+  openLanguageMismatch(languageData: unknown, config?: ModalConfig): DialogRef<unknown, LanguageMismatchModal> {
+    // Input validation
+    if (languageData === null || languageData === undefined) {
+      throw new Error('Language data cannot be null or undefined');
+    }
+    
+    this.logger.info('Opening language mismatch modal');
     const dialogRef = this.dialog.open(LanguageMismatchModal, {
       width: '100vw',
       maxWidth: '32rem',
@@ -146,14 +162,16 @@ export class ModalService {
   }
 
   /**
-   * Apply dark mode to CDK overlay container
+   * Apply dark mode to CDK overlay container using Angular Renderer2
    */
   private applyDarkModeToOverlay(): void {
     // Small delay to ensure overlay is created
     setTimeout(() => {
-      const overlayContainer = document.querySelector('.cdk-overlay-container');
-      if (overlayContainer && document.documentElement.classList.contains('dark')) {
-        overlayContainer.classList.add('dark');
+      const overlayContainer = this.renderer.selectRootElement('.cdk-overlay-container', true);
+      const documentElement = this.renderer.selectRootElement('html', true);
+      
+      if (overlayContainer && documentElement.classList.contains('dark')) {
+        this.renderer.addClass(overlayContainer, 'dark');
       }
     }, 0);
   }

@@ -40,27 +40,42 @@ export class AiOrchestratorService {
    * Check availability of all AI services
    */
   async checkAvailability(): Promise<AIServicesStatus> {
-    const [prompt, summarizer, translator, languageDetector, writer, rewriter] = await Promise.all([
-      this.promptService.isAvailable(),
-      this.summarizerService.isAvailable(),
-      this.translatorService.isAvailable(),
-      this.languageDetectorService.isAvailable(),
-      this.writerService.isWriterAvailable(),
-      this.writerService.isRewriterAvailable(),
-    ]);
+    try {
+      const [prompt, summarizer, translator, languageDetector, writer, rewriter] = await Promise.all([
+        this.promptService.isAvailable(),
+        this.summarizerService.isAvailable(),
+        this.translatorService.isAvailable(),
+        this.languageDetectorService.isAvailable(),
+        this.writerService.isWriterAvailable(),
+        this.writerService.isRewriterAvailable(),
+      ]);
 
-    this.servicesStatus = {
-      prompt,
-      summarizer,
-      translator,
-      languageDetector,
-      writer,
-      rewriter,
-      allAvailable: prompt && summarizer && translator && writer && rewriter,
-    };
+      this.servicesStatus = {
+        prompt,
+        summarizer,
+        translator,
+        languageDetector,
+        writer,
+        rewriter,
+        allAvailable: prompt && summarizer && translator && writer && rewriter,
+      };
 
-    this.logger.info('AI services status', this.servicesStatus);
-    return this.servicesStatus;
+      this.logger.info('AI services status', this.servicesStatus);
+      return this.servicesStatus;
+    } catch (error) {
+      this.logger.error('Failed to check AI services availability', error);
+      // Return a safe fallback status
+      this.servicesStatus = {
+        prompt: false,
+        summarizer: false,
+        translator: false,
+        languageDetector: false,
+        writer: false,
+        rewriter: false,
+        allAvailable: false,
+      };
+      return this.servicesStatus;
+    }
   }
 
   /**

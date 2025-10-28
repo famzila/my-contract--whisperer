@@ -1,18 +1,14 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import type { UserRole } from '../../models/ai-analysis.model';
-import { LoggerService } from '../logger.service';
 
 /**
  * Service dedicated to building AI prompts for contract analysis
  * Handles perspective-aware prompt generation and system prompt construction
- * 
- * Separated from PromptService to follow single responsibility principle
  */
 @Injectable({
   providedIn: 'root',
 })
 export class PromptBuilderService {
-  private logger = inject(LoggerService);
 
   /**
    * Build perspective-aware system prompt based on user role
@@ -164,6 +160,16 @@ Remember: Output ONLY the JSON object, no markdown, no code blocks, no additiona
   }
 
   /**
+   * Build question-answering prompt
+   */
+  buildQuestionPrompt(contractText: string, question: string): string {
+    return `Based on the following contract, answer this question: ${question}
+
+Contract:
+${contractText}`;
+  }
+
+  /**
    * Build metadata extraction prompt
    */
   private buildMetadataPrompt(contractText: string, userRole?: string, outputLanguage?: string): string {
@@ -269,27 +275,5 @@ Instructions:
 - Use null for fields that don't apply or aren't specified in the contract
 
 Return the summary in the exact JSON structure specified in the schema.`;
-  }
-
-  /**
-   * Build question-answering prompt
-   */
-  buildQuestionPrompt(contractText: string, question: string): string {
-    return `Based on the following contract, answer this question: ${question}
-
-Contract:
-${contractText}`;
-  }
-
-  /**
-   * Build clause extraction prompt
-   */
-  buildClauseExtractionPrompt(contractText: string): string {
-    return `Analyze this contract and respond with ONLY valid JSON following the schema provided in your system prompt.
-
-Contract to analyze:
-${contractText}
-
-Remember: Output ONLY the JSON object, no markdown, no code blocks, no additional text.`;
   }
 }

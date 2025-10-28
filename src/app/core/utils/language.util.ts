@@ -8,7 +8,8 @@ import {
   LANGUAGE_TRANSLATION_KEYS,
   RTL_LANGUAGES,
   GEMINI_NANO_SUPPORTED_LANGUAGES,
-  SUPPORTED_APP_LANGUAGES
+  SUPPORTED_APP_LANGUAGES,
+  getLanguageName as configGetLanguageName
 } from '../config/application.config';
 import type { Language } from '../models/language.model';
 
@@ -65,20 +66,10 @@ export function needsPostTranslation(targetLanguage?: string): boolean {
 
 /**
  * Get language name from code (for display purposes)
+ * Now uses centralized configuration
  */
 export function getLanguageName(languageCode: string): string {
-  const languageNames: Record<string, string> = {
-    'en': 'English',
-    'fr': 'French',
-    'ar': 'Arabic',
-    'es': 'Spanish',
-    'de': 'German',
-    'ja': 'Japanese',
-    'zh': 'Chinese',
-    'ko': 'Korean',
-  };
-  
-  return languageNames[languageCode] || languageCode.toUpperCase();
+  return configGetLanguageName(languageCode);
 }
 
 /**

@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AnalysisData, CachedAnalysis, CacheStats, TranslationCache } from '../models/translation-cache.model';
+import { LoggerService } from './logger.service';
 
 /**
  * Translation Cache Service
@@ -15,11 +16,14 @@ import { AnalysisData, CachedAnalysis, CacheStats, TranslationCache } from '../m
  * - Type-safe caching with proper error handling
  * - Backward compatibility with old cache format
  */
+import { STORAGE_CONFIG } from '../config/application.config';
+
 @Injectable({ providedIn: 'root' })
 export class TranslationCacheService {
-  private readonly CACHE_KEY = 'contract_analysis_cache';
-  private readonly MAX_CONTRACTS = 5; // Keep last 5 contracts
-  private readonly MAX_AGE_DAYS = 7; // Cache for 7 days
+  private logger = inject(LoggerService);
+  private readonly CACHE_KEY = STORAGE_CONFIG.CONTRACT_CACHE.CACHE_KEY;
+  private readonly MAX_CONTRACTS = STORAGE_CONFIG.TRANSLATION_CACHE.MAX_CONTRACTS;
+  private readonly MAX_AGE_DAYS = STORAGE_CONFIG.TRANSLATION_CACHE.MAX_AGE_DAYS;
 
   /**
    * Get cached analysis for a contract in specific language
@@ -30,7 +34,7 @@ export class TranslationCacheService {
     const contractCache = cache[contractId];
     
     if (!contractCache) {
-      console.log(`📭 [Cache] No cache found for contract ${contractId}`);
+      this.logger.info(`No cache found for contract ${contractId}`);
       return null;
     }
     
@@ -39,10 +43,10 @@ export class TranslationCacheService {
       const analysis = contractCache.translations[languageCode];
       
       if (!this.isExpired(analysis.translatedAt)) {
-        console.log(`✅ [Cache] Found ${languageCode} analysis for contract ${contractId}`);
+        this.logger.info(`Found ${languageCode} analysis for contract ${contractId}`);
         return analysis;
       } else {
-        console.log(`⏰ [Cache] ${languageCode} analysis expired for contract ${contractId}`);
+        this.logger.info(`${languageCode} analysis expired for contract ${contractId}`);
         // Remove expired analysis
         delete contractCache.translations[languageCode];
         this.saveCache(cache);
@@ -77,7 +81,7 @@ export class TranslationCacheService {
     };
     
     this.saveCache(cache);
-    console.log(`💾 [Cache] Stored ${languageCode} analysis for contract ${contractId}`);
+    this.logger.info(`Stored ${languageCode} analysis for contract ${contractId}`);
   }
 
   /**
@@ -112,7 +116,7 @@ export class TranslationCacheService {
     const cache = this.getCache();
     delete cache[contractId];
     this.saveCache(cache);
-    console.log(`🗑️ [Cache] Cleared cache for contract ${contractId}`);
+    this.logger.info(`Cleared cache for contract ${contractId}`);
   }
 
   /**
@@ -120,66 +124,9 @@ export class TranslationCacheService {
    */
   clearAll(): void {
     localStorage.removeItem(this.CACHE_KEY);
-    console.log(`🗑️ [Cache] Cleared all translation cache`);
+    this.logger.info(`Cleared all translation cache`);
   }
 
-
-  /**
-   * Get cache statistics
-   */
-  getCacheStats(): CacheStats {
-    const cache = this.getCache();
-    const contractIds = Object.keys(cache);
-    
-    let totalTranslations = 0;
-    let expiredTranslations = 0;
-    
-    contractIds.forEach(id => {
-      const contractCache = cache[id];
-      
-      // Check translations
-      Object.values(contractCache.translations).forEach(translation => {
-        totalTranslations++;
-        if (this.isExpired(translation.translatedAt)) {
-          expiredTranslations++;
-        }
-      });
-    });
-    
-    return {
-      totalContracts: contractIds.length,
-      totalTranslations,
-      expiredTranslations,
-      cacheSize: JSON.stringify(cache).length
-    };
-  }
-
-  /**
-   * Clean up expired entries
-   */
-  cleanupExpired(): void {
-    const cache = this.getCache();
-    let cleaned = false;
-    
-    Object.keys(cache).forEach(contractId => {
-      const contractCache = cache[contractId];
-      
-      // Remove expired translations
-      Object.keys(contractCache.translations).forEach(lang => {
-        const translation = contractCache.translations[lang];
-        if (translation && this.isExpired(translation.translatedAt)) {
-          delete contractCache.translations[lang];
-          cleaned = true;
-          console.log(`🗑️ [Cache] Removed expired ${lang} translation for contract ${contractId}`);
-        }
-      });
-    });
-    
-    if (cleaned) {
-      this.saveCache(cache);
-      console.log(`🧹 [Cache] Cleanup completed`);
-    }
-  }
 
   // Private helpers
   private getCache(): TranslationCache {
@@ -187,7 +134,7 @@ export class TranslationCacheService {
       const cached = localStorage.getItem(this.CACHE_KEY);
       return cached ? JSON.parse(cached) : {};
     } catch (error) {
-      console.error('❌ [Cache] Failed to parse cache:', error);
+      this.logger.error('Failed to parse cache:', error);
       return {};
     }
   }

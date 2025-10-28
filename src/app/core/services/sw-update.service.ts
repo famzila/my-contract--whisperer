@@ -2,6 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { SwUpdate, VersionReadyEvent, VersionDetectedEvent, VersionInstallationFailedEvent } from '@angular/service-worker';
 import { filter, map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { LoggerService } from './logger.service';
 
 /**
  * Service Worker Update Service
@@ -12,6 +13,7 @@ import { Observable } from 'rxjs';
 })
 export class SwUpdateService {
   private swUpdate = inject(SwUpdate);
+  private logger = inject(LoggerService);
   
   // Signals for UI state
   private _updateAvailable = signal<boolean>(false);
@@ -36,7 +38,7 @@ export class SwUpdateService {
    */
   private setupUpdateListeners(): void {
     if (!this.swUpdate.isEnabled) {
-      console.log('🔧 Service Worker: Not enabled (development mode)');
+      this.logger.info('Service Worker: Not enabled (development mode)');
       return;
     }
 
@@ -45,7 +47,7 @@ export class SwUpdateService {
       .pipe(
         filter((evt): evt is VersionDetectedEvent => evt.type === 'VERSION_DETECTED'),
         tap(evt => {
-          console.log(`🔄 Update: New version detected: ${evt.version.hash}`);
+          this.logger.info(`Update: New version detected: ${evt.version.hash}`);
           this._updateDownloading.set(true);
           this.newVersion.set(evt.version.hash);
         })
@@ -57,9 +59,9 @@ export class SwUpdateService {
       .pipe(
         filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
         tap(evt => {
-          console.log(`✅ Update: New version ready`);
-          console.log(`Current: ${evt.currentVersion.hash}`);
-          console.log(`Available: ${evt.latestVersion.hash}`);
+          this.logger.info(`Update: New version ready`);
+          this.logger.info(`Current: ${evt.currentVersion.hash}`);
+          this.logger.info(`Available: ${evt.latestVersion.hash}`);
           
           this._updateAvailable.set(true);
           this._updateDownloading.set(false);
@@ -74,7 +76,7 @@ export class SwUpdateService {
       .pipe(
         filter((evt): evt is VersionInstallationFailedEvent => evt.type === 'VERSION_INSTALLATION_FAILED'),
         tap(evt => {
-          console.error(`❌ Update: Installation failed: ${evt.error}`);
+          this.logger.error(`Update: Installation failed: ${evt.error}`);
           this._updateError.set(`Update failed: ${evt.error}`);
           this._updateDownloading.set(false);
         })
@@ -87,17 +89,17 @@ export class SwUpdateService {
    */
   async checkForUpdate(): Promise<boolean> {
     if (!this.swUpdate.isEnabled) {
-      console.log('🔧 Service Worker: Not enabled, skipping update check');
+      this.logger.info('Service Worker: Not enabled, skipping update check');
       return false;
     }
 
     try {
-      console.log('🔄 Checking for updates...');
+      this.logger.info('Checking for updates...');
       const updateFound = await this.swUpdate.checkForUpdate();
-      console.log(updateFound ? '✅ Update available' : '✅ Already up to date');
+      this.logger.info(updateFound ? 'Update available' : 'Already up to date');
       return updateFound;
     } catch (error) {
-      console.error('❌ Update check failed:', error);
+      this.logger.error('Update check failed:', error);
       this._updateError.set(`Update check failed: ${error}`);
       return false;
     }

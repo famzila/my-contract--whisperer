@@ -1,6 +1,15 @@
 /**
  * Contract data model
  */
+import { ContractValidationResult } from '../schemas/analysis-schemas';
+
+// Re-export for convenience
+export type { ContractValidationResult };
+
+// ============================================================================
+// Core Contract Interfaces
+// ============================================================================
+
 export interface Contract {
   id: string;
   text: string;
@@ -11,6 +20,30 @@ export interface Contract {
   wordCount: number;
   estimatedReadingTime: number;
 }
+
+// ============================================================================
+// Contract Parsing Interfaces
+// ============================================================================
+
+/**
+ * Contract file types supported
+ */
+export type ContractFileType = 'text/plain' | 'application/pdf' | 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+/**
+ * Parsed contract result
+ */
+export interface ParsedContract {
+  text: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  parsedAt: Date;
+}
+
+// ============================================================================
+// Contract Analysis Interfaces
+// ============================================================================
 
 /**
  * Contract analysis result

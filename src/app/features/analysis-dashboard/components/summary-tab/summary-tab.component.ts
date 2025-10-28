@@ -76,6 +76,37 @@ export class SummaryTabComponent {
       restrictions?.other
     );
   });
+
+  /**
+   * Format Quick Take text by splitting on asterisks and converting to HTML list
+   * Preserves original text in localStorage, formats only for display
+   */
+  formatQuickTakeText(rawText: string): string {
+    if (!rawText) return '';
+    
+    // Split on single or double asterisks (with optional whitespace)
+    const items = rawText
+      .split(/\s*\*+\s*/)
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
+    
+    if (items.length <= 1) {
+      // If no asterisks found or only one item, return as-is
+      return rawText;
+    }
+    
+    // Convert to HTML list
+    const listItems = items.map(item => `<li>${item}</li>`).join('');
+    return `<ul class="list-disc list-inside space-y-1">${listItems}</ul>`;
+  }
+
+  /**
+   * Get formatted Quick Take for display
+   */
+  getFormattedQuickTake = computed(() => {
+    const quickTake = this.summary()?.quickTake;
+    return quickTake ? this.formatQuickTakeText(quickTake) : '';
+  });
   
   // Icons
   ClipboardIcon = Clipboard;

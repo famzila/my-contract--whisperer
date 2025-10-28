@@ -433,7 +433,7 @@
     "storageItem4": "Sin cookies que rastreen el contenido de tu contrato",
     "storageItem5": "Sin analíticas sobre el contenido de tu documento",
     "onlyLocalStorage": "Solo el almacenamiento local de tu navegador contiene:",
-    "onlyLocalStorageDescription": "Preferencias de interfaz, configuración de idioma y opciones de tema.",
+    "onlyLocalStorageDescription": "Preferencias de interfaz, configuración de idioma, opciones de tema y traducciones de resultados de análisis.",
     "localAIProcessing": "Procesamiento de IA Local",
     "localAIProcessingDescription": "Todo el procesamiento de IA ocurre en tu dispositivo usando la IA integrada de Chrome:",
     "processingItem1": "El modelo de IA Gemini Nano se ejecuta localmente en Chrome",

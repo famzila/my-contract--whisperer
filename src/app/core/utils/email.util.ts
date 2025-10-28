@@ -5,6 +5,8 @@
  * Pure functions: No dependencies, can be used anywhere
  */
 
+import { AIRewriterLength, AIRewriterTone, AIWriterLength, AIWriterTone } from "../models/ai.types";
+
 // ============================================================================
 // EMAIL GENERATION UTILITIES
 // ============================================================================
@@ -141,7 +143,7 @@ export function getMockEmailOpening(senderRole: string, recipientRole: string, r
 /**
  * Map user-friendly tone to Rewriter API tone
  */
-export function mapToneToRewriterAPI(tone: 'formal' | 'neutral' | 'casual'): 'more-formal' | 'as-is' | 'more-casual' {
+export function mapToneToRewriterAPI(tone: AIWriterTone): AIRewriterTone {
   switch (tone) {
     case 'formal':
       return 'more-formal';
@@ -155,7 +157,7 @@ export function mapToneToRewriterAPI(tone: 'formal' | 'neutral' | 'casual'): 'mo
 /**
  * Map user-friendly length to Rewriter API length
  */
-export function mapLengthToRewriterAPI(length: 'short' | 'medium' | 'long'): 'shorter' | 'as-is' | 'longer' {
+export function mapLengthToRewriterAPI(length: AIWriterLength): AIRewriterLength {
   switch (length) {
     case 'short':
       return 'shorter';

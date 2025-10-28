@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Contract } from '../../models/contract.model';
 import { ContractAnalysis } from '../../models/contract.model';
+import { STORAGE_CONFIG } from '../../config/application.config';
 
 /**
  * Offline contract storage interface
@@ -21,10 +22,10 @@ export interface OfflineContract {
   providedIn: 'root',
 })
 export class OfflineStorageService {
-  private readonly DB_NAME = 'ContractWhispererOffline';
-  private readonly DB_VERSION = 1;
-  private readonly STORE_NAME = 'contracts';
-  private readonly MAX_CONTRACTS = 10;
+  private readonly DB_NAME = STORAGE_CONFIG.OFFLINE_STORAGE.DB_NAME;
+  private readonly DB_VERSION = STORAGE_CONFIG.OFFLINE_STORAGE.DB_VERSION;
+  private readonly STORE_NAME = STORAGE_CONFIG.OFFLINE_STORAGE.STORE_NAME;
+  private readonly MAX_CONTRACTS = STORAGE_CONFIG.OFFLINE_STORAGE.MAX_CONTRACTS;
   
   private db: IDBDatabase | null = null;
 
