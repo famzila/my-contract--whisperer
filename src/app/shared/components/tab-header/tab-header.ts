@@ -1,5 +1,5 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideAngularModule, LucideIconData } from 'lucide-angular';
 
 @Component({
   selector: 'app-tab-header',
@@ -27,7 +27,7 @@ export class TabHeader {
   // Inputs
   title = input.required<string>();
   subtitle = input<string | null>(null);
-  icon = input.required<any>();
+  icon = input.required<LucideIconData>();
   iconBgClass = input.required<string>();
   iconColorClass = input.required<string>();
 }

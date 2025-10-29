@@ -6,8 +6,8 @@ import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
 import {
   Globe,
   Lightbulb,
-  AlertCircle,
-  AlertTriangle,
+  CircleAlert,
+  TriangleAlert,
   CircleCheckBig,
   Info,
   Languages,
@@ -87,7 +87,7 @@ export interface LanguageMismatchData {
             @if (data.needsPreTranslation) {
             <app-notice
               type="warning"
-              [icon]="AlertTriangleIcon"
+              [icon]="TriangleAlertIcon"
               class="mb-4"
               titleKey="language.limitedSupport"
               messageKey="language.willTranslateForAnalysis"
@@ -100,7 +100,7 @@ export interface LanguageMismatchData {
             } @else {
             <!-- UI not available - fallback to English -->
             <div class="badge badge-amber rtl:flex-row-reverse">
-              <lucide-icon [img]="AlertCircleIcon" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+              <lucide-icon [img]="CircleAlertIcon" class="w-4 h-4 flex-shrink-0"></lucide-icon>
               <span>{{
                 'language.uiNotAvailable'
                   | translate
@@ -175,8 +175,8 @@ export class LanguageMismatchModal {
   readonly LanguagesIcon = Languages;
   readonly LightbulbIcon = Lightbulb;
   readonly InfoIcon = Info;
-  readonly AlertCircleIcon = AlertCircle;
-  readonly AlertTriangleIcon = AlertTriangle;
+  readonly CircleAlertIcon = CircleAlert;
+  readonly TriangleAlertIcon = TriangleAlert;
   readonly CheckIcon = CircleCheckBig;
 
   // Modal configuration

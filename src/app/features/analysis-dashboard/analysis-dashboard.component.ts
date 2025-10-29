@@ -27,7 +27,7 @@ import { isAppLanguageSupported, getLanguageTranslationKey } from '../../core/ut
 import { mapObligationsToPerspective, PerspectiveObligations } from '../../core/utils/obligation-mapper.util';
 import {
   Clipboard,
-  AlertTriangle,
+  TriangleAlert,
   Clock,
   FileX,
   Info,
@@ -73,7 +73,7 @@ export class AnalysisDashboard implements OnInit {
 
   // Icons
   ClipboardIcon = Clipboard;
-  AlertTriangleIcon = AlertTriangle;
+  TriangleAlertIcon = TriangleAlert;
   ClockIcon = Clock;
   FileXIcon = FileX;
   InfoIcon = Info;
@@ -143,7 +143,7 @@ export class AnalysisDashboard implements OnInit {
     {
       id: 'risks',
       labelKey: 'analysis.tabs.risks',
-      icon: this.AlertTriangleIcon,
+      icon: this.TriangleAlertIcon,
       isLoading: this.isRisksLoading(),
       badge: this.risks()?.length || 0,
     },

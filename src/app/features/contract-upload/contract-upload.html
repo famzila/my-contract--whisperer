@@ -48,7 +48,7 @@
     @if (contractStore.uploadError() || contractStore.analysisError()) {
     <app-notice
       type="error"
-      [icon]="AlertTriangleIcon"
+      [icon]="TriangleAlertIcon"
       titleKey="common.error"
       [message]="contractStore.uploadError() || contractStore.analysisError()"
       class="mb-6"
@@ -64,6 +64,18 @@
       [icon]="LightbulbIcon"
       titleKey="analysis.chromeAiNotAvailable"
       messageKey="analysis.chromeAiNotAvailableMessage"
+      class="mb-6"
+    >
+    </app-notice>
+    }
+
+    <!-- Offline & AI Unavailable Notice -->
+    @if (onboardingStore.isAnalysisDisabled()) {
+    <app-notice
+      type="error"
+      [icon]="TriangleAlertIcon"
+      titleKey="upload.offlineUnavailableTitle"
+      messageKey="upload.offlineUnavailable"
       class="mb-6"
     >
     </app-notice>
@@ -111,6 +123,7 @@
           variant="primary"
           size="md"
           [rounded]="'lg'"
+          [disabled]="onboardingStore.isAnalysisDisabled()"
         ></app-button>
         <p class="upload-formats">
           {{ 'upload.supportedFormats' | translate }}
@@ -156,7 +169,7 @@
         <!-- Submit Button -->
         <app-button
           type="submit"
-          [disabled]="contractStore.isLoading() || !contractText().trim()"
+          [disabled]="contractStore.isLoading() || !contractText().trim() || onboardingStore.isAnalysisDisabled()"
           [loading]="contractStore.isLoading()"
           variant="primary"
           [fullWidth]="true"

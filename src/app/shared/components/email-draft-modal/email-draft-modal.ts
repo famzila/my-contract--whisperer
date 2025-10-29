@@ -8,16 +8,22 @@ import { Button } from '../button/button';
 import { EmailDraftStore } from '../../../core/stores/email-draft.store';
 import { LanguageStore } from '../../../core/stores/language.store';
 import { Notice } from '../notice/notice';
+import type { AIWriterTone, AIWriterLength } from '../../../core/models/ai.types';
 
 export interface EmailDraftData {
   emailContent: string;
   isRewriting: boolean;
   showRewriteOptions: boolean;
   rewriteOptions: {
-    tone: string;
-    length: string;
-    formality: string;
+    tone: AIWriterTone;
+    length: AIWriterLength;
+    formality?: string;
   };
+}
+
+export interface EmailRewriteOptions {
+  tone: AIWriterTone;
+  length: AIWriterLength;
 }
 
 @Component({
@@ -35,7 +41,7 @@ export class EmailDraftModal {
   emailContent = input<string>('');
   isRewriting = input<boolean>(false);
   showRewriteOptions = input<boolean>(false);
-  rewriteOptions = input<any>({});
+  rewriteOptions = input<EmailRewriteOptions>({ tone: 'neutral', length: 'medium' });
 
   // Computed signals for email language and RTL/LTR handling
   protected emailDirection = computed(() => {
@@ -111,7 +117,7 @@ export class EmailDraftModal {
   /**
    * Get rewrite options from store
    */
-  get currentRewriteOptions(): any {
+  get currentRewriteOptions(): EmailRewriteOptions {
     return {
       tone: this.emailStore.rewriteTone(),
       length: this.emailStore.rewriteLength()

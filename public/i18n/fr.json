@@ -90,7 +90,9 @@
     "howItWorks": "Comment ça marche",
     "privacyPolicy": "Politique de confidentialité",
     "analyzingParties": "Analyse des parties contractantes",
-    "identifyingParties": "Identification des parties impliquées dans cet accord..."
+    "identifyingParties": "Identification des parties impliquées dans cet accord...",
+    "offlineUnavailableTitle": "Analyse indisponible",
+    "offlineUnavailable": "L'analyse est indisponible hors ligne et lorsque l'IA n'est pas disponible. Veuillez vérifier votre connexion ou activer l'IA de Chrome (chrome://flags/#optimization-guide-on-device-model) pour utiliser l'analyse hors ligne."
   },
   "nonContract": {
     "title": "Hmm, cela ne ressemble pas à un contrat",
@@ -536,5 +538,10 @@
   },
   "dateFormat": {
     "analyzedOn": "Analysé le {{date}}"
+  },
+  "offline": {
+    "backOnline": "De nouveau en ligne",
+    "aiAvailable": "Vous êtes hors ligne - Toutes les fonctionnalités sont disponibles",
+    "aiUnavailable": "Votre navigateur ne prend pas encore en charge l'IA sur appareil. Veuillez mettre à jour Chrome pour une analyse respectueuse de la vie privée"
   }
 }

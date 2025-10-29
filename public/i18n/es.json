@@ -536,5 +536,10 @@
   },
   "dateFormat": {
     "analyzedOn": "Analizado el {{date}}"
+  },
+  "offline": {
+    "backOnline": "Volver en línea",
+    "aiAvailable": "Estás desconectado - Todas las funciones están disponibles",
+    "aiUnavailable": "Tu navegador aún no admite IA en el dispositivo. Por favor, actualiza Chrome para un análisis que respete la privacidad"
   }
 }

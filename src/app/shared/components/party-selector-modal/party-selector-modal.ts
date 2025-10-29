@@ -5,14 +5,13 @@
 import { Component, input, output, computed, inject } from '@angular/core';
 import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideAngularModule, LucideIconData } from 'lucide-angular';
 import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
 import { 
   Building2, 
   User, 
   Briefcase, 
   Wrench, 
-  Home, 
   Key, 
   Handshake, 
   FileText, 
@@ -21,7 +20,8 @@ import {
   Eye,
   X,
   Search,
-  ChevronRight
+  ChevronRight,
+  House
 } from '../../../shared/icons/lucide-icons';
 import { Notice } from '../notice/notice';
 import type { PartyDetectionResult, UserRole } from '../../../core/models/ai-analysis.model';
@@ -30,7 +30,7 @@ import { getRoleIcon, getRoleTranslationKey } from '../../../core/utils/role.uti
 interface PartyOption {
   value: UserRole;
   label: string;
-  icon: any; // Lucide icon component
+  icon: LucideIconData;
   description?: string;
 }
 
@@ -60,7 +60,7 @@ export class PartySelectorModal {
   readonly UserIcon = User;
   readonly BriefcaseIcon = Briefcase;
   readonly WrenchIcon = Wrench;
-  readonly HomeIcon = Home;
+  readonly HouseIcon = House;
   readonly KeyIcon = Key;
   readonly HandshakeIcon = Handshake;
   readonly FileTextIcon = FileText;
@@ -182,7 +182,7 @@ export class PartySelectorModal {
       {
         value: 'landlord',
         label: this.translate.instant('partySelector.landlord'),
-        icon: this.HomeIcon,
+        icon: this.HouseIcon,
         description: this.translate.instant('partySelector.owningProperty'),
       },
       {
@@ -224,7 +224,7 @@ export class PartySelectorModal {
   /**
    * Get icon for role
    */
-  private getIconForRole(role: string): any {
+  private getIconForRole(role: string): LucideIconData {
     return getRoleIcon(role) || this.FileTextIcon;
   }
 }

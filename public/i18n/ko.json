@@ -90,7 +90,9 @@
     "howItWorks": "작동 방식",
     "privacyPolicy": "개인 정보 보호 정책",
     "analyzingParties": "계약 당사자 분석 중",
-    "identifyingParties": "이 계약에 관련된 당사자를 식별 중..."
+    "identifyingParties": "이 계약에 관련된 당사자를 식별 중...",
+    "offlineUnavailableTitle": "분석을 사용할 수 없음",
+    "offlineUnavailable": "오프라인 상태이고 AI를 사용할 수 없는 경우 분석을 사용할 수 없습니다. 연결을 확인하거나 Chrome AI(chrome://flags/#optimization-guide-on-device-model)를 활성화하여 오프라인 분석을 사용하세요."
   },
   "nonContract": {
     "title": "음... 이건 계약서가 아닌 것 같습니다",
@@ -536,5 +538,10 @@
   },
   "dateFormat": {
     "analyzedOn": "분석 날짜: {{date}}"
+  },
+  "offline": {
+    "backOnline": "다시 온라인",
+    "aiAvailable": "오프라인입니다 - 모든 기능을 사용할 수 있습니다",
+    "aiUnavailable": "브라우저가 아직 온디바이스 AI를 지원하지 않습니다. 개인정보 보호 중심 분석을 위해 Chrome을 업데이트하세요"
   }
 }

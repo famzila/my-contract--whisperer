@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output, computed } from '@angular/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideAngularModule, LucideIconData } from 'lucide-angular';
 import { LoadingSpinner } from '../loading-spinner/loading-spinner';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'link' | 'neutral';
@@ -31,14 +31,14 @@ export class Button {
   // Structured content inputs
   text = input<string>('');
   loadingText = input<string>('');
-  icon = input<any>(null); // Lucide icon component
+  icon = input<LucideIconData | undefined>(undefined);
   iconPosition = input<'left' | 'right' | 'center'>('left');
 
   // Outputs
   clicked = output<Event>();
 
   // Computed properties
-  hasIcon = computed(() => this.icon() !== null);
+  hasIcon = computed(() => this.icon() !== undefined);
   hasContent = computed(() => this.text() || this.hasIcon());
 
   /**

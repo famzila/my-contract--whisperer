@@ -90,7 +90,9 @@
     "howItWorks": "كيف يعمل",
     "privacyPolicy": "سياسة الخصوصية",
     "analyzingParties": "تحليل أطراف العقد",
-    "identifyingParties": "تحديد الأطراف المشاركة في هذا الاتفاق...\u200F"
+    "identifyingParties": "تحديد الأطراف المشاركة في هذا الاتفاق...\u200F",
+    "offlineUnavailableTitle": "التحليل غير متاح",
+    "offlineUnavailable": "التحليل غير متاح عند عدم الاتصال وعندما لا يكون الذكاء الاصطناعي متاحًا. يرجى التحقق من اتصالك أو تمكين ذكاء كروم الاصطناعي (chrome://flags/#optimization-guide-on-device-model) لاستخدام التحليل في وضع عدم الاتصال.\u200F"
   },
   "nonContract": {
     "title": "همم، هذا لا يبدو وكأنه عقد",
@@ -536,5 +538,10 @@
   },
   "dateFormat": {
     "analyzedOn": "تم تحليله في {{date}}"
+  },
+  "offline": {
+    "backOnline": "العودة إلى الإنترنت",
+    "aiAvailable": "أنت غير متصل بالإنترنت - جميع الميزات متاحة\u200F",
+    "aiUnavailable": "متصفحك لا يدعم الذكاء الاصطناعي على الجهاز بعد. يرجى تحديث Chrome للتحليل الذي يحترم الخصوصية\u200F"
   }
 }

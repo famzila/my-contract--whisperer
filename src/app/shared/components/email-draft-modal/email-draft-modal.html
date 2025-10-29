@@ -80,7 +80,7 @@
           size="md"
           [fullWidth]="true"
           [text]="isCurrentlyRewriting ? ('analysis.email.rewriting' | translate) : ('analysis.email.applyChanges' | translate)"
-          [icon]="isCurrentlyRewriting ? null : RefreshCwIcon"
+          [icon]="isCurrentlyRewriting ? undefined : RefreshCwIcon"
           [loading]="isCurrentlyRewriting"
           [loadingText]="'analysis.email.rewriting' | translate"
           customClasses="rtl:flex-row-reverse"

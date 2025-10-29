@@ -9,6 +9,7 @@ import { patchState } from '@ngrx/signals';
 import { TranslatorService } from '../services/ai/translator.service';
 import { TranslateService } from '@ngx-translate/core';
 import { LoggerService } from '../services/logger.service';
+import { OfflineDetectionService } from '../services/offline-detection.service';
 import { AppConfig } from '../config/application.config';
 import { MOCK_ONBOARDING_STATE } from '../../../../public/mocks/mock-analysis.data';
 import type { UserRole, PartyDetectionResult } from '../models/ai-analysis.model';
@@ -80,7 +81,11 @@ export const OnboardingStore = signalStore(
   withState(initialState),
   
   // Computed values
-  withComputed(({ currentStep, isValidContract, detectedLanguage, selectedOutputLanguage, userPreferredLanguage, selectedRole, detectedParties }) => ({
+  withComputed((store) => {
+    const offlineDetection = inject(OfflineDetectionService);
+    const { currentStep, isValidContract, detectedLanguage, selectedOutputLanguage, userPreferredLanguage, selectedRole, detectedParties } = store;
+    
+    return {
     /**
      * Get progress percentage (0-100)
      */
@@ -130,8 +135,16 @@ export const OnboardingStore = signalStore(
       return valid && languageSelected && partiesDetected && noRoleSelected;
     }),
     
+    /**
+     * Check if analysis is disabled (offline AND AI unavailable)
+     * Components should use this instead of directly injecting OfflineDetectionService
+     */
+    isAnalysisDisabled: computed(() => {
+      return offlineDetection.isFullyOffline();
+    }),
    
-  })),
+  };
+ }),
   
   // Methods
   withMethods((store, translatorService = inject(TranslatorService), translate = inject(TranslateService), logger = inject(LoggerService)) => ({

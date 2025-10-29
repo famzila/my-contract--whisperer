@@ -125,7 +125,7 @@
                 {{ metadata()?.endDate }}
               </p>
               @if (isContractExpiringSoon()) {
-              <app-severity-badge [label]="'analysis.expiringSoon' | translate" variant="warning" [icon]="AlertTriangleIcon" />
+              <app-severity-badge [label]="'analysis.expiringSoon' | translate" variant="warning" [icon]="TriangleAlertIcon" />
               } } @else {
               <app-severity-badge [label]="'analysis.noEndDate' | translate" variant="neutral" [icon]="InfoIcon" />
               }

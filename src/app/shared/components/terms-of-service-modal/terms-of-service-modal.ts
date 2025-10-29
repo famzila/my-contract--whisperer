@@ -3,7 +3,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DialogRef } from '@angular/cdk/dialog';
 import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
-import { FileText, Shield, CheckCircle, User, AlertTriangle, Edit, Mail } from '../../icons/lucide-icons';
+import { FileText, Shield, CircleCheckBig, User, TriangleAlert, SquarePen, Mail } from '../../icons/lucide-icons';
 import { Notice } from '../notice/notice';
 
 @Component({
@@ -18,10 +18,10 @@ export class TermsOfServiceModal {
   // Icons for content
   readonly FileTextIcon = FileText;
   readonly ShieldIcon = Shield;
-  readonly CheckCircleIcon = CheckCircle;
+  readonly CheckCircleIcon = CircleCheckBig;
   readonly UserIcon = User;
-  readonly AlertTriangleIcon = AlertTriangle;
-  readonly EditIcon = Edit;
+  readonly TriangleAlertIcon = TriangleAlert;
+  readonly EditIcon = SquarePen;
   readonly MailIcon = Mail;
 
   // Base modal configuration

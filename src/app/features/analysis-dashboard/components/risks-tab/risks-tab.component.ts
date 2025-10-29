@@ -2,8 +2,7 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader';
-import { 
-  AlertTriangle, 
+import {  TriangleAlert, 
   FileX
 } from '../../../../shared/icons/lucide-icons';
 import { Notice } from "../../../../shared/components/notice/notice";
@@ -29,7 +28,7 @@ export class RisksTabComponent {
   lowRisks = input<RiskItem[]>([]);
 
   // Icons
-  AlertTriangleIcon = AlertTriangle;
+  TriangleAlertIcon = TriangleAlert;
   FileXIcon = FileX;
 }
 

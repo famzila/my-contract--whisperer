@@ -90,7 +90,9 @@
     "howItWorks": "How it works",
     "privacyPolicy": "Privacy Policy",
     "analyzingParties": "Analyzing Contract Parties",
-    "identifyingParties": "Identifying who's involved in this agreement..."
+    "identifyingParties": "Identifying who's involved in this agreement...",
+    "offlineUnavailableTitle": "Analysis Unavailable",
+    "offlineUnavailable": "Analysis is unavailable while offline and AI is not available. Please check your connection or enable Chrome AI (chrome://flags/#optimization-guide-on-device-model) to use analysis offline."
   },
   "nonContract": {
     "title": "Hmm, This Doesn't Look Like a Contract",
@@ -534,5 +536,10 @@
   },
   "dateFormat": {
     "analyzedOn": "Analyzed on {{date}}"
+  },
+  "offline": {
+    "backOnline": "Back online",
+    "aiAvailable": "You're offline - All features available",
+    "aiUnavailable": "Your browser doesn't support on-device AI yet. Please update Chrome for privacy-first analysis"
   }
 }

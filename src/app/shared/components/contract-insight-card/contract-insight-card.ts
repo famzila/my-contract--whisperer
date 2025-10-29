@@ -3,7 +3,7 @@ import { CdkAccordionItem } from '@angular/cdk/accordion';
 import { LucideAngularModule } from 'lucide-angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SeverityBadge } from '../severity-badge/severity-badge';
-import { ChevronDown, AlertTriangle } from '../../icons/lucide-icons';
+import { ChevronDown, TriangleAlert } from '../../icons/lucide-icons';
 
 export type InsightSeverity = 'high' | 'medium' | 'low';
 
@@ -52,6 +52,6 @@ export class ContractInsightCard {
 
   // Icons
   readonly ChevronDownIcon = ChevronDown;
-  readonly AlertTriangleIcon = AlertTriangle;
+  readonly TriangleAlertIcon = TriangleAlert;
 }
 

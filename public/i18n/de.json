@@ -90,7 +90,9 @@
     "howItWorks": "So funktioniert's",
     "privacyPolicy": "Datenschutzrichtlinie",
     "analyzingParties": "Vertragsparteien werden analysiert",
-    "identifyingParties": "Es wird identifiziert, wer an dieser Vereinbarung beteiligt ist..."
+    "identifyingParties": "Es wird identifiziert, wer an dieser Vereinbarung beteiligt ist...",
+    "offlineUnavailableTitle": "Analyse nicht verfügbar",
+    "offlineUnavailable": "Die Analyse ist nicht verfügbar, wenn Sie offline sind und die KI nicht verfügbar ist. Bitte überprüfen Sie Ihre Verbindung oder aktivieren Sie Chrome KI (chrome://flags/#optimization-guide-on-device-model), um die Analyse offline zu nutzen."
   },
   "nonContract": {
     "title": "Hmm, das sieht nicht nach einem Vertrag aus",
@@ -536,5 +538,10 @@
   },
   "dateFormat": {
     "analyzedOn": "Analysiert am {{date}}"
+  },
+  "offline": {
+    "backOnline": "Wieder online",
+    "aiAvailable": "Sie sind offline - Alle Funktionen sind verfügbar",
+    "aiUnavailable": "Ihr Browser unterstützt noch keine On-Device-KI. Bitte aktualisieren Sie Chrome für eine datenschutzfreundliche Analyse"
   }
 }

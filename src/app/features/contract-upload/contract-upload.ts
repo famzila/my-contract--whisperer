@@ -7,14 +7,14 @@ import { LucideAngularModule, Sparkles } from 'lucide-angular';
 import { Button } from '../../shared/components/button/button';
 import {
   FileText,
-  Edit,
+  SquarePen,
   Upload,
-  AlertTriangle,
-  BarChart3,
+  TriangleAlert,
+  ChartColumn,
   Clock,
-  CheckCircle,
+  CircleCheckBig,
   BookOpen,
-  HelpCircle,
+  CircleQuestionMark,
   Shield,
   Globe,
   Lightbulb,
@@ -56,14 +56,14 @@ export class ContractUpload {
 
   // Lucide icons
   readonly FileTextIcon = FileText;
-  readonly EditIcon = Edit;
+  readonly EditIcon = SquarePen;
   readonly UploadIcon = Upload;
-  readonly AlertTriangleIcon = AlertTriangle;
-  readonly BarChart3Icon = BarChart3;
+  readonly TriangleAlertIcon = TriangleAlert;
+  readonly BarChart3Icon = ChartColumn;
   readonly ClockIcon = Clock;
-  readonly CheckCircleIcon = CheckCircle;
+  readonly CheckCircleIcon = CircleCheckBig;
   readonly BookOpenIcon = BookOpen;
-  readonly HelpCircleIcon = HelpCircle;
+  readonly HelpCircleIcon = CircleQuestionMark;
   readonly ShieldIcon = Shield;
   readonly GlobeIcon = Globe;
   readonly LightbulbIcon = Lightbulb;
@@ -217,6 +217,15 @@ export class ContractUpload {
    * Delegates to ContractStore
    */
   private async processFile(file: File): Promise<void> {
+    // Prevent analysis if offline and AI unavailable
+    if (this.onboardingStore.isAnalysisDisabled()) {
+      this.uiStore.showToast(
+        this.translate.instant('upload.offlineUnavailable'),
+        'error'
+      );
+      return;
+    }
+
     try {
       // Reset onboarding state for new upload
       this.onboardingStore.reset();
@@ -240,6 +249,15 @@ export class ContractUpload {
 
     if (!text.trim()) {
       this.uiStore.showToast('Please enter contract text', 'error');
+      return;
+    }
+
+    // Prevent analysis if offline and AI unavailable
+    if (this.onboardingStore.isAnalysisDisabled()) {
+      this.uiStore.showToast(
+        this.translate.instant('upload.offlineUnavailable'),
+        'error'
+      );
       return;
     }
 

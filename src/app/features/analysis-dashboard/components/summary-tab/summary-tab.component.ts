@@ -4,7 +4,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader';
 import { 
   Clipboard, 
-  AlertTriangle, 
+  TriangleAlert, 
   Users, 
   Briefcase, 
   DollarSign, 
@@ -110,7 +110,7 @@ export class SummaryTabComponent {
   
   // Icons
   ClipboardIcon = Clipboard;
-  AlertTriangleIcon = AlertTriangle;
+  TriangleAlertIcon = TriangleAlert;
   UsersIcon = Users;
   BriefcaseIcon = Briefcase;
   DollarSignIcon = DollarSign;

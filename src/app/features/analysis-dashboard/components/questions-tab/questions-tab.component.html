@@ -26,7 +26,7 @@
       variant="primary" 
       size="md"
       [text]="isDrafting() ? ('analysis.questions.drafting' | translate) : ('analysis.questions.writeEmail' | translate)"
-      [icon]="isDrafting() ? null : MailIcon"
+      [icon]="isDrafting() ? undefined : MailIcon"
       [loading]="isDrafting()"
     >
     </app-button>

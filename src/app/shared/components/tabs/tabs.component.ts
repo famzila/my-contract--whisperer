@@ -1,5 +1,5 @@
 import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideAngularModule, LucideIconData } from 'lucide-angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { LoadingSpinner } from '../loading-spinner/loading-spinner';
 
@@ -7,7 +7,7 @@ export interface TabConfig {
   id: string;
   label?: string;
   labelKey?: string; // Translation key for reactive translation
-  icon: any;
+  icon: LucideIconData;
   isLoading?: boolean;
   badge?: string | number;
   disabled?: boolean;

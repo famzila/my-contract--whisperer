@@ -5,8 +5,8 @@ import { SkeletonLoader } from '../../../../shared/components/skeleton-loader';
 import { PerspectiveObligations } from '../../../../core/utils/obligation-mapper.util';
 import { 
   Clock, 
-  CheckCircle, 
-  AlertTriangle, 
+  CircleCheckBig, 
+  TriangleAlert, 
   DollarSign, 
   RefreshCw, 
   Clipboard 
@@ -29,8 +29,8 @@ export class ObligationsTabComponent {
 
   // Icons
   ClockIcon = Clock;
-  CheckCircleIcon = CheckCircle;
-  AlertTriangleIcon = AlertTriangle;
+  CheckCircleIcon = CircleCheckBig;
+  TriangleAlertIcon = TriangleAlert;
   DollarSignIcon = DollarSign;
   RefreshCwIcon = RefreshCw;
   ClipboardIcon = Clipboard;

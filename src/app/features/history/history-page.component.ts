@@ -7,6 +7,8 @@ import { OfflineDetectionService } from '../../core/services/offline-detection.s
 import { ContractAnalysis } from '../../core/models/contract.model';
 import { 
   LucideAngularModule,
+} from 'lucide-angular';
+import { 
   FileText, 
   Calendar, 
   Users, 
@@ -16,8 +18,8 @@ import {
   WifiOff, 
   Brain,
   Search,
-  AlertCircle
-} from 'lucide-angular';
+  CircleAlert
+} from '../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'app-history-page',
@@ -29,7 +31,7 @@ import {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex items-center justify-between h-16">
             <div class="flex items-center gap-3">
-              <lucide-icon name="file-text" class="w-6 h-6 text-blue-600" />
+              <lucide-icon [img]="FileTextIcon" class="w-6 h-6 text-blue-600" />
               <h1 class="text-xl font-semibold text-gray-900">Contract History</h1>
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 {{ cacheSize() }}/10
@@ -40,24 +42,24 @@ import {
             <div class="flex items-center gap-2">
               @if (status().online) {
                 <div class="flex items-center gap-1 text-green-600">
-                  <lucide-icon name="wifi" class="w-4 h-4" />
+                  <lucide-icon [img]="WifiIcon" class="w-4 h-4" />
                   <span class="text-sm">Online</span>
                 </div>
               } @else {
                 <div class="flex items-center gap-1 text-amber-600">
-                  <lucide-icon name="wifi-off" class="w-4 h-4" />
+                  <lucide-icon [img]="WifiOffIcon" class="w-4 h-4" />
                   <span class="text-sm">Offline</span>
                 </div>
               }
               
               @if (status().aiAvailable) {
                 <div class="flex items-center gap-1 text-green-600">
-                  <lucide-icon name="brain" class="w-4 h-4" />
+                  <lucide-icon [img]="BrainIcon" class="w-4 h-4" />
                   <span class="text-sm">AI Ready</span>
                 </div>
               } @else {
                 <div class="flex items-center gap-1 text-red-600">
-                  <lucide-icon name="alert-circle" class="w-4 h-4" />
+                  <lucide-icon [img]="CircleAlertIcon" class="w-4 h-4" />
                   <span class="text-sm">AI Unavailable</span>
                 </div>
               }
@@ -70,7 +72,7 @@ import {
         <!-- Search bar -->
         <div class="mb-6">
           <div class="relative">
-            <lucide-icon name="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <lucide-icon [img]="SearchIcon" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search contracts..."
@@ -84,7 +86,7 @@ import {
         <!-- Contracts list -->
         @if (filteredContracts().length === 0) {
           <div class="text-center py-12">
-            <lucide-icon name="file-text" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <lucide-icon [img]="FileTextIcon" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 class="text-lg font-medium text-gray-900 mb-2">
               @if (searchQuery()) {
                 No contracts match your search
@@ -104,7 +106,7 @@ import {
                 (click)="goToAnalysis()"
                 class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                <lucide-icon name="file-text" class="w-4 h-4 mr-2" />
+                <lucide-icon [img]="FileTextIcon" class="w-4 h-4 mr-2" />
                 Start Analysis
               </button>
             }
@@ -121,7 +123,7 @@ import {
                       </h3>
                       @if (!status().online) {
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                          <lucide-icon name="wifi-off" class="w-3 h-3 mr-1" />
+                          <lucide-icon [img]="WifiOffIcon" class="w-3 h-3 mr-1" />
                           Offline
                         </span>
                       }
@@ -129,11 +131,11 @@ import {
                     
                     <div class="flex items-center gap-4 text-sm text-gray-600 mb-3">
                       <div class="flex items-center gap-1">
-                        <lucide-icon name="users" class="w-4 h-4" />
+                        <lucide-icon [img]="UsersIcon" class="w-4 h-4" />
                         <span>{{ getPartiesText(contract.contract) }}</span>
                       </div>
                       <div class="flex items-center gap-1">
-                        <lucide-icon name="calendar" class="w-4 h-4" />
+                        <lucide-icon [img]="CalendarIcon" class="w-4 h-4" />
                         <span>{{ formatDate(contract.analysis.analyzedAt) }}</span>
                       </div>
                     </div>
@@ -150,7 +152,7 @@ import {
                       (click)="viewAnalysis(contract)"
                       class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
-                      <lucide-icon name="eye" class="w-4 h-4 mr-1" />
+                      <lucide-icon [img]="EyeIcon" class="w-4 h-4 mr-1" />
                       View
                     </button>
                     
@@ -158,7 +160,7 @@ import {
                       (click)="deleteContract(contract.id)"
                       class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                     >
-                      <lucide-icon name="trash-2" class="w-4 h-4" />
+                      <lucide-icon [img]="Trash2Icon" class="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -182,6 +184,18 @@ export class HistoryPageComponent implements OnInit, OnDestroy {
   private offlineStorage = inject(OfflineStorageService);
   private offlineDetection = inject(OfflineDetectionService);
   private router = inject(Router);
+  
+  // Icons
+  readonly FileTextIcon = FileText;
+  readonly CalendarIcon = Calendar;
+  readonly UsersIcon = Users;
+  readonly Trash2Icon = Trash2;
+  readonly EyeIcon = Eye;
+  readonly WifiIcon = Wifi;
+  readonly WifiOffIcon = WifiOff;
+  readonly BrainIcon = Brain;
+  readonly SearchIcon = Search;
+  readonly CircleAlertIcon = CircleAlert;
   
   // Component state
   private _contracts = signal<OfflineContract[]>([]);

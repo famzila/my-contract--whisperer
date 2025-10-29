@@ -21,7 +21,6 @@ export class LanguageSelector {
   languageStore = inject(LanguageStore);
   contractStore = inject(ContractStore);
   translateService = inject(TranslateService);
-  translate = inject(TranslateService);
   logger = inject(LoggerService);
   
   // Lucide icons
@@ -107,16 +106,16 @@ export class LanguageSelector {
       const currentLanguageName = getLanguageName(result.revertedTo || this.languageStore.preferredLanguage());
       
       // Build comprehensive error message using translations
-      const errorMessage = this.translate.instant('errors.languageSwitchFailed', {
+      const errorMessage = this.translateService.instant('errors.languageSwitchFailed', {
         targetLanguage: targetLanguageName,
         currentLanguage: currentLanguageName
       });
       
-      const explanation = this.translate.instant('errors.languageSwitchExplanation', {
+      const explanation = this.translateService.instant('errors.languageSwitchExplanation', {
         targetLanguage: targetLanguageName
       });
       
-      const retryMessage = this.translate.instant('errors.languageSwitchRetry', {
+      const retryMessage = this.translateService.instant('errors.languageSwitchRetry', {
         targetLanguage: targetLanguageName
       });
       

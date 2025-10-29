@@ -5,7 +5,7 @@
  */
 
 import {
-  Home,
+  House,
   Menu,
   X,
   ChevronDown,
@@ -40,7 +40,7 @@ import {
   FileX,
   Clipboard,
   Copy,
-  Edit,
+  SquarePen,
   Save,
   Trash2,
   Lock,
@@ -51,13 +51,12 @@ import {
   Phone,
   Send,
   Reply,
-  BarChart3,
-  PieChart,
+  ChartColumn,
+  ChartPie,
   TrendingUp,
   TrendingDown,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
+  TriangleAlert,
+  CircleX,
   Info,
   Lightbulb,
   Target,
@@ -67,7 +66,7 @@ import {
   FileSearch,
   Scale,
   Gavel,
-  FileSignature,
+  FilePenLine,
   Handshake,
   Calendar,
   Clock,
@@ -81,8 +80,8 @@ import {
   RotateCcw,
   Play,
   Pause,
-  AlertCircle,
-  HelpCircle,
+  CircleAlert,
+  
   ThumbsUp,
   ThumbsDown,
   Bot,
@@ -93,12 +92,14 @@ import {
   Sun,
   Moon,
   SlidersVertical,
+  Wifi,
+  WifiOff,
 } from 'lucide-angular';
 
 // Export individual icons for standalone component usage
 export {
   // Navigation & UI
-  Home,
+  House,
   Menu,
   X,
   ChevronDown,
@@ -136,7 +137,7 @@ export {
   FileX,
   Clipboard,
   Copy,
-  Edit,
+  SquarePen,
   Save,
   Trash2,
 
@@ -150,13 +151,12 @@ export {
   Reply,
 
   // Analysis & Data
-  BarChart3,
-  PieChart,
+  ChartColumn,
+  ChartPie,
   TrendingUp,
   TrendingDown,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
+  TriangleAlert,
+  CircleX,
   Info,
   Lightbulb,
   Target,
@@ -168,7 +168,7 @@ export {
   // Contract & Legal
   Scale,
   Gavel,
-  FileSignature,
+  FilePenLine,
   Handshake,
   Calendar,
   Clock,
@@ -184,8 +184,8 @@ export {
   RotateCcw,
   Play,
   Pause,
-  AlertCircle,
-  HelpCircle,
+  CircleAlert,
+  
   ThumbsUp,
   ThumbsDown,
   Bot,
@@ -194,6 +194,10 @@ export {
   CircleQuestionMark,
   CircleCheckBig,
   View,
+
+  // Network & Connectivity
+  Wifi,
+  WifiOff,
 
   // Theme
   Sun,

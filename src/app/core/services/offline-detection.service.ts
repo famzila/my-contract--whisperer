@@ -1,36 +1,35 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { Observable, fromEvent, merge, of } from 'rxjs';
+import { Observable, fromEvent, merge } from 'rxjs';
 import { map, startWith, shareReplay } from 'rxjs/operators';
 import { LoggerService } from './logger.service';
 import { AiOrchestratorService } from './ai/ai-orchestrator.service';
 
-/**
- * Offline Detection Service
- * Monitors online/offline status and AI availability
- */
 @Injectable({
   providedIn: 'root',
 })
 export class OfflineDetectionService {
   private logger = inject(LoggerService);
   private aiOrchestratorService = inject(AiOrchestratorService);
-  // Signal-based online/offline state
+  
+  private _wasOffline = signal<boolean>(false);
   private _isOnline = signal<boolean>(navigator.onLine);
   private _aiAvailable = signal<boolean>(false);
   
-  // Public computed signals
   readonly isOnline = computed(() => this._isOnline());
   readonly aiAvailable = computed(() => this._aiAvailable());
   readonly isFullyOffline = computed(() => !this.isOnline() && !this.aiAvailable());
+  readonly wasOffline = computed(() => this._wasOffline());
   
-  // Observable for reactive updates
   readonly onlineStatus$: Observable<boolean>;
   
   constructor() {
-    // Set up event listeners for online/offline changes
+    // Check if user was offline in previous session (BEFORE setting up listeners)
+    if (sessionStorage.getItem('was-offline') === 'true') {
+      this._wasOffline.set(true);
+    }
+    
     this.setupNetworkListeners();
     
-    // Create observable for online status
     this.onlineStatus$ = merge(
       fromEvent(window, 'online').pipe(map(() => true)),
       fromEvent(window, 'offline').pipe(map(() => false))
@@ -39,43 +38,86 @@ export class OfflineDetectionService {
       shareReplay(1)
     );
     
-    // Check AI availability on initialization
-    this.aiOrchestratorService.checkAvailability();
+    // Check AI availability and update signal
+    this.checkAndUpdateAiAvailability();
   }
 
-  /**
-   * Set up network event listeners
-   */
   private setupNetworkListeners(): void {
     window.addEventListener('online', () => {
       this.logger.info('Network: Back online');
       this._isOnline.set(true);
-      // Re-check AI availability when back online
-      this.aiOrchestratorService.checkAvailability();
+      this.checkAndUpdateAiAvailability();
     });
 
     window.addEventListener('offline', () => {
       this.logger.info('Network: Gone offline');
       this._isOnline.set(false);
+      this._wasOffline.set(true);
+      sessionStorage.setItem('was-offline', 'true'); // Persist offline state
+      // Check AI availability when going offline (it might still work)
+      this.checkAndUpdateAiAvailability();
     });
   }
 
+  /**
+   * Check AI availability and update the signal
+   * Note: Chrome's Gemini Nano works offline, so if we're offline and check fails,
+   * we should still check if LanguageModel API exists (works offline)
+   */
+  private async checkAndUpdateAiAvailability(): Promise<void> {
+    try {
+      // Quick check: If Chrome's LanguageModel API exists, AI is likely available
+      // This works offline since Gemini Nano runs locally
+      const hasLanguageModelApi = typeof window !== 'undefined' && 'LanguageModel' in window;
+      
+      if (hasLanguageModelApi) {
+        // Try the full availability check
+        try {
+          const status = await this.aiOrchestratorService.checkAvailability();
+          // AI is available if at least prompt service is available (core functionality)
+          const isAvailable = status?.prompt ?? false;
+          this._aiAvailable.set(isAvailable);
+          this.logger.info(`AI availability updated: ${isAvailable}`);
+        } catch (error) {
+          // If check fails but API exists, assume available (works offline)
+          this._aiAvailable.set(true);
+          this.logger.info('AI availability check failed, but LanguageModel API exists - assuming available');
+        }
+      } else {
+        // LanguageModel API doesn't exist
+        this._aiAvailable.set(false);
+        this.logger.warn('Chrome LanguageModel API not available');
+      }
+    } catch (error) {
+      this.logger.error('Failed to check AI availability', error);
+      // If we're offline and error occurs, check if API exists as fallback
+      if (!this.isOnline() && typeof window !== 'undefined' && 'LanguageModel' in window) {
+        this._aiAvailable.set(true);
+        this.logger.info('Offline and check failed, but LanguageModel API exists - assuming available');
+      } else {
+        this._aiAvailable.set(false);
+      }
+    }
+  }
 
   /**
-   * Get current online status
+   * Reset the "was offline" flag (call after showing reconnection banner)
    */
+  resetOfflineFlag(): void {
+    this._wasOffline.set(false);
+    sessionStorage.removeItem('was-offline'); // Clear persisted state
+  }
+
   isCurrentlyOnline(): boolean {
     return this.isOnline();
   }
 
-  /**
-   * Get comprehensive status
-   */
   getStatus(): {
     online: boolean;
     aiAvailable: boolean;
     fullyOffline: boolean;
     canAnalyze: boolean;
+    wasOffline: boolean;
   } {
     const online = this.isOnline();
     const aiAvailable = this.aiAvailable();
@@ -84,9 +126,8 @@ export class OfflineDetectionService {
       online,
       aiAvailable,
       fullyOffline: !online && !aiAvailable,
-      canAnalyze: aiAvailable, // Can analyze if AI is available (regardless of network)
+      canAnalyze: aiAvailable,
+      wasOffline: this.wasOffline(),
     };
   }
 }
-
-

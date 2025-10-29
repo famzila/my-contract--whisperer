@@ -23,7 +23,7 @@
     }
   } @else {
     @if (hasIcon() && iconPosition() === 'left') {
-      <lucide-icon [name]='icon()' [class]='getIconClasses()'></lucide-icon>
+      <lucide-icon [img]='icon()!' [class]='getIconClasses()'></lucide-icon>
     }
 
     @if (text() && iconPosition() !== 'center') {
@@ -31,7 +31,7 @@
     }
 
     @if (hasIcon() && iconPosition() === 'center') {
-      <lucide-icon [name]='icon()' [class]='getIconClasses()'></lucide-icon>
+      <lucide-icon [img]='icon()!' [class]='getIconClasses()'></lucide-icon>
     }
 
     @if (text() && iconPosition() === 'center') {
@@ -39,7 +39,7 @@
     }
 
     @if (hasIcon() && iconPosition() === 'right') {
-      <lucide-icon [name]='icon()' [class]='getIconClasses()'></lucide-icon>
+      <lucide-icon [img]='icon()!' [class]='getIconClasses()'></lucide-icon>
     }
   }
 

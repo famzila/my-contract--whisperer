@@ -90,7 +90,9 @@
     "howItWorks": "工作原理",
     "privacyPolicy": "隐私政策",
     "analyzingParties": "分析合同当事方",
-    "identifyingParties": "正在识别参与本协议的当事方..."
+    "identifyingParties": "正在识别参与本协议的当事方...",
+    "offlineUnavailableTitle": "分析不可用",
+    "offlineUnavailable": "在离线且AI不可用时，分析不可用。请检查您的连接或启用Chrome AI (chrome://flags/#optimization-guide-on-device-model) 以使用离线分析。"
   },
   "nonContract": {
     "title": "嗯，这看起来不像是一份合同",
@@ -536,5 +538,10 @@
   },
   "dateFormat": {
     "analyzedOn": "分析于 {{date}}"
+  },
+  "offline": {
+    "backOnline": "重新在线",
+    "aiAvailable": "您处于离线状态 - 所有功能可用",
+    "aiUnavailable": "您的浏览器尚不支持设备端AI。请更新Chrome以进行隐私优先的分析"
   }
 }

@@ -8,7 +8,7 @@ import {
   User, 
   Briefcase, 
   Wrench, 
-  Home, 
+  House, 
   Key, 
   Handshake 
 } from '../../shared/icons/lucide-icons';
@@ -55,7 +55,7 @@ const ROLE_CONFIG = {
     'Employee': User,
     'Client': Briefcase,
     'Contractor': Wrench,
-    'Landlord': Home,
+    'Landlord': House,
     'Tenant': Key,
     'Partner': Handshake,
     // Handle case variations
@@ -63,7 +63,7 @@ const ROLE_CONFIG = {
     'employee': User,
     'client': Briefcase,
     'contractor': Wrench,
-    'landlord': Home,
+    'landlord': House,
     'tenant': Key,
     'partner': Handshake,
   } as const,

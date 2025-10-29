@@ -2,10 +2,11 @@ import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { LANGUAGES } from './core/config/application.config';
+import { OfflineIndicatorComponent } from "./shared/components";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, OfflineIndicatorComponent],
   templateUrl: './app.html'
 })
 export class App {

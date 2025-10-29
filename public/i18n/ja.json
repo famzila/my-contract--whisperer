@@ -90,7 +90,9 @@
     "howItWorks": "仕組み",
     "privacyPolicy": "プライバシーポリシー",
     "analyzingParties": "契約当事者の分析",
-    "identifyingParties": "この合意に関与している当事者を特定中..."
+    "identifyingParties": "この合意に関与している当事者を特定中...",
+    "offlineUnavailableTitle": "分析が利用できません",
+    "offlineUnavailable": "オフラインでAIが利用できない場合、分析は利用できません。接続を確認するか、Chrome AI（chrome://flags/#optimization-guide-on-device-model）を有効にして、オフラインで分析を使用してください。"
   },
   "nonContract": {
     "title": "うーん、これは契約書ではないようです",
@@ -536,5 +538,10 @@
   },
   "dateFormat": {
     "analyzedOn": "分析日: {{date}}"
+  },
+  "offline": {
+    "backOnline": "オンラインに戻りました",
+    "aiAvailable": "オフラインです - すべての機能が利用できます",
+    "aiUnavailable": "お使いのブラウザはまだオンデバイスAIをサポートしていません。プライバシー重視の分析のためにChromeを更新してください"
   }
 }

@@ -11,7 +11,7 @@ import {
   Globe, 
   RefreshCw, 
   FileText, 
-  AlertTriangle, 
+  TriangleAlert, 
   Calendar,
   Users,
   Info
@@ -52,7 +52,7 @@ export class DashboardHeaderComponent {
   GlobeIcon = Globe;
   RefreshCwIcon = RefreshCw;
   FileTextIcon = FileText;
-  AlertTriangleIcon = AlertTriangle;
+  TriangleAlertIcon = TriangleAlert;
   CalendarIcon = Calendar;
   UsersIcon = Users;
   InfoIcon = Info;

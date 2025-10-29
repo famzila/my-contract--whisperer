@@ -1,11 +1,11 @@
-import {
+  import {
     ChangeDetectionStrategy,
     Component,
     input,
     computed,
     inject,
   } from '@angular/core';
-  import { LucideAngularModule } from 'lucide-angular';
+  import { LucideAngularModule, LucideIconData } from 'lucide-angular';
   import { TranslatePipe } from '@ngx-translate/core';
   import { LanguageStore } from '../../../core/stores/language.store';
   import { LoadingSpinner } from '../loading-spinner/loading-spinner';
@@ -53,7 +53,7 @@ import {
   
     // Inputs
     type = input<NoticeType>('default');
-    icon = input<any>(null);
+    icon = input<LucideIconData | undefined>(undefined);
     title = input<string>('');
     titleKey = input<string>('');
     message = input<string | null>(null);
