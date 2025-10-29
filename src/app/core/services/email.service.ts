@@ -141,7 +141,8 @@ export class EmailService {
   async rewriteEmail(
     currentEmail: string,
     emailLanguage: string,
-    options: RewriteOptions
+    options: RewriteOptions,
+    onChunk?: (partial: string) => void
   ): Promise<EmailResult> {
     if (!currentEmail) {
       this.logger.warn('No email to rewrite');
@@ -175,6 +176,9 @@ export class EmailService {
           sharedContext: `Rewriting email in ${languageName} language`,
         });
         
+        if (onChunk) {
+          onChunk(rewritten);
+        }
         return {
           content: rewritten,
           language: emailLanguage,
@@ -195,12 +199,15 @@ export class EmailService {
       const stream = await this.writerService.rewriteStreaming(enhancedEmail, {
         tone: rewriterTone,
         length: rewriterLength,
+        outputLanguage: emailLanguage,
       });
       
-      // Process the stream
       let rewrittenText = '';
       for await (const chunk of stream) {
         rewrittenText += chunk;
+        if (onChunk) {
+          onChunk(rewrittenText);
+        }
       }
       
       // Check if language changed and translate if needed

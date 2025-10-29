@@ -34,7 +34,7 @@
         <!-- Tone Selection -->
         <div class="my-4">
           <label class="block text-sm font-medium uppercase text-indigo-800 dark:text-indigo-200 mb-2 rtl:text-right">{{ 'analysis.email.tone' | translate }}</label>
-          <div class="flex flex-wrap gap-2 rtl:justify-end">
+          <div class="flex flex-wrap gap-2">
             @for (tone of ['formal', 'neutral', 'casual']; track tone) {
               <button
                 type="button"
@@ -54,7 +54,7 @@
         <!-- Length Selection -->
         <div class="my-4">
           <label class="block text-sm font-medium uppercase text-indigo-800 dark:text-indigo-200 mb-2 rtl:text-right">{{ 'analysis.email.length' | translate }}</label>
-          <div class="flex flex-wrap gap-2 rtl:justify-end">
+          <div class="flex flex-wrap gap-2">
             @for (length of ['short', 'medium', 'long']; track length) {
               <button
                 type="button"
@@ -97,7 +97,6 @@
     [class.font-arabic]="emailDirection() === 'rtl'">
     @if (isCurrentlyRewriting) {
         <div class="absolute inset-0 bg-white/80 dark:bg-slate-900/80 flex items-center justify-center rounded-lg">
-        <app-loading-spinner size="md" />
       </div>
     }
     {{ emailText }}

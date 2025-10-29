@@ -90,18 +90,18 @@ export class AnalysisDashboard implements OnInit {
   isSummaryLoading = computed(() => this.contractStore.sectionsSummary()?.loading || false);
   isRisksLoading = computed(() => this.contractStore.sectionsRisks()?.loading || false);
   isObligationsLoading = computed(() => this.contractStore.sectionsObligations()?.loading || false);
-  isOmissionsLoading = computed(() => this.contractStore.sectionsOmissionsQuestions()?.loading || false);
+  isOmissionsLoading = computed(() => this.contractStore.sectionsOmissions()?.loading || this.contractStore.sectionsQuestions()?.loading || false);
   
   // Retry state
   summaryRetryCount = computed(() => this.contractStore.sectionsSummary()?.retryCount || 0);
   risksRetryCount = computed(() => this.contractStore.sectionsRisks()?.retryCount || 0);
   obligationsRetryCount = computed(() => this.contractStore.sectionsObligations()?.retryCount || 0);
-  omissionsRetryCount = computed(() => this.contractStore.sectionsOmissionsQuestions()?.retryCount || 0);
+  omissionsRetryCount = computed(() => this.contractStore.sectionsOmissions()?.retryCount || this.contractStore.sectionsQuestions()?.retryCount || 0);
   
   summaryIsRetrying = computed(() => this.contractStore.sectionsSummary()?.isRetrying || false);
   risksIsRetrying = computed(() => this.contractStore.sectionsRisks()?.isRetrying || false);
   obligationsIsRetrying = computed(() => this.contractStore.sectionsObligations()?.isRetrying || false);
-  omissionsIsRetrying = computed(() => this.contractStore.sectionsOmissionsQuestions()?.isRetrying || false);
+  omissionsIsRetrying = computed(() => this.contractStore.sectionsOmissions()?.isRetrying || this.contractStore.sectionsQuestions()?.isRetrying || false);
   
   // Translation state
   isTranslating = computed(() => this.contractStore.isTranslating());
@@ -211,58 +211,43 @@ export class AnalysisDashboard implements OnInit {
   });
 
   risks = computed(() => {
-    // Get progressive loading risks
+    // Get progressive loading risks (now flat array)
     const progressiveRisks = this.contractStore.sectionsRisks()?.data;
-    if (progressiveRisks) {
-      return progressiveRisks.risks || [];
-    }
-    
-    return [];
+    return (progressiveRisks as any) || [];
   });
 
   obligations = computed((): PerspectiveObligations | null => {
-    // Get progressive loading obligations
+    // Get progressive loading obligations (now flat structure)
     const progressiveObligations = this.contractStore.sectionsObligations()?.data;
     
-    if (progressiveObligations !== undefined) {
-      // Handle nested obligations structure from AI response
-      if (progressiveObligations && typeof progressiveObligations === 'object' && 'obligations' in progressiveObligations) {
-        const metadata = this.contractStore.sectionsMetadata()?.data;
-        const selectedRole = this.onboardingStore.selectedRole();
+    if (progressiveObligations !== undefined && progressiveObligations !== null) {
+      const metadata = this.contractStore.sectionsMetadata()?.data;
+      const selectedRole = this.onboardingStore.selectedRole();
 
-        if (metadata) {
-          const result = mapObligationsToPerspective(
-            progressiveObligations.obligations,
-            metadata,
-            selectedRole
-          );
-          return result;
-        }
+      if (metadata) {
+        const result = mapObligationsToPerspective(
+          progressiveObligations, // Already flat, no .obligations needed
+          metadata,
+          selectedRole
+        );
+        return result;
       }
-      return null; // Can be null if extraction failed
+      return null;
     }
     
     return null;
   });
 
   omissions = computed(() => {
-    // Get progressive loading omissions
-    const progressiveOmissions = this.contractStore.sectionsOmissionsQuestions()?.data;
-    if (progressiveOmissions) {
-      return progressiveOmissions.omissions || [];
-    }
-    
-    return [];
+    // Get progressive loading omissions (now separate section)
+    const progressiveOmissions = this.contractStore.sectionsOmissions()?.data;
+    return progressiveOmissions || [];
   });
 
   questions = computed(() => {
-    // Get progressive loading questions
-    const progressiveQuestions = this.contractStore.sectionsOmissionsQuestions()?.data;
-    if (progressiveQuestions) {
-      return progressiveQuestions.questions || [];
-    }
-    
-    return [];
+    // Get progressive loading questions (now separate section)
+    const progressiveQuestions = this.contractStore.sectionsQuestions()?.data;
+    return progressiveQuestions || [];
   });
 
   getDisclaimer() {
@@ -271,28 +256,28 @@ export class AnalysisDashboard implements OnInit {
 
   // Risk filtering methods
   getHighRisks() {
-    return this.risks().filter((risk: any) => risk.severity === 'high');
+    return this.risks().filter((risk: any) => risk.severity === 'High');
   }
 
   getMediumRisks() {
-    return this.risks().filter((risk: any) => risk.severity === 'medium');
+    return this.risks().filter((risk: any) => risk.severity === 'Medium');
   }
 
   getLowRisks() {
-    return this.risks().filter((risk: any) => risk.severity === 'low');
+    return this.risks().filter((risk: any) => risk.severity === 'Low');
   }
 
   // Omission filtering methods
   getHighPriorityOmissions() {
-    return this.omissions().filter((omission: any) => omission.priority === 'high');
+    return this.omissions().filter((omission: any) => omission.priority === 'High');
   }
 
   getMediumPriorityOmissions() {
-    return this.omissions().filter((omission: any) => omission.priority === 'medium');
+    return this.omissions().filter((omission: any) => omission.priority === 'Medium');
   }
 
   getLowPriorityOmissions() {
-    return this.omissions().filter((omission: any) => omission.priority === 'low');
+    return this.omissions().filter((omission: any) => omission.priority === 'Low');
   }
 
   // Perspective and context methods

@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { AnalysisData, CachedAnalysis, CacheStats, TranslationCache } from '../models/translation-cache.model';
+import { CachedAnalysis, TranslationCache } from '../models/translation-cache.model';
+import type { CompleteAnalysis } from '../schemas/analysis-schemas';
 import { LoggerService } from './logger.service';
 
 /**
@@ -63,7 +64,7 @@ export class TranslationCacheService {
    * 
    * @param languageCode - The language of the analysis results (en, es, ja, ar, fr, etc.)
    */
-  storeAnalysis(contractId: string, languageCode: string, analysis: AnalysisData): void {
+  storeAnalysis(contractId: string, languageCode: string, analysis: Partial<CompleteAnalysis>): void {
     const cache = this.getCache();
     
     if (!cache[contractId]) {
@@ -75,10 +76,12 @@ export class TranslationCacheService {
       cache[contractId].translations = {};
     }
     
+    const existing = cache[contractId].translations[languageCode] || {};
     cache[contractId].translations[languageCode] = {
-      ...analysis,
-      translatedAt: new Date().toISOString()
-    };
+      ...(existing as CachedAnalysis),
+      ...(analysis as CompleteAnalysis),
+      translatedAt: new Date().toISOString(),
+    } as CachedAnalysis;
     
     this.saveCache(cache);
     this.logger.info(`Stored ${languageCode} analysis for contract ${contractId}`);

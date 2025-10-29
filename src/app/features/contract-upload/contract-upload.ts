@@ -27,6 +27,7 @@ import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { LanguageStore } from '../../core/stores/language.store';
 import {
   LANGUAGES,
+  AI_CONFIG,
 } from '../../core/config/application.config';
 import {
   isAppLanguageSupported,
@@ -387,7 +388,10 @@ export class ContractUpload {
       // NEW: Language support information for Phase 0
       isContractLanguageAvailableInUI: isAppLanguageSupported(detectedLang!),
       canAnalyzeDirectly: isGeminiNanoSupported(detectedLang!),
-      needsPreTranslation: !isGeminiNanoSupported(detectedLang!),
+      // In English-first mode, we don't show "limited support" notice since we intentionally translate even supported languages
+      needsPreTranslation: AI_CONFIG.ANALYSIS_OUTPUT_MODE === 'english_first' 
+        ? false  // Don't show notice in English-first mode
+        : !isGeminiNanoSupported(detectedLang!),  // Original logic for other modes
       fallbackLanguage: isAppLanguageSupported(detectedLang!) ? detectedLang! : 'en',
 
       onSelectContractLanguage: () => this.selectContractLanguage(),

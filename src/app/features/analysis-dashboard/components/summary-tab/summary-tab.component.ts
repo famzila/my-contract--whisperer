@@ -36,8 +36,8 @@ export class SummaryTabComponent {
    * Check if compensation section has any data
    */
   hasCompensationData = computed(() => {
-    const compensation = this.summary()?.summary?.compensation;
-    const benefits = this.summary()?.summary?.benefits;
+    const compensation = this.summary()?.compensation;
+    const benefits = this.summary()?.benefits;
     
     return !!(
       compensation?.baseSalary ||
@@ -52,7 +52,7 @@ export class SummaryTabComponent {
    * Check if termination section has any data
    */
   hasTerminationData = computed(() => {
-    const termination = this.summary()?.summary?.termination;
+    const termination = this.summary()?.termination;
     
     return !!(
       termination?.atWill ||
@@ -66,7 +66,7 @@ export class SummaryTabComponent {
    * Check if restrictions section has any data
    */
   hasRestrictionsData = computed(() => {
-    const restrictions = this.summary()?.summary?.restrictions;
+    const restrictions = this.summary()?.restrictions;
     
     return !!(
       restrictions?.confidentiality ||
@@ -104,7 +104,7 @@ export class SummaryTabComponent {
    * Get formatted Quick Take for display
    */
   getFormattedQuickTake = computed(() => {
-    const quickTake = this.summary()?.summary?.quickTake;
+    const quickTake = this.summary()?.quickTake;
     return quickTake ? this.formatQuickTakeText(quickTake) : '';
   });
   

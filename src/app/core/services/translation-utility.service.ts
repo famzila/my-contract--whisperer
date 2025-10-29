@@ -81,39 +81,40 @@ export class TranslationUtilityService {
   ): Promise<Schemas.ContractSummary> {
     this.logger.info(`🌍 [Translation] Translating summary to ${targetLanguage}...`);
     
-    const quickTake = await this.translateField(summary.summary?.quickTake, targetLanguage);
+    const quickTake = await this.translateField(summary.quickTake, targetLanguage);
     
     return {
-      summary: {
-        quickTake: quickTake || undefined,
-        keyResponsibilities: await this.translateStringArray(
-          summary.summary.keyResponsibilities,
-          targetLanguage
-        ),
-        compensation: {
-          baseSalary: summary.summary.compensation.baseSalary,
-          bonus: await this.translateField(summary.summary.compensation.bonus, targetLanguage),
-          equity: await this.translateField(summary.summary.compensation.equity, targetLanguage),
-          other: await this.translateField(summary.summary.compensation.other, targetLanguage),
-        },
-        benefits: await this.translateStringArray(
-          summary.summary.benefits,
-          targetLanguage
-        ),
-        termination: {
-          atWill: await this.translateField(summary.summary.termination.atWill, targetLanguage),
-          forCause: await this.translateField(summary.summary.termination.forCause, targetLanguage),
-          severance: await this.translateField(summary.summary.termination.severance, targetLanguage),
-          noticeRequired: await this.translateField(summary.summary.termination.noticeRequired, targetLanguage),
-        },
-        restrictions: {
-          confidentiality: await this.translateField(summary.summary.restrictions.confidentiality, targetLanguage),
-          nonCompete: await this.translateField(summary.summary.restrictions.nonCompete, targetLanguage),
-          nonSolicitation: await this.translateField(summary.summary.restrictions.nonSolicitation, targetLanguage),
-          intellectualProperty: await this.translateField(summary.summary.restrictions.intellectualProperty, targetLanguage),
-          other: await this.translateField(summary.summary.restrictions.other, targetLanguage),
-        },
+      quickTake: quickTake || undefined,
+      keyResponsibilities: await this.translateStringArray(
+        summary.keyResponsibilities,
+        targetLanguage
+      ),
+      compensation: {
+        baseSalary: summary.compensation.baseSalary,
+        bonus: await this.translateField(summary.compensation.bonus, targetLanguage),
+        equity: await this.translateField(summary.compensation.equity, targetLanguage),
+        other: await this.translateField(summary.compensation.other, targetLanguage),
       },
+      benefits: await this.translateStringArray(
+        summary.benefits,
+        targetLanguage
+      ),
+      termination: {
+        atWill: await this.translateField(summary.termination.atWill, targetLanguage),
+        forCause: await this.translateField(summary.termination.forCause, targetLanguage),
+        severance: await this.translateField(summary.termination.severance, targetLanguage),
+        noticeRequired: await this.translateField(summary.termination.noticeRequired, targetLanguage),
+      },
+      restrictions: {
+        confidentiality: await this.translateField(summary.restrictions.confidentiality, targetLanguage),
+        nonCompete: await this.translateField(summary.restrictions.nonCompete, targetLanguage),
+        nonSolicitation: await this.translateField(summary.restrictions.nonSolicitation, targetLanguage),
+        intellectualProperty: await this.translateField(summary.restrictions.intellectualProperty, targetLanguage),
+        other: await this.translateField(summary.restrictions.other, targetLanguage),
+      },
+      fromYourPerspective: summary.fromYourPerspective ? (await this.translateField(summary.fromYourPerspective, targetLanguage)) || undefined : undefined,
+      keyBenefits: summary.keyBenefits ? await this.translateStringArray(summary.keyBenefits, targetLanguage) : undefined,
+      keyConcerns: summary.keyConcerns ? await this.translateStringArray(summary.keyConcerns, targetLanguage) : undefined,
     };
   }
 
@@ -121,51 +122,47 @@ export class TranslationUtilityService {
    * Translate risks analysis
    */
   async translateRisks(
-    risks: Schemas.RisksAnalysis,
+    risks: Schemas.RiskItem[],
     targetLanguage: string
-  ): Promise<Schemas.RisksAnalysis> {
+  ): Promise<Schemas.RiskItem[]> {
     this.logger.info(`🌍 [Translation] Translating risks to ${targetLanguage}...`);
     
-    return {
-      risks: await Promise.all(
-        risks.risks.map(async (risk) => ({
-          ...risk,
-          title: await this.translator.translateFromEnglish(risk.title, targetLanguage),
-          description: await this.translator.translateFromEnglish(risk.description, targetLanguage),
-          impact: await this.translator.translateFromEnglish(risk.impact, targetLanguage),
-        }))
-      ),
-    };
+    return await Promise.all(
+      risks.map(async (risk) => ({
+        ...risk,
+        title: await this.translator.translateFromEnglish(risk.title, targetLanguage),
+        description: await this.translator.translateFromEnglish(risk.description, targetLanguage),
+        impact: await this.translator.translateFromEnglish(risk.impact, targetLanguage),
+      }))
+    );
   }
 
   /**
    * Translate obligations analysis
    */
   async translateObligations(
-    obligations: Schemas.ObligationsAnalysis,
+    obligations: Schemas.Obligations,
     targetLanguage: string
-  ): Promise<Schemas.ObligationsAnalysis> {
+  ): Promise<Schemas.Obligations> {
     this.logger.info(`🌍 [Translation] Translating obligations to ${targetLanguage}...`);
     
     return {
-      obligations: {
-        party1: await Promise.all(
-          obligations.obligations.party1.map(async (obligation) => ({
-            ...obligation,
-            duty: await this.translator.translateFromEnglish(obligation.duty, targetLanguage),
-            frequency: await this.translateField(obligation.frequency, targetLanguage),
-            scope: await this.translateField(obligation.scope, targetLanguage),
-          }))
-        ),
-        party2: await Promise.all(
-          obligations.obligations.party2.map(async (obligation) => ({
-            ...obligation,
-            duty: await this.translator.translateFromEnglish(obligation.duty, targetLanguage),
-            frequency: await this.translateField(obligation.frequency, targetLanguage),
-            scope: await this.translateField(obligation.scope, targetLanguage),
-          }))
-        ),
-      },
+      party1: await Promise.all(
+        obligations.party1.map(async (obligation) => ({
+          ...obligation,
+          duty: await this.translator.translateFromEnglish(obligation.duty, targetLanguage),
+          frequency: await this.translateField(obligation.frequency, targetLanguage),
+          scope: await this.translateField(obligation.scope, targetLanguage),
+        }))
+      ),
+      party2: await Promise.all(
+        obligations.party2.map(async (obligation) => ({
+          ...obligation,
+          duty: await this.translator.translateFromEnglish(obligation.duty, targetLanguage),
+          frequency: await this.translateField(obligation.frequency, targetLanguage),
+          scope: await this.translateField(obligation.scope, targetLanguage),
+        }))
+      ),
     };
   }
 
@@ -173,9 +170,9 @@ export class TranslationUtilityService {
    * Translate omissions and questions
    */
   async translateOmissionsAndQuestions(
-    omissionsAndQuestions: Schemas.OmissionsAndQuestions,
+    omissionsAndQuestions: { omissions: Schemas.Omission[]; questions: string[] },
     targetLanguage: string
-  ): Promise<Schemas.OmissionsAndQuestions> {
+  ): Promise<{ omissions: Schemas.Omission[]; questions: string[] }> {
     this.logger.info(`🌍 [Translation] Translating omissions and questions to ${targetLanguage}...`);
     
     return {

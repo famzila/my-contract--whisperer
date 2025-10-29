@@ -5,7 +5,7 @@
 import { Injectable, inject } from '@angular/core';
 import { PromptService } from './ai/prompt.service';
 import { LoggerService } from './logger.service';
-import type { PartyDetectionResult, DetectedParty } from '../models/ai-analysis.model';
+import type { PartyDetectionResult, Party } from '../models/ai-analysis.model';
 import { PARTY_EXTRACTION_SCHEMA, PartyExtractionResult } from '../schemas/analysis-schemas';
 
 @Injectable({
@@ -369,13 +369,13 @@ Analyze the contract and provide your extraction results.`,
     // Bilateral contract (2 parties)
     const [party1Raw, party2Raw] = result.parties;
     
-    const party1: DetectedParty = {
+    const party1: Party = {
       name: party1Raw.name,
       role: party1Raw.role || 'Party 1',
       location: party1Raw.location || null,
     };
     
-    const party2: DetectedParty = {
+    const party2: Party = {
       name: party2Raw.name,
       role: party2Raw.role || 'Party 2',
       location: party2Raw.location || null,

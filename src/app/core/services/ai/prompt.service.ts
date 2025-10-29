@@ -11,7 +11,7 @@ import * as Schemas from '../../schemas/analysis-schemas';
 import { LoggerService } from '../logger.service';
 import { PromptBuilderService } from './prompt-builder.service';
 import { Subject } from 'rxjs';
-import { APPLICATION_CONFIG } from '../../config/application.config';
+import { APPLICATION_CONFIG, CANONICAL_ANALYSIS_LANGUAGE } from '../../config/application.config';
 
 /**
  * Service for Chrome Built-in Prompt API (Gemini Nano)
@@ -101,7 +101,8 @@ export class PromptService {
       inputLanguages.push(options.contractLanguage); // Add contract language for user prompts
     }
 
-    const outputLanguages: string[] = [options?.outputLanguage || options?.contractLanguage || 'en'];
+    // English-first strategy: always produce English outputs
+    const outputLanguages: string[] = [CANONICAL_ANALYSIS_LANGUAGE];
 
     // Prepare options with system prompt and monitor for download progress
     const createOptions: AILanguageModelCreateOptions = {
@@ -137,7 +138,7 @@ export class PromptService {
       },
     };
 
-    const langInfo = outputLanguages[0] !== 'en' ? ` (input: [${inputLanguages.join(', ')}], output: [${outputLanguages.join(', ')}])` : '';
+    const langInfo = ` (input: [${inputLanguages.join(', ')}], output: [${outputLanguages.join(', ')}])`;
     this.logger.info(`Creating session${options?.userRole ? ` for ${options.userRole} perspective` : ''}${langInfo}...`);
     this.session = await window.LanguageModel.create(createOptions);
     this.logger.info('Session ready');
@@ -210,7 +211,7 @@ export class PromptService {
     userRole?: string,
     outputLanguage?: string
   ): Promise<Schemas.ContractMetadata> {
-    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'metadata', userRole, outputLanguage);
+    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'metadata', userRole, CANONICAL_ANALYSIS_LANGUAGE);
 
     return this.promptWithSchema<Schemas.ContractMetadata>(
       prompt,
@@ -224,13 +225,14 @@ export class PromptService {
   async extractRisks(
     contractText: string,
     outputLanguage?: string
-  ): Promise<Schemas.RisksAnalysis> {
-    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'risks', undefined, outputLanguage);
+  ): Promise<Schemas.RiskItem[]> {
+    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'risks', undefined, CANONICAL_ANALYSIS_LANGUAGE);
 
-    return this.promptWithSchema<Schemas.RisksAnalysis>(
+    const result = await this.promptWithSchema<Schemas.RisksAnalysis>(
       prompt,
       Schemas.RISKS_SCHEMA
     );
+    return result.risks;
   }
 
   /**
@@ -239,13 +241,14 @@ export class PromptService {
   async extractObligations(
     contractText: string,
     outputLanguage?: string
-  ): Promise<Schemas.ObligationsAnalysis> {
-    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'obligations', undefined, outputLanguage);
+  ): Promise<Schemas.Obligations> {
+    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'obligations', undefined, CANONICAL_ANALYSIS_LANGUAGE);
 
-    return this.promptWithSchema<Schemas.ObligationsAnalysis>(
+    const result = await this.promptWithSchema<Schemas.ObligationsAnalysis>(
       prompt,
       Schemas.OBLIGATIONS_SCHEMA
     );
+    return result.obligations;
   }
 
   /**
@@ -254,28 +257,34 @@ export class PromptService {
   async extractOmissionsAndQuestions(
     contractText: string,
     outputLanguage?: string
-  ): Promise<Schemas.OmissionsAndQuestions> {
-    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'omissions', undefined, outputLanguage);
+  ): Promise<{ omissions: Schemas.Omission[]; questions: string[] }> {
+    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'omissions', undefined, CANONICAL_ANALYSIS_LANGUAGE);
 
-    return this.promptWithSchema<Schemas.OmissionsAndQuestions>(
+    const result = await this.promptWithSchema<Schemas.OmissionsAndQuestions>(
       prompt,
       Schemas.OMISSIONS_QUESTIONS_SCHEMA
     );
+    return { omissions: result.omissions, questions: result.questions };
   }
 
   /**
    * 5. Extract summary with schema
+   * Note: API returns nested { summary: {...} }, but we flatten it for consistency
    */
   async extractSummary(
     contractText: string,
     outputLanguage?: string
   ): Promise<Schemas.ContractSummary> {
-    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'summary', undefined, outputLanguage);
+    const prompt = this.promptBuilder.buildAnalysisPrompt(contractText, 'summary', undefined, CANONICAL_ANALYSIS_LANGUAGE);
 
-    return this.promptWithSchema<Schemas.ContractSummary>(
+    // API returns { summary: {...} }, but we want flat structure
+    const result = await this.promptWithSchema<{ summary: Omit<Schemas.ContractSummary, 'fromYourPerspective' | 'keyBenefits' | 'keyConcerns'> }>(
       prompt,
       Schemas.SUMMARY_SCHEMA
     );
+    
+    // Flatten by extracting the nested summary object
+    return result.summary;
   }
 
   /**
@@ -299,9 +308,9 @@ export class PromptService {
    * Extract risks as Observable
    */
   extractRisks$(
-    contractText: string, 
+    contractText: string,
     outputLanguage?: string
-  ): Observable<Schemas.RisksAnalysis> {
+  ): Observable<Schemas.RiskItem[]> {
     return defer(() => from(this.extractRisks(contractText, outputLanguage)));
   }
 
@@ -309,9 +318,9 @@ export class PromptService {
    * Extract obligations as Observable
    */
   extractObligations$(
-    contractText: string, 
+    contractText: string,
     outputLanguage?: string
-  ): Observable<Schemas.ObligationsAnalysis> {
+  ): Observable<Schemas.Obligations> {
     return defer(() => from(this.extractObligations(contractText, outputLanguage)));
   }
 
@@ -319,9 +328,9 @@ export class PromptService {
    * Extract omissions and questions as Observable
    */
   extractOmissionsAndQuestions$(
-    contractText: string, 
+    contractText: string,
     outputLanguage?: string
-  ): Observable<Schemas.OmissionsAndQuestions> {
+  ): Observable<{ omissions: Schemas.Omission[]; questions: string[] }> {
     return defer(() => from(this.extractOmissionsAndQuestions(contractText, outputLanguage)));
   }
 

@@ -13,32 +13,30 @@ import type {
   AIWriterLength,
   AIRewriterTone,
   AIRewriterLength,
-  RiskSeverity,
-  UserRole
 } from './ai.types';
 
 // Import types from analysis-schemas.ts for use in this file
 import type {
   ContractMetadata,
   ContractSummary,
-  RisksAnalysis,
-  ObligationsAnalysis,
-  OmissionsAndQuestions,
-  ContractValidationResult
+  RiskItem,
+  Obligations,
+  Omission
 } from '../schemas/analysis-schemas';
 
-// Re-export types from analysis-schemas.ts to maintain backward compatibility
+// Re-export types from analysis-schemas.ts
 export type {
   ContractMetadata,
   ContractSummary,
   RisksAnalysis,
   ObligationsAnalysis,
   OmissionsAndQuestions,
-  ContractValidationResult
+  ContractValidationResult,
+  RiskItem,
+  Obligations,
+  StructuredObligation,
+  Omission
 } from '../schemas/analysis-schemas';
-
-// Re-export UserRole for backward compatibility
-export type { UserRole };
 
 export interface AnalysisContext {
   // Language context
@@ -69,9 +67,10 @@ export type AnalysisSection = 'metadata' | 'summary' | 'risks' | 'obligations' |
 export type AnalysisData = 
   | ContractMetadata
   | ContractSummary
-  | RiskFlag[]
+  | RiskItem[]
   | Obligations
   | Omission[]
+  | { omissions: Omission[]; questions: string[] }  // Combined omissions and questions
   | Record<string, unknown>  // For merged objects and flexible data
   | string  // For quickTake and other string results
   | null;
@@ -86,11 +85,6 @@ export interface AnalysisStreamingResult {
   retryCount?: number;
   isRetrying?: boolean;
 }
-
-/**
- * Party information detected from contract (alias for backward compatibility)
- */
-export type DetectedParty = Party;
 
 /**
  * Unified party information interface
@@ -110,8 +104,8 @@ export interface Party {
 export interface PartyDetectionResult {
   confidence: 'high' | 'medium' | 'low';
   parties: {
-    party1: DetectedParty;
-    party2: DetectedParty;
+    party1: Party;
+    party2: Party;
   } | null;
   contractType: 'bilateral' | 'multilateral' | 'unilateral';
 }
@@ -122,7 +116,7 @@ export interface PartyDetectionResult {
 export interface AIAnalysisResponse {
   metadata: ContractMetadata;
   summary: ContractSummary;
-  risks: RiskFlag[];
+  risks: RiskItem[];
   obligations: Obligations;
   omissions: Omission[];
   questions: string[];
@@ -143,36 +137,7 @@ export interface ContextWarning {
 
 
 
-export interface RiskFlag {
-  title: string;
-  severity: RiskSeverity;
-  icon?: string;                     // Lucide icon name (schema-based format)
-  description: string;
-  impact: string;                    // Explain the potential impact
-  impactOn?: string;                 // Who is affected (employer/employee)
-  contextWarning?: string | null;    // Jurisdiction-specific warning
-}
 
-export interface Obligations {
-  party1: StructuredObligation[];  // First party obligations
-  party2: StructuredObligation[];  // Second party obligations
-  // Future: parties: Record<string, StructuredObligation[]> for multi-party
-}
-
-export interface StructuredObligation {
-  duty: string;
-  amount?: number | null;
-  frequency?: string | null;
-  startDate?: string | null;
-  duration?: string | null;
-  scope?: string | null;
-}
-
-export interface Omission {
-  item: string;
-  impact: string;
-  priority: 'High' | 'Medium' | 'Low';
-}
 
 /**
  * Perspective context for summary display
@@ -182,6 +147,25 @@ export interface PerspectiveContext {
   titleKey: string;
   messageKey: string;
 }
+
+/**
+ * Risk Severity
+ */
+export type RiskSeverity = 'High' | 'Medium' | 'Low';
+
+/**
+ * User roles for perspective-aware analysis
+ */
+export type UserRole = 
+  | 'employer' 
+  | 'employee' 
+  | 'client' 
+  | 'contractor' 
+  | 'landlord' 
+  | 'tenant' 
+  | 'partner'
+  | 'both_views'
+  | null;
 
 // ============================================================================
 // Chrome Built-in AI API Interfaces
@@ -222,15 +206,6 @@ export interface DownloadProgressEvent {
 // ============================================================================
 // Prompt / Language Model API
 // ============================================================================
-
-/**
- * Language Model Capabilities
- */
-export interface AILanguageModelCapabilities extends AICapabilities {
-  defaultTemperature?: number;
-  defaultTopK?: number;
-  maxTopK?: number;
-}
 
 /**
  * Language Model Instance
@@ -278,24 +253,11 @@ export interface AIExpectedInputOutput {
   languages: string[]; // BCP 47 language codes (e.g., ['en', 'ja'])
 }
 
-// Legacy aliases for backward compatibility
-export type AIExpectedInput = AIExpectedInputOutput;
-export type AIExpectedOutput = AIExpectedInputOutput;
 
 
 // ============================================================================
 // Summarizer API
 // ============================================================================
-
-/**
- * Summarizer Capabilities
- */
-export interface AISummarizerCapabilities extends AICapabilities {
-  supportsType?: (type: AISummarizerType) => boolean;
-  supportsFormat?: (format: AISummarizerFormat) => boolean;
-  supportsLength?: (length: AISummarizerLength) => boolean;
-}
-
 /**
  * Summarizer Instance
  */
@@ -331,13 +293,6 @@ export interface AISummarizerCreateOptions extends BaseCreateOptions {
 // ============================================================================
 // Writer/Rewriter API
 // ============================================================================
-
-/**
- * Writer Capabilities
- */
-export interface AIWriterCapabilities extends AICapabilities {
-  supportsSharedContext?: boolean;
-}
 
 /**
  * Writer Instance
@@ -401,13 +356,6 @@ export interface AIRewriterCreateOptions extends BaseCreateOptions {
 // ============================================================================
 
 /**
- * Translation Capabilities
- */
-export interface TranslationCapabilities {
-  canTranslate(sourceLanguage: string, targetLanguage: string): Promise<AICapabilities>;
-}
-
-/**
  * Translator Instance
  */
 export interface Translator {
@@ -442,11 +390,6 @@ export interface LanguageDetectionResult {
   detectedLanguage: string;  // BCP 47 language code (e.g., 'en', 'fr', 'ar')
   confidence: number;        // 0.0 to 1.0
 }
-
-/**
- * Language Detector Create Options
- */
-export interface LanguageDetectorCreateOptions extends BaseCreateOptions {}
 
 // ============================================================================
 // Window Interface Extension
@@ -487,7 +430,7 @@ declare global {
     
     LanguageDetector?: {
       availability(): Promise<AIAvailabilityStatus>;
-      create(options?: LanguageDetectorCreateOptions): Promise<LanguageDetector>;
+      create(options?: BaseCreateOptions): Promise<LanguageDetector>;
     };
   }
 }

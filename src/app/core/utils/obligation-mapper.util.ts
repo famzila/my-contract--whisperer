@@ -8,8 +8,7 @@
  * - Type-safe with explicit interfaces
  */
 
-import { Obligations, StructuredObligation } from '../models/ai-analysis.model';
-import { ContractMetadata } from '../schemas/analysis-schemas';
+import { ContractMetadata, Obligations, StructuredObligation } from '../schemas/analysis-schemas';
 
 /**
  * Perspective-based obligations interface

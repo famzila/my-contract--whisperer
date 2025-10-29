@@ -8,12 +8,7 @@ import {
 import { Notice } from "../../../../shared/components/notice/notice";
 import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
 import { ContractInsightCard } from "../../../../shared/components/contract-insight-card/contract-insight-card";
-
-export interface Omission {
-  item: string;
-  impact: string;
-  priority: 'high' | 'medium' | 'low';
-}
+import type { Omission } from '../../../../core/schemas/analysis-schemas';
 
 @Component({
   selector: 'app-omissions-tab',

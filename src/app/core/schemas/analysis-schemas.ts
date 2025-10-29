@@ -4,6 +4,8 @@
  * Following: https://developer.chrome.com/docs/ai/structured-output-for-prompt-api
  */
 
+import type { RiskSeverity } from '../models/ai-analysis.model';
+
 // ============================================================================
 // 1. CONTRACT METADATA SCHEMA
 // ============================================================================
@@ -92,7 +94,7 @@ export const RISKS_SCHEMA = {
           },
           severity: {
             type: "string",
-            enum: ["high", "medium", "low"],
+            enum: ["High", "Medium", "Low"],
             description: "Risk severity level"
           },
           icon: {
@@ -190,7 +192,7 @@ export const OMISSIONS_QUESTIONS_SCHEMA = {
           impact: { type: "string", description: "Why this absence could be problematic" },
           priority: {
             type: "string",
-            enum: ["high", "medium", "low"],
+            enum: ["High", "Medium", "Low"],
             description: "Importance of this omission"
           }
         },
@@ -427,7 +429,7 @@ export type ContractMetadata = {
 export type RisksAnalysis = {
   risks: Array<{
     title: string;
-    severity: 'high' | 'medium' | 'low';
+    severity: RiskSeverity;
     icon: 'alert-triangle' | 'alert-circle' | 'info';
     description: string;
     impact: string;
@@ -460,10 +462,16 @@ export type OmissionsAndQuestions = {
   omissions: Array<{
     item: string;
     impact: string;
-    priority: 'high' | 'medium' | 'low';
+    priority: 'High' | 'Medium' | 'Low';
   }>;
   questions: string[];
 };
+
+// Flattened helper types derived from schemas
+export type RiskItem = RisksAnalysis['risks'][number];
+export type Obligations = ObligationsAnalysis['obligations'];
+export type StructuredObligation = ObligationsAnalysis['obligations']['party1'][number];
+export type Omission = OmissionsAndQuestions['omissions'][number];
 
 export type PartyExtractionResult = {
   parties: Array<{
@@ -484,31 +492,28 @@ export type ContractValidationResult = {
 };
 
 export type ContractSummary = {
-  summary: {
-    quickTake?: string;  // Moved inside summary object
-    keyResponsibilities: string[];
-    compensation: {
-      baseSalary?: number | null;
-      bonus?: string | null;
-      equity?: string | null;
-      other?: string | null;
-    };
-    benefits: string[];
-    termination: {
-      atWill?: string | null;
-      forCause?: string | null;
-      severance?: string | null;
-      noticeRequired?: string | null;
-    };
-    restrictions: {
-      confidentiality?: string | null;
-      nonCompete?: string | null;
-      nonSolicitation?: string | null;
-      intellectualProperty?: string | null;
-      other?: string | null;
-    };
+  quickTake?: string;
+  keyResponsibilities: string[];
+  compensation: {
+    baseSalary?: number | null;
+    bonus?: string | null;
+    equity?: string | null;
+    other?: string | null;
   };
-  
+  benefits: string[];
+  termination: {
+    atWill?: string | null;
+    forCause?: string | null;
+    severance?: string | null;
+    noticeRequired?: string | null;
+  };
+  restrictions: {
+    confidentiality?: string | null;
+    nonCompete?: string | null;
+    nonSolicitation?: string | null;
+    intellectualProperty?: string | null;
+    other?: string | null;
+  };
   fromYourPerspective?: string;
   keyBenefits?: string[];
   keyConcerns?: string[];
@@ -520,9 +525,10 @@ export type ContractSummary = {
 
 export type CompleteAnalysis = {
   metadata: ContractMetadata;
-  risks: RisksAnalysis;
-  obligations: ObligationsAnalysis;
-  omissionsAndQuestions: OmissionsAndQuestions;
+  risks: RiskItem[];
+  obligations: Obligations;
+  omissions: Omission[];
+  questions: string[]; 
   summary: ContractSummary;
 };
 

@@ -143,6 +143,20 @@ export const AI_CONFIG = {
       'Graceful error handling with user-friendly messages',
     ],
   },
+  /**
+   * Analysis Output Mode
+   * - english_first: Always analyze in English, translate to user language
+   * - native_if_supported: Use native language if supported; otherwise English
+   */
+  ANALYSIS_OUTPUT_MODE: 'english_first' as 'english_first' | 'native_if_supported',
+
+  /**
+   * Canonical Analysis Language
+   * All AI analysis is performed in this language for consistency and quality as well as a reliable approach for analysis results to be translated to the user's preferred language.
+   * This can be changed with more translation pairs are supported by translator API to display reliable analysis results.
+   * Results are then translated to the user's preferred language.
+   */
+  CANONICAL_ANALYSIS_LANGUAGE: 'en',
 } as const;
 
 /**
@@ -220,6 +234,7 @@ export const SUPPORTED_APP_LANGUAGES = LANGUAGE_CONFIG.SUPPORTED_APP_LANGUAGES;
 export const LANGUAGE_TRANSLATION_KEYS = LANGUAGE_CONFIG.TRANSLATION_KEYS;
 export const LANGUAGE_INFO = LANGUAGE_CONFIG.LANGUAGE_INFO;
 export const DEFAULT_ANALYSIS_CONTEXT = ANALYSIS_CONTEXT_CONFIG.DEFAULT;
+export const CANONICAL_ANALYSIS_LANGUAGE = AI_CONFIG.CANONICAL_ANALYSIS_LANGUAGE;
 
 /**
  * Get supported languages as Language objects for UI components

@@ -15,11 +15,13 @@ import { mapPartyRoleToUserRole } from '../utils/role.util';
 import type { Contract } from '../models/contract.model';
 import type { 
   ContractMetadata, 
-  RisksAnalysis, 
-  ObligationsAnalysis, 
-  OmissionsAndQuestions, 
-  ContractSummary 
+  RiskItem,
+  Obligations,
+  Omission,
+  ContractSummary,
+  CompleteAnalysis
 } from '../schemas/analysis-schemas';
+import * as Schemas from '../schemas/analysis-schemas';
 import { ContractAnalysisService } from '../services/contract-analysis.service';
 import { ContractParserService } from '../services/contract-parser.service';
 import { ParsedContract } from '../models/contract.model';
@@ -64,9 +66,10 @@ interface ContractState {
   analysisProgress: number; // 0-100%
   sectionsMetadata: SectionState<ContractMetadata> | null;
   sectionsSummary: SectionState<ContractSummary> | null;
-  sectionsRisks: SectionState<RisksAnalysis> | null;
-  sectionsObligations: SectionState<ObligationsAnalysis> | null;
-  sectionsOmissionsQuestions: SectionState<OmissionsAndQuestions> | null;
+  sectionsRisks: SectionState<RiskItem[]> | null;
+  sectionsObligations: SectionState<Obligations> | null;
+  sectionsOmissions: SectionState<Omission[]> | null;
+  sectionsQuestions: SectionState<string[]> | null;
   
   // Translation state
   isTranslating: boolean;
@@ -92,7 +95,8 @@ const initialState: ContractState = {
   sectionsSummary: null,
   sectionsRisks: null,
   sectionsObligations: null,
-  sectionsOmissionsQuestions: null,
+  sectionsOmissions: null,
+  sectionsQuestions: null,
   isTranslating: false,
   translatingToLanguage: null,
   destroySubject: null,
@@ -138,7 +142,8 @@ export const ContractStore = signalStore(
     sectionsSummary,
     sectionsRisks,
     sectionsObligations,
-    sectionsOmissionsQuestions,
+      sectionsOmissions,
+      sectionsQuestions,
     isTranslating,
     translatingToLanguage,
   }) => ({
@@ -160,8 +165,9 @@ export const ContractStore = signalStore(
       const summary = sectionsSummary();
       const risks = sectionsRisks();
       const oblig = sectionsObligations();
-      const omiss = sectionsOmissionsQuestions();
-      return meta?.loading || summary?.loading || risks?.loading || oblig?.loading || omiss?.loading || false;
+      const omiss = sectionsOmissions();
+      const questions = sectionsQuestions();
+      return meta?.loading || summary?.loading || risks?.loading || oblig?.loading || omiss?.loading || questions?.loading || false;
     }),
   })),
   
@@ -456,7 +462,8 @@ export const ContractStore = signalStore(
           sectionsSummary: { data: null, loading: true, error: null },
           sectionsRisks: { data: null, loading: true, error: null },
           sectionsObligations: { data: null, loading: true, error: null },
-          sectionsOmissionsQuestions: { data: null, loading: true, error: null },
+          sectionsOmissions: { data: null, loading: true, error: null },
+          sectionsQuestions: { data: null, loading: true, error: null },
         });
         
         // Step 1: Detect contract language
@@ -549,7 +556,7 @@ export const ContractStore = signalStore(
               case 'risks':
                 patchState(store, {
                   sectionsRisks: { 
-                    data: result.data as RisksAnalysis | null, 
+                    data: result.data as RiskItem[] | null, 
                     loading: result.isRetrying || false, 
                     error: null,
                     retryCount: result.retryCount,
@@ -562,7 +569,7 @@ export const ContractStore = signalStore(
               case 'obligations':
                 patchState(store, {
                   sectionsObligations: { 
-                    data: result.data as ObligationsAnalysis | null, 
+                    data: result.data as Obligations | null, 
                     loading: result.isRetrying || false, 
                     error: null,
                     retryCount: result.retryCount,
@@ -573,10 +580,19 @@ export const ContractStore = signalStore(
                 break;
               
               case 'omissionsAndQuestions':
+                // Split omissions and questions into separate sections
+                const omissionsAndQuestions = result.data as { omissions: Omission[]; questions: string[] } | null;
                 patchState(store, {
-                  sectionsOmissionsQuestions: { 
-                    data: result.data as OmissionsAndQuestions | null, 
-                    loading: result.isRetrying || false, 
+                  sectionsOmissions: {
+                    data: omissionsAndQuestions?.omissions ?? null,
+                    loading: result.isRetrying || false,
+                    error: null,
+                    retryCount: result.retryCount,
+                    isRetrying: result.isRetrying
+                  },
+                  sectionsQuestions: {
+                    data: omissionsAndQuestions?.questions ?? null,
+                    loading: result.isRetrying || false,
                     error: null,
                     retryCount: result.retryCount,
                     isRetrying: result.isRetrying
@@ -608,7 +624,8 @@ export const ContractStore = signalStore(
               const summary = store.sectionsSummary()?.data;
               const risks = store.sectionsRisks()?.data;
               const obligations = store.sectionsObligations()?.data;
-              const omissions = store.sectionsOmissionsQuestions()?.data;
+              const omissions = store.sectionsOmissions()?.data;
+              const questions = store.sectionsQuestions()?.data;
               
               // Cache even if some sections failed (partial results are better than no cache)
               // At minimum, we need metadata to cache anything useful
@@ -622,7 +639,8 @@ export const ContractStore = signalStore(
                   summary ? 'summary' : null,
                   risks ? 'risks' : null,
                   obligations ? 'obligations' : null,
-                  omissions ? 'omissions' : null
+                  omissions ? 'omissions' : null,
+                  questions ? 'questions' : null
                 ].filter(Boolean);
                 
                 logger.info(`💾 [Store] Caching strategy - Contract: ${contractLang}, Output: ${outputLang}, Pre-translation: ${isPreTranslationFlow}`);
@@ -638,10 +656,11 @@ export const ContractStore = signalStore(
                   logger.info(`💾 [Store] Pre-translation flow: Storing ${outputLang} results`);
                   translationCache.storeAnalysis(contract.id, outputLang, {
                     metadata,
-                    summary: summary || null,
-                    risks: risks || null,
-                    obligations: obligations || null,
-                    omissions: omissions || null,
+                    summary: summary || undefined,
+                    risks: risks || undefined,
+                    obligations: obligations || undefined,
+                    omissions: omissions || undefined,
+                    questions: questions || undefined,
                   });
                   
                   // 💡 Note: English (intermediate) results already cached incrementally
@@ -652,10 +671,11 @@ export const ContractStore = signalStore(
                   logger.info(`💾 [Store] Direct analysis: Storing ${contractLang} results`);
                   translationCache.storeAnalysis(contract.id, contractLang, {
                     metadata,
-                    summary: summary || null,
-                    risks: risks || null,
-                    obligations: obligations || null,
-                    omissions: omissions || null
+                    summary: summary || undefined,
+                    risks: risks || undefined,
+                    obligations: obligations || undefined,
+                    omissions: omissions || undefined,
+                    questions: questions || undefined,
                   });
                 }
               } else {
@@ -726,7 +746,8 @@ export const ContractStore = signalStore(
             sectionsSummary: { data: cached.summary, loading: false, error: null },
             sectionsRisks: { data: cached.risks, loading: false, error: null },
             sectionsObligations: { data: cached.obligations, loading: false, error: null },
-            sectionsOmissionsQuestions: { data: cached.omissions, loading: false, error: null },
+            sectionsOmissions: { data: cached.omissions, loading: false, error: null },
+            sectionsQuestions: { data: cached.questions, loading: false, error: null },
             isTranslating: false,  // Clear loading state
             translatingToLanguage: null
           });
@@ -758,21 +779,28 @@ export const ContractStore = signalStore(
         logger.info(`🔄 [Store] Translating from ${sourceLanguage} to ${targetLanguage}...`);
         
         // Translate from source to target (with null checks)
-        const [metadata, summary, risks, obligations, omissions] = await Promise.all([
+        const [metadata, summary, risks, obligations, omissionsAndQuestions] = await Promise.all([
           sourceAnalysis.metadata ? translationUtility.translateMetadata(sourceAnalysis.metadata, targetLanguage, sourceLanguage) : null,
           sourceAnalysis.summary ? translationUtility.translateSummary(sourceAnalysis.summary, targetLanguage) : null,
           sourceAnalysis.risks ? translationUtility.translateRisks(sourceAnalysis.risks, targetLanguage) : null,
           sourceAnalysis.obligations ? translationUtility.translateObligations(sourceAnalysis.obligations, targetLanguage) : null,
-          sourceAnalysis.omissions ? translationUtility.translateOmissionsAndQuestions(sourceAnalysis.omissions, targetLanguage) : null,
+          (sourceAnalysis.omissions || sourceAnalysis.questions) ? translationUtility.translateOmissionsAndQuestions(
+            { 
+              omissions: sourceAnalysis.omissions || [], 
+              questions: sourceAnalysis.questions || [] 
+            }, 
+            targetLanguage
+          ) : null,
         ]);
         
         // Store in cache
         translationCache.storeAnalysis(contract.id, targetLanguage, {
-          metadata,
-          summary,
-          risks,
-          obligations,
-          omissions,
+          metadata: metadata || undefined,
+          summary: summary || undefined,
+          risks: risks || undefined,
+          obligations: obligations || undefined,
+          omissions: omissionsAndQuestions?.omissions || undefined,
+          questions: omissionsAndQuestions?.questions || undefined,
         });
         
         // Update store with translated data
@@ -781,7 +809,8 @@ export const ContractStore = signalStore(
           sectionsSummary: { data: summary, loading: false, error: null },
           sectionsRisks: { data: risks, loading: false, error: null },
           sectionsObligations: { data: obligations, loading: false, error: null },
-          sectionsOmissionsQuestions: { data: omissions, loading: false, error: null },
+          sectionsOmissions: { data: omissionsAndQuestions?.omissions ?? null, loading: false, error: null },
+          sectionsQuestions: { data: omissionsAndQuestions?.questions ?? null, loading: false, error: null },
           isTranslating: false,  // Clear loading state
           translatingToLanguage: null
         });
@@ -927,10 +956,34 @@ export const ContractStore = signalStore(
           analysisError: null,
           analysisProgress: 100, // Complete
           sectionsMetadata: { data: MOCK_LEASE_DATA.metadata, loading: false, error: null },
-          sectionsSummary: { data: MOCK_LEASE_DATA.summary, loading: false, error: null },
-          sectionsRisks: { data: MOCK_LEASE_DATA.risks, loading: false, error: null },
-          sectionsObligations: { data: MOCK_LEASE_DATA.obligations, loading: false, error: null },
-          sectionsOmissionsQuestions: { data: MOCK_LEASE_DATA.omissions, loading: false, error: null },
+          sectionsSummary: { 
+            data: MOCK_LEASE_DATA.summary?.summary 
+              ? { 
+                  ...MOCK_LEASE_DATA.summary.summary, 
+                  fromYourPerspective: (MOCK_LEASE_DATA.summary as any).fromYourPerspective,
+                  keyBenefits: (MOCK_LEASE_DATA.summary as any).keyBenefits,
+                  keyConcerns: (MOCK_LEASE_DATA.summary as any).keyConcerns,
+                } as Schemas.ContractSummary
+              : MOCK_LEASE_DATA.summary as unknown as Schemas.ContractSummary, 
+            loading: false, 
+            error: null 
+          },
+          sectionsRisks: { 
+            data: (MOCK_LEASE_DATA.risks?.risks || null)?.map(r => ({
+              ...r,
+              severity: (r.severity?.charAt(0).toUpperCase() + r.severity?.slice(1)) as 'High' | 'Medium' | 'Low'
+            })) || null, 
+            loading: false, error: null 
+          },
+          sectionsObligations: { data: MOCK_LEASE_DATA.obligations?.obligations || null, loading: false, error: null },
+          sectionsOmissions: { 
+            data: (MOCK_LEASE_DATA.omissions?.omissions || null)?.map(o => ({
+              ...o,
+              priority: (o.priority?.charAt(0).toUpperCase() + o.priority?.slice(1)) as 'High' | 'Medium' | 'Low'
+            })) || null, 
+            loading: false, error: null 
+          },
+          sectionsQuestions: { data: MOCK_LEASE_DATA.omissions?.questions || null, loading: false, error: null },
           isTranslating: false,
           translatingToLanguage: null,
           destroySubject: null,

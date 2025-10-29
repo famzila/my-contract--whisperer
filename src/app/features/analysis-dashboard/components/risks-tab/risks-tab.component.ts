@@ -10,13 +10,7 @@ import { Notice } from "../../../../shared/components/notice/notice";
 import { TabHeader } from "../../../../shared/components/tab-header/tab-header";
 import { ContractInsightCard } from "../../../../shared/components/contract-insight-card/contract-insight-card";
 
-export interface RiskFlag {
-  title: string;
-  description: string;
-  impact: string;
-  severity: 'high' | 'medium' | 'low';
-  icon?: string;
-}
+import type { RiskItem } from '../../../../core/schemas/analysis-schemas';
 
 @Component({
   selector: 'app-risks-tab',
@@ -26,13 +20,13 @@ export interface RiskFlag {
 })
 export class RisksTabComponent {
   // Modern input signals
-  risks = input<RiskFlag[]>([]);
+  risks = input<RiskItem[]>([]);
   isLoading = input<boolean>(false);
   retryCount = input<number>(0);
   isRetrying = input<boolean>(false);
-  highRisks = input<RiskFlag[]>([]);
-  mediumRisks = input<RiskFlag[]>([]);
-  lowRisks = input<RiskFlag[]>([]);
+  highRisks = input<RiskItem[]>([]);
+  mediumRisks = input<RiskItem[]>([]);
+  lowRisks = input<RiskItem[]>([]);
 
   // Icons
   AlertTriangleIcon = AlertTriangle;

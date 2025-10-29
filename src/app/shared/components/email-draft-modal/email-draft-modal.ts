@@ -5,7 +5,6 @@ import { DialogRef } from '@angular/cdk/dialog';
 import { BaseModal, BaseModalConfig } from '../base-modal/base-modal';
 import { Mail, Copy, RefreshCw, X, Check, Info, SlidersVertical, Sparkles } from '../../icons/lucide-icons';
 import { Button } from '../button/button';
-import { LoadingSpinner } from '../loading-spinner/loading-spinner';
 import { EmailDraftStore } from '../../../core/stores/email-draft.store';
 import { LanguageStore } from '../../../core/stores/language.store';
 import { Notice } from '../notice/notice';
@@ -23,7 +22,7 @@ export interface EmailDraftData {
 
 @Component({
   selector: 'app-email-draft-modal',
-  imports: [LucideAngularModule, TranslatePipe, BaseModal, Button, LoadingSpinner, Notice],
+  imports: [LucideAngularModule, TranslatePipe, BaseModal, Button, Notice],
   templateUrl: './email-draft-modal.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

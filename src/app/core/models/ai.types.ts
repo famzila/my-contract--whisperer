@@ -50,21 +50,3 @@ export type AIRewriterTone = 'as-is' | 'more-formal' | 'more-casual';
  */
 export type AIRewriterLength = 'as-is' | 'shorter' | 'longer';
 
-/**
- * Risk Severity
- */
-export type RiskSeverity = 'High' | 'Medium' | 'Low';
-
-/**
- * User roles for perspective-aware analysis
- */
-export type UserRole = 
-  | 'employer' 
-  | 'employee' 
-  | 'client' 
-  | 'contractor' 
-  | 'landlord' 
-  | 'tenant' 
-  | 'partner'
-  | 'both_views'
-  | null;

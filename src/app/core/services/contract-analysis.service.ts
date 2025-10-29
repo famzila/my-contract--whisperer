@@ -8,7 +8,7 @@ import { TranslationCacheService } from './translation-cache.service';
 import { TranslationUtilityService } from './translation-utility.service';
 import { OfflineStorageService } from './storage/offline-storage.service';
 import { LoggerService } from './logger.service';
-import { LANGUAGES, AI_CONFIG } from '../config/application.config';
+import { LANGUAGES, AI_CONFIG, CANONICAL_ANALYSIS_LANGUAGE } from '../config/application.config';
 import { isGeminiNanoSupported } from '../utils/language.util';
 import { Contract, ContractAnalysis } from '../models/contract.model';
 import { 
@@ -17,6 +17,7 @@ import {
   AnalysisData, 
   AnalysisStreamingResult 
 } from '../models/ai-analysis.model';
+import * as Schemas from '../schemas/analysis-schemas';
 
 /**
  * Contract Analysis Service
@@ -140,11 +141,21 @@ export class ContractAnalysisService {
     // 1. Analyze in English (or contract language if supported)
     // 2. Post-translate results to target language
     const targetLanguage = outputLanguage;
-    const isOutputLanguageSupported = !outputLanguage || isGeminiNanoSupported(outputLanguage);
-    const geminiOutputLanguage = isOutputLanguageSupported ? outputLanguage : LANGUAGES.ENGLISH;
-    const needsPostTranslation = !isOutputLanguageSupported;
+    // English-first: always analyze in English; translate if user language is not English
+    const geminiOutputLanguage = CANONICAL_ANALYSIS_LANGUAGE;
+    const needsPostTranslation = !!targetLanguage && targetLanguage !== CANONICAL_ANALYSIS_LANGUAGE;
     
     this.logger.info(`Direct Analysis - Contract: ${contractLanguage}, Target: ${targetLanguage}, Gemini Output: ${geminiOutputLanguage}, Post-translate: ${needsPostTranslation}`);
+    
+    // Debug: Log English-first strategy
+    console.warn(`[DEBUG] English-First Analysis:`, {
+      contractLanguage,
+      targetLanguage,
+      geminiOutputLanguage,
+      needsPostTranslation,
+      canonicalLanguage: CANONICAL_ANALYSIS_LANGUAGE,
+      strategy: 'Always analyze in English, translate if needed'
+    });
     
     // Create session once and share it
     const session$ = of(null).pipe(
@@ -152,7 +163,7 @@ export class ContractAnalysisService {
       switchMap(() => this.promptService.createSession({ 
         userRole: analysisContext.userRole || null,
         contractLanguage: contractLanguage,
-        outputLanguage: geminiOutputLanguage  // Only use Gemini-supported languages
+        outputLanguage: geminiOutputLanguage
       })),
       shareReplay(1)
     );
@@ -164,11 +175,20 @@ export class ContractAnalysisService {
         analysisContext.userRole || undefined,
         geminiOutputLanguage
       )),
-      // Post-translate if needed
-      switchMap(metadata => needsPostTranslation && outputLanguage
-        ? defer(() => from(this.translationUtility.translateMetadata(metadata, outputLanguage)))
-        : of(metadata)
-      ),
+      // Cache English metadata and translate if needed
+      tap(englishMetadata => {
+        // Always cache English results for future language switching
+        this.cacheIntermediateEnglishSection(contract.id, 'metadata', englishMetadata);
+        console.warn(`[DEBUG] Cached English metadata for contract ${contract.id}`);
+      }),
+      switchMap(englishMetadata => {
+        if (needsPostTranslation && outputLanguage) {
+          console.warn(`[DEBUG] Translating metadata from ${CANONICAL_ANALYSIS_LANGUAGE} to ${outputLanguage}`);
+          return defer(() => from(this.translationUtility.translateMetadata(englishMetadata, outputLanguage)));
+        }
+        console.warn(`[DEBUG] Using English metadata directly (no translation needed)`);
+        return of(englishMetadata);
+      }),
       map(metadata => ({
         section: 'metadata' as const,
         data: metadata,
@@ -188,16 +208,22 @@ export class ContractAnalysisService {
       switchMap(() => from(
         this.summarizerService.generateExecutiveSummary(parsedContract.text, geminiOutputLanguage)
       )),
-      // Cache English Quick Take BEFORE post-translation
+      // Cache English Quick Take and translate if needed
       tap(quickTakeText => {
-        if (needsPostTranslation && quickTakeText) {
+        // Always cache English results for future language switching
+        if (quickTakeText) {
           this.cacheIntermediateEnglishSection(contract.id, 'quickTake', quickTakeText);
+          console.warn(`[DEBUG] Cached English quickTake for contract ${contract.id}`);
         }
       }),
-      switchMap(quickTakeText => needsPostTranslation && quickTakeText && outputLanguage
-        ? defer(() => from(this.translator.translateFromEnglish(quickTakeText, outputLanguage)))
-        : of(quickTakeText)
-      ),
+      switchMap(quickTakeText => {
+        if (needsPostTranslation && quickTakeText && outputLanguage) {
+          console.warn(`[DEBUG] Translating quickTake from ${CANONICAL_ANALYSIS_LANGUAGE} to ${outputLanguage}`);
+          return defer(() => from(this.translator.translateFromEnglish(quickTakeText, outputLanguage)));
+        }
+        console.warn(`[DEBUG] Using English quickTake directly (no translation needed)`);
+        return of(quickTakeText);
+      }),
       catchError(error => {
         this.logger.warn('Quick take generation failed:', error);
         return of(null); // Optional - don't fail if Summarizer unavailable
@@ -208,9 +234,14 @@ export class ContractAnalysisService {
       switchMap(() => this.withRetryAndNotify$(
         'summary',
         this.promptService.extractSummary$(parsedContract.text, geminiOutputLanguage).pipe(
-          switchMap(summary => needsPostTranslation && outputLanguage
-            ? defer(() => from(this.translationUtility.translateSummary(summary, outputLanguage)))
-            : of(summary)
+          // Cache English summary and translate if needed
+          tap(englishSummary => {
+            // Always cache English results for future language switching
+            this.cacheIntermediateEnglishSection(contract.id, 'summary', englishSummary);
+          }),
+          switchMap(englishSummary => needsPostTranslation && outputLanguage
+            ? defer(() => from(this.translationUtility.translateSummary(englishSummary, outputLanguage)))
+            : of(englishSummary)
           )
         ),
         40
@@ -227,11 +258,8 @@ export class ContractAnalysisService {
         section: structuredResult.section,
         data: structuredResult.data
           ? {
-              ...structuredResult.data as any,
-              summary: {
-                ...(structuredResult.data as any).summary,
-                quickTake,
-              },
+              ...(structuredResult.data as Schemas.ContractSummary),
+              quickTake,
             }
           : null,
         progress: structuredResult.progress,
@@ -249,9 +277,14 @@ export class ContractAnalysisService {
       switchMap(() => this.withRetryAndNotify$(
         'risks',
         this.promptService.extractRisks$(parsedContract.text, geminiOutputLanguage).pipe(
-          switchMap(risks => needsPostTranslation && outputLanguage
-            ? defer(() => from(this.translationUtility.translateRisks(risks, outputLanguage)))
-            : of(risks)
+          // Cache English risks and translate if needed
+          tap(englishRisks => {
+            // Always cache English results for future language switching
+            this.cacheIntermediateEnglishSection(contract.id, 'risks', englishRisks);
+          }),
+          switchMap(englishRisks => needsPostTranslation && outputLanguage
+            ? defer(() => from(this.translationUtility.translateRisks(englishRisks, outputLanguage)))
+            : of(englishRisks)
           )
         ),
         60
@@ -272,9 +305,14 @@ export class ContractAnalysisService {
       switchMap(() => this.withRetryAndNotify$(
         'obligations',
         this.promptService.extractObligations$(parsedContract.text, geminiOutputLanguage).pipe(
-          switchMap(obligations => needsPostTranslation && outputLanguage
-            ? defer(() => from(this.translationUtility.translateObligations(obligations, outputLanguage)))
-            : of(obligations)
+          // Cache English obligations and translate if needed
+          tap(englishObligations => {
+            // Always cache English results for future language switching
+            this.cacheIntermediateEnglishSection(contract.id, 'obligations', englishObligations);
+          }),
+          switchMap(englishObligations => needsPostTranslation && outputLanguage
+            ? defer(() => from(this.translationUtility.translateObligations(englishObligations, outputLanguage)))
+            : of(englishObligations)
           )
         ),
         80
@@ -295,9 +333,14 @@ export class ContractAnalysisService {
       switchMap(() => this.withRetryAndNotify$(
         'omissionsAndQuestions',
         this.promptService.extractOmissionsAndQuestions$(parsedContract.text, geminiOutputLanguage).pipe(
-          switchMap(omissionsAndQuestions => needsPostTranslation && outputLanguage
-            ? defer(() => from(this.translationUtility.translateOmissionsAndQuestions(omissionsAndQuestions, outputLanguage)))
-            : of(omissionsAndQuestions)
+          // Cache English omissions/questions and translate if needed
+          tap(englishOmissions => {
+            // Always cache English results for future language switching
+            this.cacheIntermediateEnglishSection(contract.id, 'omissionsAndQuestions', englishOmissions);
+          }),
+          switchMap(englishOmissions => needsPostTranslation && outputLanguage
+            ? defer(() => from(this.translationUtility.translateOmissionsAndQuestions(englishOmissions, outputLanguage)))
+            : of(englishOmissions)
           )
         ),
         90
@@ -610,55 +653,48 @@ export class ContractAnalysisService {
   private cacheIntermediateEnglishSection(
     contractId: string,
     section: 'metadata' | 'summary' | 'risks' | 'obligations' | 'omissionsAndQuestions' | 'quickTake',
-    data: AnalysisData | string
+    data: AnalysisData | string | { omissions: Schemas.Omission[]; questions: string[] }
   ): void {
     try {
-      // Get existing English cache or create structure
-      const existingCache = this.translationCache.getAnalysis(contractId, 'en') || {
-        metadata: null,
-        summary: null,
-        risks: null,
-        obligations: null,
-        omissions: null,
-        quickTake: null
-      };
+      // Get existing English cache or create empty structure
+      const existingCache = this.translationCache.getAnalysis(contractId, 'en') || {} as Partial<Schemas.CompleteAnalysis>;
       
       // Update specific section
       switch (section) {
         case 'metadata':
-          existingCache.metadata = data;
+          existingCache.metadata = data as Schemas.ContractMetadata;
           break;
         case 'summary':
-          existingCache.summary = data;
+          existingCache.summary = data as Schemas.ContractSummary;
           break;
         case 'risks':
-          existingCache.risks = data;
+          existingCache.risks = data as Schemas.RiskItem[];
           break;
         case 'obligations':
-          existingCache.obligations = data;
+          existingCache.obligations = data as Schemas.Obligations;
           break;
         case 'omissionsAndQuestions':
-          existingCache.omissions = data;
+          const omissionsData = data as { omissions: Schemas.Omission[]; questions: string[] };
+          existingCache.omissions = omissionsData.omissions;
+          existingCache.questions = omissionsData.questions;
           break;
         case 'quickTake':          
-          // Store quickTake as part of summary structure for consistency
+          // Store quickTake as part of summary structure (now flat)
           if (existingCache.summary && typeof existingCache.summary === 'object') {
-            // If summary already exists, add quickTake to the nested summary object
-            if (!existingCache.summary.summary) {
-              existingCache.summary.summary = {};
-            }
-            (existingCache.summary.summary as any).quickTake = data;
+            // If summary already exists, add quickTake directly
+            existingCache.summary = {
+              ...existingCache.summary,
+              quickTake: data as string
+            };
           } else {
             // If no summary yet, create a partial summary structure with quickTake
             existingCache.summary = {
-              summary: {
-                quickTake: data,
-                keyResponsibilities: [],
-                compensation: { baseSalary: null, bonus: null, equity: null, other: null },
-                benefits: [],
-                termination: { atWill: null, forCause: null, severance: null, noticeRequired: null },
-                restrictions: { confidentiality: null, nonCompete: null, nonSolicitation: null, intellectualProperty: null, other: null }
-              }
+              quickTake: data as string,
+              keyResponsibilities: [],
+              compensation: { baseSalary: null, bonus: null, equity: null, other: null },
+              benefits: [],
+              termination: { atWill: null, forCause: null, severance: null, noticeRequired: null },
+              restrictions: { confidentiality: null, nonCompete: null, nonSolicitation: null, intellectualProperty: null, other: null }
             };
           }
           break;

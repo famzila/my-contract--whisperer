@@ -1,4 +1,6 @@
 // Types
+import type { CompleteAnalysis } from '../schemas/analysis-schemas';
+
 export interface TranslationCache {
   [contractId: string]: {
     // All languages in translations array
@@ -8,26 +10,8 @@ export interface TranslationCache {
   };
 }
 
-export interface CachedAnalysis {
-  metadata: any;
-  summary: any;
-  risks: any;
-  obligations: any;
-  omissions: any;
+// CachedAnalysis now extends the canonical CompleteAnalysis shape and adds metadata
+export interface CachedAnalysis extends CompleteAnalysis {
   translatedAt?: string;
 }
 
-export interface AnalysisData {
-  metadata: any;
-  summary: any;
-  risks: any;
-  obligations: any;
-  omissions: any;
-}
-
-export interface CacheStats {
-  totalContracts: number;
-  totalTranslations: number;
-  expiredTranslations: number;
-  cacheSize: number; // in bytes
-}

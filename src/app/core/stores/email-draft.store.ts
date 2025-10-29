@@ -145,9 +145,18 @@ export const EmailDraftStore = signalStore(
           tone: store.rewriteTone(),
           length: store.rewriteLength(),
         };
-        
-        const result = await emailService.rewriteEmail(currentEmail, emailLanguage || 'en', options);
-        
+
+        // Stream progressively via onChunk callback while awaiting the final result
+        const targetLang = emailLanguage || 'en';
+        const result = await emailService.rewriteEmail(
+          currentEmail,
+          targetLang,
+          options,
+          (partial: string) => {
+            patchState(store, { draftedEmail: partial });
+          }
+        );
+
         patchState(store, { 
           draftedEmail: result.content,
           isRewriting: false,
