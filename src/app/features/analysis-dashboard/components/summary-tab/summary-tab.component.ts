@@ -104,7 +104,7 @@ export class SummaryTabComponent {
    * Get formatted Quick Take for display
    */
   getFormattedQuickTake = computed(() => {
-    const quickTake = this.summary()?.quickTake;
+    const quickTake = this.summary()?.summary?.quickTake;
     return quickTake ? this.formatQuickTakeText(quickTake) : '';
   });
   

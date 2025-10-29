@@ -642,7 +642,6 @@ export const ContractStore = signalStore(
                     risks: risks || null,
                     obligations: obligations || null,
                     omissions: omissions || null,
-                    quickTake: null
                   });
                   
                   // 💡 Note: English (intermediate) results already cached incrementally
@@ -656,8 +655,7 @@ export const ContractStore = signalStore(
                     summary: summary || null,
                     risks: risks || null,
                     obligations: obligations || null,
-                    omissions: omissions || null,
-                    quickTake: null
+                    omissions: omissions || null
                   });
                 }
               } else {
@@ -775,7 +773,6 @@ export const ContractStore = signalStore(
           risks,
           obligations,
           omissions,
-          quickTake: summary?.quickTake || null
         });
         
         // Update store with translated data

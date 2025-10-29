@@ -81,11 +81,11 @@ export class TranslationUtilityService {
   ): Promise<Schemas.ContractSummary> {
     this.logger.info(`🌍 [Translation] Translating summary to ${targetLanguage}...`);
     
-    const quickTake = await this.translateField(summary.quickTake, targetLanguage);
+    const quickTake = await this.translateField(summary.summary?.quickTake, targetLanguage);
     
     return {
-      quickTake: quickTake || undefined,
       summary: {
+        quickTake: quickTake || undefined,
         keyResponsibilities: await this.translateStringArray(
           summary.summary.keyResponsibilities,
           targetLanguage

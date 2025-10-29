@@ -484,9 +484,8 @@ export type ContractValidationResult = {
 };
 
 export type ContractSummary = {
-  quickTake?: string;
-  
   summary: {
+    quickTake?: string;  // Moved inside summary object
     keyResponsibilities: string[];
     compensation: {
       baseSalary?: number | null;

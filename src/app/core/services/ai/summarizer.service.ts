@@ -64,13 +64,6 @@ export class SummarizerService {
       throw new Error('Summarizer API not available');
     }
 
-    // Check availability
-    const availability = await window.Summarizer.availability();
-    
-    if (availability === 'unavailable') {
-      throw new Error('Summarizer API not available on this device');
-    }
-
     // Prepare options with monitor for download progress
     const createOptions: AISummarizerCreateOptions = {
       outputLanguage: options?.outputLanguage || 'en', // Explicit default to avoid warnings
@@ -88,12 +81,6 @@ export class SummarizerService {
     };
 
     this.logger.info(`🔍 [Summarizer] createSummarizer called with options:`, createOptions);
-
-    // Log download status
-    if (availability === 'downloadable') {
-      this.logger.info('Summarizer model needs to be downloaded. Starting download...');
-      this.logger.info('This may take a few moments. Download progress will be shown below.');
-    }
 
     this.logger.info('Creating Summarizer session...');
     this.summarizer = await window.Summarizer.create(createOptions);
@@ -150,6 +137,7 @@ export class SummarizerService {
       type: 'tldr',
       length: 'short',
       format: 'plain-text',
+      outputLanguage: this.currentOutputLanguage || language,
     });
   }
 

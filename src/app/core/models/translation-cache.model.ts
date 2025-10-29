@@ -14,7 +14,6 @@ export interface CachedAnalysis {
   risks: any;
   obligations: any;
   omissions: any;
-  quickTake: any;
   translatedAt?: string;
 }
 
@@ -24,7 +23,6 @@ export interface AnalysisData {
   risks: any;
   obligations: any;
   omissions: any;
-  quickTake: any;
 }
 
 export interface CacheStats {

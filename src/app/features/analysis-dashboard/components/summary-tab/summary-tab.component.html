@@ -63,7 +63,7 @@
 
 <div class="space-y-6">
   <!-- Quick Take (from Summarizer API) -->
-  @if (summary()?.quickTake) {
+  @if (summary()?.summary?.quickTake) {
   <div class="pb-6 border-b border-divider">
     <app-notice
       type="info"

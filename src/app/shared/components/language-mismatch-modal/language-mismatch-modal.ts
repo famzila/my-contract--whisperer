@@ -78,7 +78,7 @@ export interface LanguageMismatchData {
             <!-- Show different badges based on language support -->
             @if (data.isContractLanguageAvailableInUI && data.canAnalyzeDirectly) {
             <!-- Best case: Direct analysis + UI available -->
-            <div class="badge badge-blue rtl:flex-row-reverse">
+            <div class="badge badge-blue">
               <lucide-icon [img]="CheckIcon" class="w-4 h-4 flex-shrink-0"></lucide-icon>
               <span>{{ 'language.appWillSwitch' | translate }}</span>
             </div>

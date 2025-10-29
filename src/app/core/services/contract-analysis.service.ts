@@ -225,10 +225,15 @@ export class ContractAnalysisService {
     const summary$ = combineLatest([quickTake$, structuredSummary$]).pipe(
       map(([quickTake, structuredResult]) => ({
         section: structuredResult.section,
-        data: structuredResult.data ? {
-          ...structuredResult.data as Record<string, unknown>,
-          quickTake // Add quick take to result
-        } : null,
+        data: structuredResult.data
+          ? {
+              ...structuredResult.data as any,
+              summary: {
+                ...(structuredResult.data as any).summary,
+                quickTake,
+              },
+            }
+          : null,
         progress: structuredResult.progress,
         isRetrying: (structuredResult as any).isRetrying ?? false,
         retryCount: (structuredResult as any).retryCount ?? undefined
@@ -638,13 +643,16 @@ export class ContractAnalysisService {
         case 'quickTake':          
           // Store quickTake as part of summary structure for consistency
           if (existingCache.summary && typeof existingCache.summary === 'object') {
-            // If summary already exists, add quickTake to it
-            (existingCache.summary as any).quickTake = data;
+            // If summary already exists, add quickTake to the nested summary object
+            if (!existingCache.summary.summary) {
+              existingCache.summary.summary = {};
+            }
+            (existingCache.summary.summary as any).quickTake = data;
           } else {
             // If no summary yet, create a partial summary structure with quickTake
             existingCache.summary = {
-              quickTake: data,
               summary: {
+                quickTake: data,
                 keyResponsibilities: [],
                 compensation: { baseSalary: null, bonus: null, equity: null, other: null },
                 benefits: [],

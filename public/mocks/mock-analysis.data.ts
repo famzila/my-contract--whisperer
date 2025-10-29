@@ -27,6 +27,7 @@ export const MOCK_LEASE_DATA = {
   },
   "summary": {
     "summary": {
+      "quickTake": "This is a 12-month lease agreement between Olivia Green (Landlord) and James Parker (Tenant) for a property in Portland, Oregon. The tenant pays $2,500 monthly rent and is responsible for utilities, while the landlord maintains the property structure and provides water/sewer/garbage services.",
       "keyResponsibilities": [
         "Landlord: Maintain the property (structure, plumbing, electrical, heating, major appliances). Tenant: Keep the property clean and in good condition; notify landlord of repairs; comply with local ordinances and HOA rules.",
         "Tenant: Pay rent on the 1st of each month.  Tenant is liable for damages caused by negligence or misuse of the property. Tenant is responsible for electricity, gas, internet, and cable.",
