@@ -10,7 +10,7 @@ import { TranslatorService } from './ai/translator.service';
 import { LoggerService } from './logger.service';
 import { generateMockEmail, mapToneToRewriterAPI, mapLengthToRewriterAPI } from '../utils/email.util';
 import { getLanguageName } from '../utils/language.util';
-import { AppConfig } from '../config/application.config';
+import { AppConfig, GEMINI_NANO_SUPPORTED_LANGUAGES, LANGUAGES } from '../config/application.config';
 import type { ContractMetadata } from '../schemas/analysis-schemas';
 import { EmailContext, EmailResult, RewriteOptions } from '../models/email.model';
 
@@ -95,10 +95,16 @@ export class EmailService {
       // Use Writer API to generate professional email with streaming
       this.logger.info(`✍️ Drafting email in ${context.contractLanguage} with Writer API (streaming)...`);
       
+      // Normalize language to Writer API supported languages (en, es, ja)
+      const writerOutputLanguage = (GEMINI_NANO_SUPPORTED_LANGUAGES as readonly string[]).includes(context.contractLanguage)
+        ? context.contractLanguage
+        : LANGUAGES.ENGLISH;
+      
       const prompt = this.buildEmailPrompt(context);
       const stream = await this.writerService.writeStreaming(prompt, {
         tone: 'formal',
         length: 'medium',
+        outputLanguage: writerOutputLanguage,
         sharedContext: `This is a professional email in ${getLanguageName(context.contractLanguage)} from ${context.senderName} to ${context.recipientName} regarding a contract agreement.`,
       });
       
@@ -164,6 +170,11 @@ export class EmailService {
         // Fallback to Writer API in mock mode
         this.logger.info(`🔄 Using Writer API for rewriting in ${languageName} (mock mode or Rewriter unavailable)`);
         
+        // Normalize language to Writer API supported languages (en, es, ja)
+        const writerOutputLanguage = (GEMINI_NANO_SUPPORTED_LANGUAGES as readonly string[]).includes(emailLanguage)
+          ? emailLanguage
+          : LANGUAGES.ENGLISH;
+        
         const prompt = `Rewrite this professional email IN ${languageName.toUpperCase()} with a ${options.tone} tone and make it ${options.length} length:
 
         ${currentEmail}
@@ -173,6 +184,7 @@ export class EmailService {
         const rewritten = await this.writerService.write(prompt, {
           tone: options.tone,
           length: options.length,
+          outputLanguage: writerOutputLanguage,
           sharedContext: `Rewriting email in ${languageName} language`,
         });
         
