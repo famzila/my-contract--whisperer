@@ -217,6 +217,13 @@ export const UiStore = signalStore(
     },
 
     /**
+     * Open FAQ Modal
+     */
+    openFaq: (config?: ModalConfig) => {
+      return modalService.openFaq(config);
+    },
+
+    /**
      * Close all modals
      */
     closeAllModals: () => {

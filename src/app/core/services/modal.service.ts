@@ -8,6 +8,7 @@ import { TermsOfServiceModal } from '../../shared/components/terms-of-service-mo
 import { PartySelectorModal } from '../../shared/components/party-selector-modal/party-selector-modal';
 import { EmailDraftModal } from '../../shared/components/email-draft-modal/email-draft-modal';
 import { LanguageMismatchModal } from '../../shared/components/language-mismatch-modal/language-mismatch-modal';
+import { FaqModal } from '../../shared/components/faq-modal/faq-modal';
 
 export interface ModalConfig {
   width?: string;
@@ -151,6 +152,21 @@ export class ModalService {
     this.applyDarkModeToOverlay();
     
     return dialogRef;
+  }
+
+  /**
+   * Open FAQ Modal
+   */
+  openFaq(config?: ModalConfig): DialogRef<any, any> {
+    return this.dialog.open(FaqModal, {
+      width: '90vw',
+      maxWidth: '56rem', // 4xl = 56rem
+      maxHeight: '90vh',
+      panelClass: 'faq-modal',
+      hasBackdrop: true,
+      disableClose: false,
+      ...config
+    });
   }
 
 

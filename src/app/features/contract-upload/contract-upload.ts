@@ -469,6 +469,13 @@ export class ContractUpload {
   }
 
   /**
+   * Show FAQ modal
+   */
+  showFaq(): void {
+    this.uiStore.openFaq();
+  }
+
+  /**
    * Open party selector modal
    */
   openPartySelector(): void {

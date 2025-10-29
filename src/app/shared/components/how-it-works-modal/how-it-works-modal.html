@@ -8,6 +8,21 @@
   </app-notice>
 
           <div class="space-y-6">
+          <!-- Step 0 -->
+          <div class="flex gap-4 rtl:flex-row-reverse">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
+                <lucide-icon [img]="ShieldIcon" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></lucide-icon>
+              </div>
+            </div>
+            <div class="rtl:text-right">
+              <h4 class="mb-2">{{ 'howItWorks.step0Title' | translate }}</h4>
+              <p class="text-body-sm">
+                {{ 'howItWorks.step0Description' | translate }}
+              </p>
+            </div>
+          </div>
+
           <!-- Step 1 -->
           <div class="flex gap-4 rtl:flex-row-reverse">
             <div class="flex-shrink-0">

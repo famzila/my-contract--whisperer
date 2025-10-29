@@ -1,0 +1,72 @@
+<app-base-modal [config]="modalConfig">
+  <app-notice
+    type="info"
+    [icon]="HelpCircleIcon"
+    titleKey="faq.headerTitle"
+    messageKey="faq.headerDescription"
+    class="mb-6">
+  </app-notice>
+
+  <div class="space-y-6 text-sm">
+    <!-- Q1 -->
+    <div>
+      <h3 class="mb-2 font-semibold rtl:text-right ltr:text-left">
+        {{ 'faq.q1Question' | translate }}
+      </h3>
+      <p class="text-body-sm rtl:text-right ltr:text-left">
+        {{ 'faq.q1Answer' | translate }}
+      </p>
+    </div>
+
+    <!-- Q2 -->
+    <div>
+      <h3 class="mb-2 font-semibold rtl:text-right ltr:text-left">
+        {{ 'faq.q2Question' | translate }}
+      </h3>
+      <p class="text-body-sm rtl:text-right ltr:text-left">
+        {{ 'faq.q2Answer' | translate }}
+      </p>
+    </div>
+
+    <!-- Q3 -->
+    <div>
+      <h3 class="mb-2 font-semibold rtl:text-right ltr:text-left">
+        {{ 'faq.q3Question' | translate }}
+      </h3>
+      <p class="text-body-sm rtl:text-right ltr:text-left">
+        {{ 'faq.q3Answer' | translate }}
+      </p>
+    </div>
+
+    <!-- Q4 -->
+    <div>
+      <h3 class="mb-2 font-semibold rtl:text-right ltr:text-left">
+        {{ 'faq.q4Question' | translate }}
+      </h3>
+      <p class="text-body-sm rtl:text-right ltr:text-left">
+        {{ 'faq.q4Answer' | translate }}
+      </p>
+    </div>
+
+    <!-- Q5 -->
+    <div>
+      <h3 class="mb-2 font-semibold rtl:text-right ltr:text-left">
+        {{ 'faq.q5Question' | translate }}
+      </h3>
+      <p class="text-body-sm rtl:text-right ltr:text-left">
+        {{ 'faq.q5Answer' | translate }}
+      </p>
+    </div>
+
+    <!-- Q6 -->
+    <div>
+      <h3 class="mb-2 font-semibold rtl:text-right ltr:text-left">
+        {{ 'faq.q6Question' | translate }}
+      </h3>
+      <p class="text-body-sm rtl:text-right ltr:text-left">
+        {{ 'faq.q6Answer' | translate }}
+      </p>
+    </div>
+  </div>
+</app-base-modal>
+
