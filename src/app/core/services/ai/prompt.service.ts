@@ -33,9 +33,13 @@ export class PromptService {
   readonly modelDownloadProgress = signal<number | null>(null);
   readonly isDownloadingModel = signal<boolean>(false);
   readonly shouldShowDownloadNotice = signal<boolean>(false);
+  readonly isIndeterminateProgress = signal<boolean>(false); // For when Chrome doesn't fire intermediate events
   
   private downloadStartTime: number | null = null;
   private showNoticeTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private progressSimulationIntervalId: ReturnType<typeof setInterval> | null = null;
+  private checkProgressUpdateInterval: ReturnType<typeof setInterval> | null = null;
+  private lastProgressUpdateTime: number | null = null;
   
   constructor() {
     // Register cleanup callback
@@ -155,64 +159,93 @@ export class PromptService {
             this.logger.info(`📥 [AI Model] Download starting - e.loaded === 0`);
             this.isDownloadingModel.set(true);
             this.modelDownloadProgress.set(0);
+            this.isIndeterminateProgress.set(false);
             this.downloadStartTime = Date.now();
+            this.lastProgressUpdateTime = Date.now();
             this.shouldShowDownloadNotice.set(false);
             
-            // Clear any existing timeout
+            // Clear any existing timeouts/intervals
             if (this.showNoticeTimeoutId) {
               clearTimeout(this.showNoticeTimeoutId);
               this.showNoticeTimeoutId = null;
             }
+            if (this.progressSimulationIntervalId) {
+              clearInterval(this.progressSimulationIntervalId);
+              this.progressSimulationIntervalId = null;
+            }
             
-            // Only show notice if download takes more than 500ms
-            // This prevents flickering for cached models that complete instantly
+            // Always show notice immediately so user can see progress
+            // Even if download is cached/instant, we want to show the progress
+            this.shouldShowDownloadNotice.set(true);
+            
+            // Also set a timeout to check for missing progress events
             this.showNoticeTimeoutId = setTimeout(() => {
               // Check if download is still in progress (not complete)
               if (this.isDownloadingModel() && this.modelDownloadProgress() !== null && this.modelDownloadProgress() !== 100) {
-                this.logger.info(`📥 [AI Model] Download taking time - showing notice`);
-                this.shouldShowDownloadNotice.set(true);
+                this.logger.info(`📥 [AI Model] Download taking time - notice already shown`);
+                
+                // If we haven't received progress updates in 2 seconds, Chrome might not be firing intermediate events
+                // Switch to indeterminate progress (animated loading)
+                const timeSinceLastUpdate = this.lastProgressUpdateTime ? Date.now() - this.lastProgressUpdateTime : 0;
+                if (timeSinceLastUpdate > 2000) {
+                  this.logger.info(`📥 [AI Model] No progress updates for ${timeSinceLastUpdate}ms - switching to indeterminate progress`);
+                  this.isIndeterminateProgress.set(true);
+                  this.modelDownloadProgress.set(null); // Clear percentage, show animated loader
+                  
+                  // Start simulated progress (slowly animate from 0-90% over time)
+                  this.startProgressSimulation();
+                }
               }
             }, 500);
+            
+            // Monitor for lack of progress updates (Chrome might not fire intermediate events)
+            this.checkProgressUpdateInterval = setInterval(() => {
+              const timeSinceLastUpdate = this.lastProgressUpdateTime ? Date.now() - this.lastProgressUpdateTime : 0;
+              if (timeSinceLastUpdate > 2000 && this.isDownloadingModel() && !this.isIndeterminateProgress()) {
+                this.logger.info(`📥 [AI Model] No progress events for ${timeSinceLastUpdate}ms - Chrome may not be firing intermediate events`);
+                this.isIndeterminateProgress.set(true);
+                this.modelDownloadProgress.set(null);
+                this.startProgressSimulation();
+              }
+            }, 1000);
             
             this.logger.info(`📥 [AI Model] Download started - progress set to 0`);
           } else if (e.loaded === 1) {
             // Download complete
+            this.logger.info(`📥 [AI Model] Download complete - e.loaded === 1`);
+            this.cleanupProgressTracking();
             this.modelDownloadProgress.set(100);
             
-            // Clear the timeout if download completed quickly
-            if (this.showNoticeTimeoutId) {
-              clearTimeout(this.showNoticeTimeoutId);
-              this.showNoticeTimeoutId = null;
-            }
-            
-            // Check if download was fast (less than 500ms) - likely cached
+            // Always show completion progress so user can see it
             const downloadDuration = this.downloadStartTime ? Date.now() - this.downloadStartTime : 0;
-            if (downloadDuration < 500) {
-              // Model was cached, completed instantly - don't show notice
-              this.shouldShowDownloadNotice.set(false);
-              this.isDownloadingModel.set(false);
+            this.isDownloadingModel.set(false);
+            this.isIndeterminateProgress.set(false);
+            
+            // Show completion for 2 seconds so user can see 100%
+            setTimeout(() => {
               this.modelDownloadProgress.set(null);
+              this.shouldShowDownloadNotice.set(false);
               this.downloadStartTime = null;
-              this.logger.info(`📥 [AI Model] Download complete (cached, ${downloadDuration}ms)`);
-            } else {
-              // Show completion briefly, then reset
-              this.isDownloadingModel.set(false);
-              setTimeout(() => {
-                this.modelDownloadProgress.set(null);
-                this.shouldShowDownloadNotice.set(false);
-                this.downloadStartTime = null;
-              }, 500);
-              this.logger.info(`📥 [AI Model] Download complete (${downloadDuration}ms)`);
-            }
+            }, 2000);
+            
+            this.logger.info(`📥 [AI Model] Download complete (${downloadDuration}ms, ${downloadDuration < 500 ? 'cached' : 'downloaded'})`);
           } else {
-            // Download in progress - if we've passed the delay threshold, show notice
+            // Download in progress - received an intermediate progress event!
+            // This means Chrome IS firing progress events, so use real progress
             this.logger.info(`📥 [AI Model] Setting progress to: ${percent}%`);
+            this.lastProgressUpdateTime = Date.now();
+            this.isIndeterminateProgress.set(false); // Use real progress
             this.modelDownloadProgress.set(percent);
+            
+            // Stop any progress simulation since we have real updates
+            if (this.progressSimulationIntervalId) {
+              clearInterval(this.progressSimulationIntervalId);
+              this.progressSimulationIntervalId = null;
+            }
             
             // If download is taking time, ensure notice is shown
             if (this.downloadStartTime && Date.now() - this.downloadStartTime > 500) {
               this.shouldShowDownloadNotice.set(true);
-
             }
           }
           
@@ -479,20 +512,67 @@ export class PromptService {
   /**
    * Clean up resources
    */
+  /**
+   * Start simulated progress when Chrome doesn't fire intermediate events
+   * This shows a slowly increasing progress bar to give visual feedback
+   */
+  private startProgressSimulation(): void {
+    if (this.progressSimulationIntervalId) {
+      return; // Already running
+    }
+    
+    this.logger.info(`📥 [AI Model] Starting progress simulation`);
+    let simulatedProgress = 0;
+    
+    this.progressSimulationIntervalId = setInterval(() => {
+      // Slowly increase from 0 to 90% over time (cap at 90% to leave room for real completion)
+      simulatedProgress = Math.min(90, simulatedProgress + 1);
+      this.modelDownloadProgress.set(simulatedProgress);
+      this.logger.info(`📥 [AI Model] Simulated progress: ${simulatedProgress}%`);
+      
+      // Stop if we get a real progress update or download completes
+      if (!this.isDownloadingModel() || !this.isIndeterminateProgress()) {
+        if (this.progressSimulationIntervalId) {
+          clearInterval(this.progressSimulationIntervalId);
+          this.progressSimulationIntervalId = null;
+        }
+      }
+    }, 1000); // Update every second
+  }
+
+  /**
+   * Clean up all progress tracking intervals and timeouts
+   */
+  private cleanupProgressTracking(): void {
+    if (this.showNoticeTimeoutId) {
+      clearTimeout(this.showNoticeTimeoutId);
+      this.showNoticeTimeoutId = null;
+    }
+    if (this.progressSimulationIntervalId) {
+      clearInterval(this.progressSimulationIntervalId);
+      this.progressSimulationIntervalId = null;
+    }
+    if (this.checkProgressUpdateInterval) {
+      clearInterval(this.checkProgressUpdateInterval);
+      this.checkProgressUpdateInterval = null;
+    }
+  }
+
+  /**
+   * Clean up resources
+   */
   destroy(): void {
     if (this.session) {
       this.session.destroy();
       this.session = null;
     }
-    // Clear timeout if exists
-    if (this.showNoticeTimeoutId) {
-      clearTimeout(this.showNoticeTimeoutId);
-      this.showNoticeTimeoutId = null;
-    }
+    this.cleanupProgressTracking();
     // Reset download state
     this.isDownloadingModel.set(false);
     this.modelDownloadProgress.set(null);
     this.shouldShowDownloadNotice.set(false);
+    this.isIndeterminateProgress.set(false);
     this.downloadStartTime = null;
+    this.lastProgressUpdateTime = null;
   }
 }
