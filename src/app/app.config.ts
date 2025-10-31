@@ -26,6 +26,6 @@ export const appConfig: ApplicationConfig = {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000'
     }),
-    { provide: LOG_LEVEL, useValue: isDevMode() ? LogLevel.DEBUG : LogLevel.NONE }
+    { provide: LOG_LEVEL, useValue: isDevMode() ? LogLevel.DEBUG : LogLevel.DEBUG }
   ]
 };

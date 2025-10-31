@@ -39,13 +39,15 @@ export class SummaryTabComponent {
     const compensation = this.summary()?.compensation;
     const benefits = this.summary()?.benefits;
     
-    return !!(
-      compensation?.baseSalary ||
-      compensation?.bonus ||
-      compensation?.equity ||
-      compensation?.other ||
-      (benefits && benefits.length > 0)
-    );
+    // Check for non-null, non-empty values
+    // baseSalary is a number, others are strings
+    const hasBaseSalary = compensation?.baseSalary != null;
+    const hasBonus = compensation?.bonus != null && compensation.bonus !== '' && compensation.bonus !== 'null';
+    const hasEquity = compensation?.equity != null && compensation.equity !== '' && compensation.equity !== 'null';
+    const hasOther = compensation?.other != null && compensation.other !== '' && compensation.other !== 'null';
+    const hasBenefits = benefits && benefits.length > 0;
+    
+    return hasBaseSalary || hasBonus || hasEquity || hasOther || hasBenefits;
   });
 
   /**
@@ -54,12 +56,13 @@ export class SummaryTabComponent {
   hasTerminationData = computed(() => {
     const termination = this.summary()?.termination;
     
-    return !!(
-      termination?.atWill ||
-      termination?.forCause ||
-      termination?.severance ||
-      termination?.noticeRequired
-    );
+    // Check for non-null, non-empty values
+    const hasAtWill = termination?.atWill != null && termination.atWill !== '' && termination.atWill !== 'null';
+    const hasForCause = termination?.forCause != null && termination.forCause !== '' && termination.forCause !== 'null';
+    const hasSeverance = termination?.severance != null && termination.severance !== '' && termination.severance !== 'null';
+    const hasNoticeRequired = termination?.noticeRequired != null && termination.noticeRequired !== '' && termination.noticeRequired !== 'null';
+    
+    return hasAtWill || hasForCause || hasSeverance || hasNoticeRequired;
   });
 
   /**
@@ -68,13 +71,14 @@ export class SummaryTabComponent {
   hasRestrictionsData = computed(() => {
     const restrictions = this.summary()?.restrictions;
     
-    return !!(
-      restrictions?.confidentiality ||
-      restrictions?.nonCompete ||
-      restrictions?.nonSolicitation ||
-      restrictions?.intellectualProperty ||
-      restrictions?.other
-    );
+    // Check for non-null, non-empty values
+    const hasConfidentiality = restrictions?.confidentiality != null && restrictions.confidentiality !== '';
+    const hasNonCompete = restrictions?.nonCompete != null && restrictions.nonCompete !== '';
+    const hasNonSolicitation = restrictions?.nonSolicitation != null && restrictions.nonSolicitation !== '';
+    const hasIntellectualProperty = restrictions?.intellectualProperty != null && restrictions.intellectualProperty !== '';
+    const hasOther = restrictions?.other != null && restrictions.other !== '';
+    
+    return hasConfidentiality || hasNonCompete || hasNonSolicitation || hasIntellectualProperty || hasOther;
   });
 
   /**

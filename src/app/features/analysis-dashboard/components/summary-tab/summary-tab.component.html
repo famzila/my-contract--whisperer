@@ -97,22 +97,22 @@
     </h3>
     @if (hasCompensationData()) {
     <div class="space-y-2 text-body">
-      @if (summary()?.compensation?.baseSalary) {
+      @if (summary()?.compensation?.baseSalary != null) {
       <p>
         <strong>{{ 'analysis.summary.baseSalary' | translate }}:</strong> 
         {{ summary()?.compensation?.baseSalary }}
       </p>
-      } @if (summary()?.compensation?.bonus) {
+      } @if (summary()?.compensation?.bonus != null && summary()?.compensation?.bonus !== '') {
       <p>
         <strong>{{ 'analysis.summary.bonus' | translate }}:</strong>
         {{ summary()?.compensation?.bonus }}
       </p>
-      } @if (summary()?.compensation?.equity) {
+      } @if (summary()?.compensation?.equity != null && summary()?.compensation?.equity !== '') {
       <p>
         <strong>{{ 'analysis.summary.equity' | translate }}:</strong>
         {{ summary()?.compensation?.equity }}
       </p>
-      } @if (summary()?.compensation?.other) {
+      } @if (summary()?.compensation?.other != null && summary()?.compensation?.other !== '') {
       <p>
         <strong>{{ 'analysis.summary.other' | translate }}:</strong>
         {{ summary()?.compensation?.other }}
@@ -139,22 +139,22 @@
     </h3>
     @if (hasTerminationData()) {
     <div class="space-y-2 text-body">
-      @if (summary()?.termination?.atWill) {
+      @if (summary()?.termination?.atWill != null && summary()?.termination?.atWill !== '') {
       <p>
         <strong>{{ 'analysis.summary.atWill' | translate }}:</strong>
         {{ summary()?.termination?.atWill }}
       </p>
-      } @if (summary()?.termination?.forCause) {
+      } @if (summary()?.termination?.forCause != null && summary()?.termination?.forCause !== '') {
       <p>
         <strong>{{ 'analysis.summary.forCause' | translate }}:</strong>
         {{ summary()?.termination?.forCause }}
       </p>
-      } @if (summary()?.termination?.severance) {
+      } @if (summary()?.termination?.severance != null && summary()?.termination?.severance !== '') {
       <p>
         <strong>{{ 'analysis.summary.severance' | translate }}:</strong>
         {{ summary()?.termination?.severance }}
       </p>
-      } @if (summary()?.termination?.noticeRequired) {
+      } @if (summary()?.termination?.noticeRequired != null && summary()?.termination?.noticeRequired !== '') {
       <p>
         <strong>{{ 'analysis.summary.noticeRequired' | translate }}:</strong>
         {{ summary()?.termination?.noticeRequired }}
@@ -174,27 +174,27 @@
     </h3>
     @if (hasRestrictionsData()) {
     <div class="space-y-2 text-body">
-      @if (summary()?.restrictions?.confidentiality) {
+      @if (summary()?.restrictions?.confidentiality != null && summary()?.restrictions?.confidentiality !== '') {
       <p>
         <strong>{{ 'analysis.summary.confidentiality' | translate }}:</strong>
         {{ summary()?.restrictions?.confidentiality }}
       </p>
-      } @if (summary()?.restrictions?.nonCompete) {
+      } @if (summary()?.restrictions?.nonCompete != null && summary()?.restrictions?.nonCompete !== '') {
       <p>
         <strong>{{ 'analysis.summary.nonCompete' | translate }}:</strong>
         {{ summary()?.restrictions?.nonCompete }}
       </p>
-      } @if (summary()?.restrictions?.nonSolicitation) {
+      } @if (summary()?.restrictions?.nonSolicitation != null && summary()?.restrictions?.nonSolicitation !== '') {
       <p>
         <strong>{{ 'analysis.summary.nonSolicitation' | translate }}:</strong>
         {{ summary()?.restrictions?.nonSolicitation }}
       </p>
-      } @if (summary()?.restrictions?.intellectualProperty) {
+      } @if (summary()?.restrictions?.intellectualProperty != null && summary()?.restrictions?.intellectualProperty !== '') {
       <p>
         <strong>{{ 'analysis.summary.intellectualProperty' | translate }}:</strong>
         {{ summary()?.restrictions?.intellectualProperty }}
       </p>
-      } @if (summary()?.restrictions?.other) {
+      } @if (summary()?.restrictions?.other != null && summary()?.restrictions?.other !== '') {
       <p>
         <strong>{{ 'analysis.summary.other' | translate }}:</strong>
         {{ summary()?.restrictions?.other }}
