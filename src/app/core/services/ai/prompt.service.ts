@@ -135,9 +135,6 @@ export class PromptService {
         },
       ],
       monitor: (m) => {
-        // IMPORTANT: Log when monitor is called to verify it's being invoked
-        this.logger.info(`📥 [AI Model] Monitor callback invoked - setting up downloadprogress listener`);
-        
         // Listen for the 'downloadprogress' event on the monitor object (m)
         m.addEventListener('downloadprogress', (e) => {
           const loaded = e.loaded;
@@ -146,45 +143,54 @@ export class PromptService {
           // Calculate percentage
           const percentage = total > 0 ? parseFloat(((loaded / total) * 100).toFixed(2)) : 0;
           
-          // Log the real-time progress to the console
-          this.logger.info(`📥 [DOWNLOAD] Progress: ${percentage}% (${loaded} of ${total} bytes)`);
-          
           // Update progress in UI
           this.modelDownloadProgress.set(Math.round(percentage));
           
           // Handle download start
           if (loaded === 0 && !this.isDownloadingModel()) {
-            this.logger.info(`📥 [AI Model] Download starting`);
             this.isDownloadingModel.set(true);
             this.modelDownloadProgress.set(0);
             this.downloadStartTime = Date.now();
-            this.shouldShowDownloadNotice.set(true);
+            this.shouldShowDownloadNotice.set(false); // Don't show immediately - wait to see if it's instant
             
             // Clear any existing timeout
             if (this.showNoticeTimeoutId) {
               clearTimeout(this.showNoticeTimeoutId);
               this.showNoticeTimeoutId = null;
             }
+            
+            // Only show notice if download takes more than 500ms
+            // This prevents flickering for cached models that complete instantly
+            this.showNoticeTimeoutId = setTimeout(() => {
+              if (this.isDownloadingModel() && this.modelDownloadProgress() !== null && this.modelDownloadProgress() !== 100) {
+                this.shouldShowDownloadNotice.set(true);
+              }
+            }, 500);
           }
           
-          // Optional: If the download completes (100%), signal extraction phase.
+          // If the download completes (100%), signal extraction phase
           if (loaded === total && total > 0) {
-            this.logger.info(`📥 [STATUS] Download 100%. Model is now being extracted and loaded into memory...`);
             this.cleanupProgressTracking();
             this.modelDownloadProgress.set(100);
             
-            // Always show completion progress so user can see it
+            // Check if download was fast (less than 500ms) - likely cached
             const downloadDuration = this.downloadStartTime ? Date.now() - this.downloadStartTime : 0;
-            this.isDownloadingModel.set(false);
             
-            // Show completion for 2 seconds so user can see 100%
-            setTimeout(() => {
-              this.modelDownloadProgress.set(null);
+            if (downloadDuration < 500) {
+              // Model was cached, completed instantly - don't show notice
               this.shouldShowDownloadNotice.set(false);
+              this.isDownloadingModel.set(false);
+              this.modelDownloadProgress.set(null);
               this.downloadStartTime = null;
-            }, 2000);
-            
-            this.logger.info(`📥 [AI Model] Download complete (${downloadDuration}ms, ${downloadDuration < 500 ? 'cached' : 'downloaded'})`);
+            } else {
+              // Actual download - show completion briefly
+              this.isDownloadingModel.set(false);
+              setTimeout(() => {
+                this.modelDownloadProgress.set(null);
+                this.shouldShowDownloadNotice.set(false);
+                this.downloadStartTime = null;
+              }, 500);
+            }
           } else if (loaded > 0 && loaded < total) {
             // Download in progress - intermediate progress event
             // If download is taking time, ensure notice is shown
@@ -199,50 +205,8 @@ export class PromptService {
     const langInfo = ` (input: [${inputLanguages.join(', ')}], output: [${outputLanguages.join(', ')}])`;
     this.logger.info(`Creating session${options?.userRole ? ` for ${options.userRole} perspective` : ''}${langInfo}...`);
     
-    // Log initial state before creating
-    this.logger.info(`📥 [AI Model] Before create() - progress: ${this.modelDownloadProgress()}, isDownloading: ${this.isDownloadingModel()}`);
-    
-    // Note: LanguageModel doesn't have availability() method like other APIs
-    // The monitor callback will only be invoked if a download is needed
-    // If model is cached, monitor might not be called or events won't fire
-    
-    // Set a flag before create() to track if monitor gets called
-    let monitorWasCalled = false;
-    const originalMonitor = createOptions.monitor;
-    
-    // Wrap monitor to track invocation
-    createOptions.monitor = (m) => {
-      monitorWasCalled = true;
-      this.logger.info(`📥 [AI Model] Monitor callback actually invoked!`);
-      if (originalMonitor) {
-        originalMonitor(m);
-      }
-    };
-    
-    this.logger.info(`📥 [AI Model] Calling LanguageModel.create() with monitor configured...`);
-    const createStartTime = Date.now();
-    
-    try {
-      this.session = await window.LanguageModel.create(createOptions);
-      const createDuration = Date.now() - createStartTime;
-      this.logger.info(`Session ready (took ${createDuration}ms)`);
-      
-      // Check if monitor was invoked (if download was needed) by checking progress state
-      const finalProgress = this.modelDownloadProgress();
-      const finalIsDownloading = this.isDownloadingModel();
-      this.logger.info(`📥 [AI Model] After create() - monitorWasCalled: ${monitorWasCalled}, progress: ${finalProgress}, isDownloading: ${finalIsDownloading}`);
-      
-      // If monitor was never called, the model was likely already available (instant)
-      if (!monitorWasCalled) {
-        this.logger.info(`📥 [AI Model] Monitor callback was NOT invoked - model was likely already cached/available`);
-        this.logger.info(`📥 [AI Model] This means downloadprogress events won't fire - model is ready immediately`);
-      } else if (finalProgress === null && finalIsDownloading === false) {
-        this.logger.info(`📥 [AI Model] Monitor was called but no progress events fired - model completed instantly (cached)`);
-      }
-    } catch (error) {
-      this.logger.error(`📥 [AI Model] create() failed:`, error);
-      throw error;
-    }
+    this.session = await window.LanguageModel.create(createOptions);
+    this.logger.info('Session ready');
     
     return this.session;
   }

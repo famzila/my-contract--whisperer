@@ -107,6 +107,71 @@
       messageKey="analysis.chromeAiNotAvailableMessage"
       class="mb-6"
     >
+      <div class="mt-3 space-y-3">
+        <button
+          type="button"
+          (click)="showChromeAiRequirements.set(!showChromeAiRequirements())"
+          class="text-sm font-medium text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 underline underline-offset-2 flex items-center gap-1 rtl:flex-row-reverse"
+        >
+          @if (!showChromeAiRequirements()) {
+            {{ 'analysis.chromeAiNotAvailableReadMore' | translate }}
+            <lucide-icon [name]="ChevronDownIcon" class="w-4 h-4"></lucide-icon>
+          } @else {
+            {{ 'analysis.chromeAiNotAvailableRequirements.readLess' | translate }}
+            <lucide-icon [name]="ChevronUpIcon" class="w-4 h-4"></lucide-icon>
+          }
+        </button>
+        
+        @if (showChromeAiRequirements()) {
+          <div class="mt-3 pt-3 border-t border-amber-200 dark:border-amber-800 space-y-4 text-sm">
+            <h5 class="font-semibold text-amber-900 dark:text-amber-200">
+              {{ 'analysis.chromeAiNotAvailableRequirements.title' | translate }}
+            </h5>
+            
+            <div class="space-y-3 text-amber-800 dark:text-amber-300">
+              <div>
+                <strong>{{ 'analysis.chromeAiNotAvailableRequirements.chromeVersion' | translate }}</strong>
+              </div>
+              
+              <div>
+                <strong>{{ 'analysis.chromeAiNotAvailableRequirements.storage' | translate }}</strong>
+              </div>
+              
+              <div>
+                <strong>{{ 'analysis.chromeAiNotAvailableRequirements.gpuTitle' | translate }}</strong>
+                <ul class="list-disc list-inside ml-4 rtl:mr-4 rtl:ml-0 mt-1 space-y-1">
+                  <li>{{ 'analysis.chromeAiNotAvailableRequirements.gpuVram' | translate }}</li>
+                </ul>
+              </div>
+              
+              <div>
+                <strong>{{ 'analysis.chromeAiNotAvailableRequirements.cpuTitle' | translate }}</strong>
+                <ul class="list-disc list-inside ml-4 rtl:mr-4 rtl:ml-0 mt-1 space-y-1">
+                  <li>{{ 'analysis.chromeAiNotAvailableRequirements.cpuRam' | translate }}</li>
+                  <li>{{ 'analysis.chromeAiNotAvailableRequirements.cpuCores' | translate }}</li>
+                </ul>
+              </div>
+              
+              <div>
+                <strong>{{ 'analysis.chromeAiNotAvailableRequirements.mobileTitle' | translate }}</strong>
+                <ul class="list-disc list-inside ml-4 rtl:mr-4 rtl:ml-0 mt-1 space-y-1">
+                  <li>{{ 'analysis.chromeAiNotAvailableRequirements.mobileNotSupported' | translate }}</li>
+                </ul>
+              </div>
+              
+              <div>
+                <strong>{{ 'analysis.chromeAiNotAvailableRequirements.osTitle' | translate }}</strong>
+                <ul class="list-disc list-inside ml-4 rtl:mr-4 rtl:ml-0 mt-1 space-y-1">
+                  <li>{{ 'analysis.chromeAiNotAvailableRequirements.windows' | translate }}</li>
+                  <li>{{ 'analysis.chromeAiNotAvailableRequirements.macos' | translate }}</li>
+                  <li>{{ 'analysis.chromeAiNotAvailableRequirements.linux' | translate }}</li>
+                  <li>{{ 'analysis.chromeAiNotAvailableRequirements.chromeos' | translate }}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
     </app-notice>
     }
 
@@ -171,7 +236,7 @@
           variant="primary"
           size="md"
           [rounded]="'lg'"
-          [disabled]="onboardingStore.isAnalysisDisabled()"
+          [disabled]="onboardingStore.isAnalysisDisabled() || showChromeAiNotice()"
         ></app-button>
         <p class="upload-formats">
           {{ 'upload.supportedFormats' | translate }}
@@ -220,7 +285,8 @@
           [disabled]="
             contractStore.isLoading() ||
             !contractText().trim() ||
-            onboardingStore.isAnalysisDisabled()
+            onboardingStore.isAnalysisDisabled() ||
+            showChromeAiNotice()
           "
           [loading]="contractStore.isLoading() && !contractStore.shouldShowDownloadNotice()"
           variant="primary"

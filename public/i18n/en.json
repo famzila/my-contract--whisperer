@@ -151,7 +151,26 @@
     "translationFailed": "Translation failed. Please try again.",
     "viewingInDifferentLanguage": "Viewing analysis in different language",
     "chromeAiNotAvailable": "Chrome AI Features Not Available",
-    "chromeAiNotAvailableMessage": "For the best experience with accurate party detection and AI analysis, please enable Chrome's built-in AI features. Go to chrome://flags/#optimization-guide-on-device-model and enable 'Optimization Guide On Device Model'.",
+    "chromeAiNotAvailableMessage": "This app requires Chrome version 141 or later with built-in AI features enabled. Please update Chrome or check if your device meets the requirements.",
+    "chromeAiNotAvailableReadMore": "Read more about requirements",
+    "chromeAiNotAvailableRequirements": {
+      "title": "System Requirements",
+      "chromeVersion": "Chrome version 141 or later",
+      "storage": "At least 22 GB of free space on the volume containing your Chrome profile",
+      "gpuTitle": "GPU (If using GPU):",
+      "gpuVram": "Strictly more than 4 GB of VRAM (Video RAM)",
+      "cpuTitle": "CPU (If using CPU only):",
+      "cpuRam": "16 GB of RAM or more",
+      "cpuCores": "4 CPU cores or more",
+      "mobileTitle": "Mobile Devices:",
+      "mobileNotSupported": "Chrome for Android, iOS, and ChromeOS on non-Chromebook Plus devices are not yet supported.",
+      "osTitle": "Operating Systems:",
+      "windows": "Windows 10 or 11",
+      "macos": "macOS 13+ (Ventura and onwards)",
+      "linux": "Linux (latest versions)",
+      "chromeos": "ChromeOS Platform 16389.0.0 and onwards on Chromebook Plus devices",
+      "readLess": "Show less"
+    },
     "perspectiveContext": {
       "employer": {
         "title": "Employer Perspective",

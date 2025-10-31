@@ -54,6 +54,68 @@ export class SummarizerService {
   }
 
   /**
+   * Check Summarizer availability status
+   * Returns the actual availability state (available, downloadable, downloading, unavailable)
+   */
+  async checkAvailability(): Promise<'available' | 'downloadable' | 'downloading' | 'unavailable'> {
+    if (!window.Summarizer) {
+      return 'unavailable';
+    }
+    
+    return await window.Summarizer.availability();
+  }
+
+  /**
+   * Pre-initialize Summarizer during user gesture to trigger model download if needed
+   * This should be called when a user gesture is available (e.g., file upload, button click)
+   * 
+   * @param outputLanguage - Optional output language, defaults to 'en'
+   */
+  async preInitialize(outputLanguage?: string): Promise<void> {
+    if (!window.Summarizer) {
+      this.logger.warn('⚠️ [Summarizer] API not available, skipping pre-initialization');
+      return;
+    }
+
+    const language = getAiOutputLanguage(outputLanguage);
+    
+    try {
+      // Check if model needs download
+      const availability = await this.checkAvailability();
+      
+      if (availability === 'downloadable' || availability === 'downloading') {
+        this.logger.info(`📥 [Summarizer] Model needs download, pre-initializing during user gesture...`);
+        
+        // Pre-create summarizer to trigger download during user gesture
+        await this.createSummarizer({ outputLanguage: language });
+        this.currentOutputLanguage = language;
+        
+        this.logger.info(`✅ [Summarizer] Pre-initialized successfully`);
+      } else if (availability === 'available') {
+        // Model is already available, we can optionally pre-create for faster response
+        this.logger.info(`✅ [Summarizer] Model already available`);
+        
+        // Optionally pre-create even if available to ensure it's ready
+        if (!this.summarizer || this.currentOutputLanguage !== language) {
+          await this.createSummarizer({ outputLanguage: language });
+          this.currentOutputLanguage = language;
+        }
+      } else {
+        this.logger.warn(`⚠️ [Summarizer] Model unavailable (status: ${availability})`);
+      }
+    } catch (error) {
+      // Handle user gesture requirement error
+      if (error instanceof Error && error.message.includes('user gesture')) {
+        this.logger.warn(`⚠️ [Summarizer] User gesture required but may have expired:`, error);
+        // Don't throw - we'll try again during analysis
+      } else {
+        this.logger.error(`❌ [Summarizer] Pre-initialization failed:`, error);
+        // Don't throw - we'll try again during analysis
+      }
+    }
+  }
+
+  /**
    * Create a new Summarizer instance (private - only used internally)
    * This will trigger model download if needed (requires user interaction)
    */

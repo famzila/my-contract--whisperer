@@ -21,11 +21,15 @@ import {
   Search,
   Lock,
   Mail,
+  ChevronDown,
+  ChevronUp,
 } from '../../shared/icons/lucide-icons';
 import { ContractStore } from '../../core/stores/contract.store';
 import { UiStore } from '../../core/stores/ui.store';
 import { OnboardingStore } from '../../core/stores/onboarding.store';
 import { LanguageStore } from '../../core/stores/language.store';
+import { SummarizerService } from '../../core/services/ai/summarizer.service';
+import { getAiOutputLanguage } from '../../core/utils/language.util';
 import {
   LANGUAGES,
   AI_CONFIG,
@@ -55,6 +59,7 @@ export class ContractUpload {
   translate = inject(TranslateService);
   uiStore = inject(UiStore);
   logger = inject(LoggerService);
+  summarizerService = inject(SummarizerService);
 
   // Lucide icons
   readonly FileTextIcon = FileText;
@@ -72,6 +77,8 @@ export class ContractUpload {
   readonly SearchIcon = Search;
   readonly LockIcon = Lock;
   readonly MailIcon = Mail;
+  readonly ChevronDownIcon = ChevronDown;
+  readonly ChevronUpIcon = ChevronUp;
   SparklesIcon = Sparkles;
 
   // Local UI state
@@ -80,6 +87,7 @@ export class ContractUpload {
   isDragging = signal(false);
   private partySelectorDialogRef: any = null;
   private chromeAiAvailable = signal<boolean | null>(null);
+  showChromeAiRequirements = signal(false);
   
   
   constructor() {
@@ -290,6 +298,22 @@ export class ContractUpload {
     if (!pendingText) {
       this.uiStore.showToast('No contract found', 'error');
       return;
+    }
+
+    // Pre-initialize Summarizer during user gesture to trigger model download if needed
+    // This prevents "Requires a user gesture" errors during analysis
+    const selectedLanguage = this.onboardingStore.selectedOutputLanguage() 
+      || this.onboardingStore.detectedLanguage() 
+      || 'en';
+    const outputLanguage = getAiOutputLanguage(selectedLanguage);
+    
+    try {
+      this.logger.info(`📥 [ContractUpload] Pre-initializing Summarizer for ${outputLanguage} (user gesture available)...`);
+      await this.summarizerService.preInitialize(outputLanguage);
+      this.logger.info(`✅ [ContractUpload] Summarizer pre-initialized successfully`);
+    } catch (error) {
+      this.logger.warn(`⚠️ [ContractUpload] Summarizer pre-initialization failed, will retry during analysis:`, error);
+      // Continue anyway - we'll try again during analysis
     }
 
     // Show loading toast
