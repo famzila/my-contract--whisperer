@@ -504,8 +504,11 @@
   "errors": {
     "contractTextEmpty": "契約書テキストは空にできません",
     "contractTextTooShort": "契約書テキストが短すぎます (最低 100 文字)",
-    "contractTextTooLong": "契約書テキストが長すぎます。最大 50,000 文字まで許可されています。",
+    "contractTextTooLong": "契約書テキストが長すぎます。",
     "fileSizeExceeded": "ファイルサイズが 5MB の制限を超えています",
+    "joinWaitlist": "ウェイトリストに参加",
+    "waitlistDescription": "より大きなファイルのサポートに取り組んでいます。利用可能になったら通知を受け取るためにウェイトリストに参加してください。",
+    "waitlistGeneric": "まもなく新機能: 複数当事者の契約、より長いファイル、画像などに対応。最新情報はウェイトリストにご登録ください。",
     "unsupportedFileType": "サポートされていないファイルタイプ: {{type}}。サポートされているタイプ: TXT, PDF, DOCX",
     "fileEmpty": "ファイルが空です",
     "pdfEmpty": "PDFは空であるか、画像のみを含んでいるようです",
@@ -527,6 +530,7 @@
     "languageSwitchRetry": "戻って{{targetLanguage}}を再選択して、もう一度お試しください。",
     "notAValidContract": "これは有効な契約書文書ではないようです。",
     "analysisFailed": "申し訳ありません、エラーが発生しました。契約書を分析できませんでした。もう一度お試しください。",
+    "genericFailure": "申し訳ございませんが、契約書の処理中に問題が発生しました。もう一度お試しください。",
     "translationFailed": "翻訳に失敗しました。もう一度お試しください。",
     "multiPartyContract": "このアプリは現在、2者間の契約のみをサポートしています。多者間契約は現在サポートされていません。"
   },
@@ -565,5 +569,9 @@
     "q5Answer": "Chromeは初回使用時にGoogleから直接AIモデル（Gemini Nano）をダウンロードします。これはChromeとGoogleによって完全に管理されており、当社はこのプロセスからのデータを制御または受信しません。ダウンロード後、モデルはお使いのデバイス上でローカルに実行されます。",
     "q6Question": "どのブラウザがサポートされていますか？",
     "q6Answer": "AIが組み込まれたChromeブラウザ（バージョン141以降）。アプリはGemini Nano AI用にChrome flagsが有効になっている必要があります。"
+  },
+  "earlyAccess": {
+    "bannerMessage": "早期アクセス：AI契約チャット・画像契約のアップロード（JPG/PNG）・無制限長の分析・スマートエクスポート",
+    "join": "早期アクセスに参加"
   }
 }

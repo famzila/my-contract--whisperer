@@ -94,6 +94,7 @@ import {
   SlidersVertical,
   Wifi,
   WifiOff,
+  Rocket,
 } from 'lucide-angular';
 
 // Export individual icons for standalone component usage
@@ -198,6 +199,9 @@ export {
   // Network & Connectivity
   Wifi,
   WifiOff,
+
+  // Action & Navigation
+  Rocket,
 
   // Theme
   Sun,

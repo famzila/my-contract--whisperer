@@ -26,12 +26,15 @@ export * from './email-draft-modal/email-draft-modal';
 export * from './language-mismatch-modal/language-mismatch-modal';
 export * from './faq-modal/faq-modal';
 
-// Feature Components
+// For feature Components
 export * from './contract-insight-card/contract-insight-card';
 export * from './severity-badge/severity-badge';
 
 // PWA Components
 export * from './offline-indicator/offline-indicator.component';
+
+// Marketing Components
+export * from './early-access-banner/early-access-banner';
 
 
 

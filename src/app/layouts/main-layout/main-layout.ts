@@ -2,13 +2,13 @@ import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/c
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { LanguageSelector, Button } from '../../shared/components';
+import { LanguageSelector, Button, EarlyAccessBanner } from '../../shared/components';
 import { UiStore } from '../../core/stores/ui.store';
 import { FileText, Bot, Shield, Menu, Sun, Moon } from '../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterLink, RouterOutlet, TranslatePipe, LucideAngularModule, LanguageSelector, Button],
+  imports: [RouterLink, RouterOutlet, TranslatePipe, LucideAngularModule, LanguageSelector, Button, EarlyAccessBanner],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

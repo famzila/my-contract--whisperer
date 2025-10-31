@@ -504,8 +504,11 @@
   "errors": {
     "contractTextEmpty": "계약서 텍스트는 비어 있을 수 없습니다",
     "contractTextTooShort": "계약서 텍스트가 너무 짧습니다 (최소 100자)",
-    "contractTextTooLong": "계약서 텍스트가 너무 깁니다. 최대 50,000자까지 허용됩니다.",
+    "contractTextTooLong": "계약서 텍스트가 너무 깁니다.",
     "fileSizeExceeded": "파일 크기가 5MB 제한을 초과했습니다",
+    "joinWaitlist": "대기 목록에 가입",
+    "waitlistDescription": "더 큰 파일 지원을 위해 작업 중입니다. 사용 가능해지면 알림을 받으려면 대기 목록에 가입하세요.",
+    "waitlistGeneric": "곧 새로운 기능 제공: 다자간 계약, 더 긴 파일, 이미지 등. 업데이트를 받으려면 대기 목록에 가입하세요.",
     "unsupportedFileType": "지원되지 않는 파일 형식: {{type}}. 지원되는 형식: TXT, PDF, DOCX",
     "fileEmpty": "파일이 비어 있습니다",
     "pdfEmpty": "PDF가 비어 있거나 이미지만 포함된 것 같습니다",
@@ -527,6 +530,7 @@
     "languageSwitchRetry": "돌아가서 {{targetLanguage}}을 다시 선택하여 시도해보세요.",
     "notAValidContract": "이는 유효한 계약 문서로 보이지 않습니다.",
     "analysisFailed": "죄송합니다. 오류가 발생했습니다. 계약서를 분석할 수 없었습니다. 다시 시도하십시오.",
+    "genericFailure": "죄송합니다. 계약서를 처리하는 중에 문제가 발생했습니다. 다시 시도하십시오.",
     "translationFailed": "번역에 실패했습니다. 다시 시도하십시오.",
     "multiPartyContract": "이 앱은 현재 2자 간 계약만 지원합니다. 다자 계약은 현재 지원되지 않습니다."
   },
@@ -565,5 +569,9 @@
     "q5Answer": "Chrome은 첫 사용 시 Google에서 직접 AI 모델(Gemini Nano)을 다운로드합니다. 이것은 Chrome과 Google에 의해 완전히 관리되며, 당사는 이 프로세스의 데이터를 제어하거나 받지 않습니다. 다운로드 후 모델은 귀하의 장치에서 로컬로 실행됩니다.",
     "q6Question": "어떤 브라우저가 지원됩니까?",
     "q6Answer": "내장 AI가 활성화된 Chrome 브라우저(버전 141+). 앱은 Gemini Nano AI를 위해 Chrome flags가 활성화되어 있어야 합니다."
+  },
+  "earlyAccess": {
+    "bannerMessage": "얼리 액세스: 계약서 AI 채팅 • 이미지 계약 업로드 (JPG/PNG) • 길이 제한 없는 분석 • 스마트 내보내기",
+    "join": "얼리 액세스 참여"
   }
 }

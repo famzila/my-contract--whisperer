@@ -16,7 +16,7 @@
         <!-- Language Selector & Theme Toggle -->
         <div class="flex items-center gap-4">
           
-          <app-language-selector></app-language-selector>
+          <app-language-selector/>
           <!-- Theme Toggle Button -->
           <app-button
             [icon]="isDarkMode() ? SunIcon : MoonIcon"
@@ -40,11 +40,14 @@
 
   <!-- Main Content -->
   <main class="flex-1 animate-fade-in">
-    <router-outlet></router-outlet>
+    <router-outlet/>
   </main>
 
   <!-- Footer -->
   <footer>
+    <!-- Early Access Banner -->
+    <app-early-access-banner/>
+    
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <!-- About -->

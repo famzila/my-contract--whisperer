@@ -14,7 +14,7 @@
   /* declar this for glow anim rgba(16, 185, 129, 0.3) */
   --color-glow-anim: rgba(16, 185, 129, 0.3);
   --color-glow-anim-2: rgba(16, 185, 129, 0.5);
-  
+
 }
 
 
@@ -119,6 +119,8 @@
   /* Hero heading gradient utility */
   .text-hero {
     @apply text-5xl font-bold bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 dark:from-indigo-400 dark:via-indigo-300 dark:to-sky-400 bg-clip-text text-transparent;
+    background-size: 200% auto;
+    animation: gradient-flow 3s ease infinite;
   }
 
   /* Layout utilities */
@@ -158,11 +160,11 @@
   .badge {
     @apply px-3 py-1 text-sm font-medium rounded-full border flex items-center gap-1;
   }
-  
+
   .badge-amber {
     @apply bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800;
   }
-  
+
   .badge-blue {
     @apply bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800;
   }
@@ -546,12 +548,15 @@
   .insight-impact {
     @apply text-sm font-semibold flex items-start flex-wrap gap-2 mb-2 leading-relaxed;
   }
+
   .insight-impact-critical {
     @apply text-red-700 dark:text-red-300;
   }
+
   .insight-impact-warning {
     @apply text-amber-700 dark:text-amber-300;
   }
+
   .insight-impact-info {
     @apply text-blue-700 dark:text-blue-300;
   }
@@ -604,14 +609,16 @@
 
 /* Custom Animations */
 @keyframes pulse-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 20px color-mix(in srgb, var(--color-risk-low) 30%, transparent);
   }
+
   50% {
     box-shadow: 0 0 30px color-mix(in srgb, var(--color-risk-low) 50%, transparent);
   }
 }
-
 
 @keyframes float {
 
@@ -624,6 +631,19 @@
     transform: translateY(-10px);
   }
 }
+
+@keyframes gradient-flow {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 
 .float-animation {
   animation: float 3s ease-in-out infinite;

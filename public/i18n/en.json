@@ -13,6 +13,7 @@
     "next": "Next",
     "previous": "Previous",
     "done": "Done",
+    "dismiss": "Dismiss",
     "words": "words",
     "minRead": "min read",
     "notAvailable": "Not Available",
@@ -502,8 +503,11 @@
   "errors": {
     "contractTextEmpty": "Contract text cannot be empty",
     "contractTextTooShort": "Contract text is too short (minimum 100 characters)",
-    "contractTextTooLong": "Contract text is too long. Maximum 50,000 characters allowed.",
+    "contractTextTooLong": "Contract text is too long.",
     "fileSizeExceeded": "File size exceeds 5MB limit",
+    "joinWaitlist": "Join Waitlist",
+    "waitlistDescription": "We're working on supporting larger files. Join the waitlist to be notified when available.",
+    "waitlistGeneric": "New capabilities coming soon: multi‑party contracts, longer files, images, and more. Join the waitlist for updates.",
     "unsupportedFileType": "Unsupported file type: {{type}}. Supported types: TXT, PDF, DOCX",
     "fileEmpty": "File is empty",
     "pdfEmpty": "PDF appears to be empty or contains only images",
@@ -525,6 +529,7 @@
     "languageSwitchRetry": "You can go back and reselect {{targetLanguage}} to try again.",
     "notAValidContract": "This doesn't appear to be a valid contract document.",
     "analysisFailed": "We're sorry, an error occurred. We couldn't analyze your contract. Please try again.",
+    "genericFailure": "We're sorry, something went wrong while processing your contract. Please try again.",
     "translationFailed": "Translation failed. Please try again.",
     "multiPartyContract": "This app currently only supports contracts between 2 parties. Multi-party contracts are not supported at this time."
   },
@@ -563,5 +568,9 @@
     "q5Answer": "Chrome downloads AI models (Gemini Nano) directly from Google on first use. This is handled entirely by Chrome and Google - we do not control or receive any data from this process. After download, models run locally on your device.",
     "q6Question": "What browsers are supported?",
     "q6Answer": "Chrome browser (version 141+) with built-in AI enabled. The app requires Chrome flags to be enabled for Gemini Nano AI."
+  },
+  "earlyAccess": {
+    "bannerMessage": "Early Access: AI contract chat • Upload image contracts (JPG/PNG) • Analyze unlimited length • Smart exports",
+    "join": "Join Early Access"
   }
 }

@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import * as mammoth from 'mammoth';
 import { ContractFileType, ParsedContract } from '../models/contract.model';
+import { CONTRACT_CONFIG } from '../config/application.config';
 
 /**
  * Service for parsing contract files and extracting text
@@ -38,8 +39,13 @@ export class ContractParserService {
       throw new Error(this.translate.instant('errors.contractTextEmpty'));
     }
 
-    if (text.length < 100) {
+    if (text.length < CONTRACT_CONFIG.MIN_TEXT_LENGTH) {
       throw new Error(this.translate.instant('errors.contractTextTooShort'));
+    }
+
+    // Check maximum length
+    if (text.length > CONTRACT_CONFIG.MAX_TEXT_LENGTH) {
+      throw new Error(this.translate.instant('errors.contractTextTooLong'));
     }
 
     return {
@@ -55,9 +61,8 @@ export class ContractParserService {
    * Validate file before parsing
    */
   private validateFile(file: File): void {
-    // Check file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
+    // Check file size
+    if (file.size > CONTRACT_CONFIG.MAX_FILE_SIZE) {
       throw new Error(this.translate.instant('errors.fileSizeExceeded'));
     }
 
@@ -207,17 +212,14 @@ export class ContractParserService {
    * Validate contract text length
    */
   validateTextLength(text: string): { valid: boolean; message?: string } {
-    const minLength = 100;
-    const maxLength = 50000; // ~50KB of text
-
-    if (text.length < minLength) {
+    if (text.length < CONTRACT_CONFIG.MIN_TEXT_LENGTH) {
       return {
         valid: false,
         message: this.translate.instant('errors.contractTextTooShort'),
       };
     }
 
-    if (text.length > maxLength) {
+    if (text.length > CONTRACT_CONFIG.MAX_TEXT_LENGTH) {
       return {
         valid: false,
         message: this.translate.instant('errors.contractTextTooLong'),

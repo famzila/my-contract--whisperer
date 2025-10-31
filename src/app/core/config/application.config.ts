@@ -160,6 +160,20 @@ export const AI_CONFIG = {
 } as const;
 
 /**
+ * Contract Upload Configuration
+ */
+export const CONTRACT_CONFIG = {
+  // Maximum file size (5MB in bytes)
+  MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
+  
+  // Maximum text length in characters
+  MAX_TEXT_LENGTH: 36000, // 36,000 characters
+  
+  // Minimum text length in characters
+  MIN_TEXT_LENGTH: 1000, // 1000 characters
+} as const;
+
+/**
  * Storage Configuration
  */
 export const STORAGE_CONFIG = {
@@ -212,6 +226,7 @@ export const ANALYSIS_CONTEXT_CONFIG = {
 export const UI_CONFIG = {
   DEFAULT_THEME: 'dark',
   DEFAULT_THEME_STORAGE_KEY: 'contract-whisperer-theme',
+  WAITLIST_FORM_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSeGo9LVpzU0ll2E2yWJj5rxYg4sRSp8b5_ofnnxOrs2EPgFvA/viewform',
 } as const;
 
 /**
@@ -223,6 +238,7 @@ export const APPLICATION_CONFIG = {
   ANALYSIS_CONTEXT: ANALYSIS_CONTEXT_CONFIG,
   STORAGE: STORAGE_CONFIG,
   UI: UI_CONFIG,
+  CONTRACT: CONTRACT_CONFIG,
 } as const;
 
 // Export individual configs for backward compatibility

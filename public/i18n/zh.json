@@ -504,8 +504,11 @@
   "errors": {
     "contractTextEmpty": "合同文本不能为空",
     "contractTextTooShort": "合同文本太短（最少 100 个字符）",
-    "contractTextTooLong": "合同文本太长。最大允许 50,000 个字符。",
+    "contractTextTooLong": "合同文本太长。",
     "fileSizeExceeded": "文件大小超出 5MB 限制",
+    "joinWaitlist": "加入等待列表",
+    "waitlistDescription": "我们正在努力支持更大的文件。加入等待列表以在可用时收到通知。",
+    "waitlistGeneric": "即将推出新功能：多方合同、更长文件、图像等。加入等待列表以获取更新。",
     "unsupportedFileType": "不支持的文件类型：{{type}}。支持的类型：TXT、PDF、DOCX",
     "fileEmpty": "文件为空",
     "pdfEmpty": "PDF 似乎为空或仅包含图像",
@@ -527,6 +530,7 @@
     "languageSwitchRetry": "您可以返回并重新选择{{targetLanguage}}来重试。",
     "notAValidContract": "这似乎不是一个有效的合同文件。",
     "analysisFailed": "很抱歉，发生了一个错误。我们无法分析您的合同。请重试。",
+    "genericFailure": "很抱歉，处理您的合同时出现了问题。请重试。",
     "translationFailed": "翻译失败。请重试。",
     "multiPartyContract": "此应用目前仅支持双方合同。多方合同目前不受支持。"
   },
@@ -565,5 +569,9 @@
     "q5Answer": "Chrome在首次使用时直接从Google下载AI模型（Gemini Nano）。这完全由Chrome和Google管理 - 我们不控制或接收此过程的任何数据。下载后，模型在您的设备上本地运行。",
     "q6Question": "支持哪些浏览器？",
     "q6Answer": "启用内置AI的Chrome浏览器（版本141+）。应用需要为Gemini Nano AI启用Chrome flags。"
+  },
+  "earlyAccess": {
+    "bannerMessage": "抢先体验：AI 合同对话 • 上传图片合同（JPG/PNG）• 无长度限制分析 • 智能导出",
+    "join": "加入抢先体验"
   }
 }

@@ -504,8 +504,11 @@
   "errors": {
     "contractTextEmpty": "Le texte du contrat ne peut pas être vide",
     "contractTextTooShort": "Le texte du contrat est trop court (minimum 100 caractères)",
-    "contractTextTooLong": "Le texte du contrat est trop long. Maximum 50 000 caractères autorisés.",
+    "contractTextTooLong": "Le texte du contrat est trop long.",
     "fileSizeExceeded": "La taille du fichier dépasse la limite de 5 Mo",
+    "joinWaitlist": "Rejoindre la liste d'attente",
+    "waitlistDescription": "Nous travaillons sur la prise en charge de fichiers plus volumineux. Rejoignez la liste d'attente pour être notifié lorsqu'ils seront disponibles.",
+    "waitlistGeneric": "Nouvelles capacités bientôt disponibles : contrats multi‑parties, fichiers plus longs, images, et plus. Rejoignez la liste d’attente pour être informé.",
     "unsupportedFileType": "Type de fichier non pris en charge : {{type}}. Types pris en charge : TXT, PDF, DOCX",
     "fileEmpty": "Le fichier est vide",
     "pdfEmpty": "Le PDF semble être vide ou ne contenir que des images",
@@ -527,6 +530,7 @@
     "languageSwitchRetry": "Vous pouvez revenir et re-sélectionner {{targetLanguage}} pour réessayer.",
     "notAValidContract": "Ceci ne semble pas être un document de contrat valide.",
     "analysisFailed": "Nous sommes désolés, une erreur s'est produite. Nous n'avons pas pu analyser votre contrat. Veuillez réessayer.",
+    "genericFailure": "Nous sommes désolés, un problème est survenu lors du traitement de votre contrat. Veuillez réessayer.",
     "translationFailed": "Échec de la traduction. Veuillez réessayer.",
     "multiPartyContract": "Cette application ne prend actuellement en charge que les contrats entre 2 parties. Les contrats multipartites ne sont pas pris en charge pour le moment."
   },
@@ -565,5 +569,9 @@
     "q5Answer": "Chrome télécharge les modèles IA (Gemini Nano) directement depuis Google lors de la première utilisation. Ceci est entièrement géré par Chrome et Google - nous ne contrôlons ni ne recevons de données de ce processus. Après le téléchargement, les modèles fonctionnent localement sur votre appareil.",
     "q6Question": "Quels navigateurs sont pris en charge ?",
     "q6Answer": "Navigateur Chrome (version 141+) avec IA intégrée activée. L'application nécessite que les flags Chrome soient activés pour Gemini Nano AI."
+  },
+  "earlyAccess": {
+    "bannerMessage": "Accès anticipé : chat IA sur contrat • Téléversement d'images (JPG/PNG) • Analyse sans limite de longueur • Exports intelligents",
+    "join": "Rejoindre l’accès anticipé"
   }
 }

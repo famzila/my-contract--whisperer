@@ -50,9 +50,27 @@
       type="error"
       [icon]="TriangleAlertIcon"
       titleKey="common.error"
-      [message]="contractStore.uploadError() || contractStore.analysisError()"
+      [messageKey]="errorMessageKey()"
+      [message]="errorMessage()"
       class="mb-6"
     >
+      @if (shouldShowWaitlist()) {
+      <div class="mt-2 space-y-3">
+        <p class="text-sm text-red-700 dark:text-red-300 rtl:text-right ltr:text-left">
+          {{ 'errors.waitlistGeneric' | translate }}
+        </p>
+        <div class="flex justify-end rtl:justify-start">
+          <app-button
+            (clicked)="openWaitlist()"
+            variant="secondary"
+            size="sm"
+            [text]="'errors.joinWaitlist' | translate"
+            [icon]="MailIcon"
+          >
+          </app-button>
+        </div>
+      </div>
+      }
     </app-notice>
 
     }
@@ -169,7 +187,11 @@
         <!-- Submit Button -->
         <app-button
           type="submit"
-          [disabled]="contractStore.isLoading() || !contractText().trim() || onboardingStore.isAnalysisDisabled()"
+          [disabled]="
+            contractStore.isLoading() ||
+            !contractText().trim() ||
+            onboardingStore.isAnalysisDisabled()
+          "
           [loading]="contractStore.isLoading()"
           variant="primary"
           [fullWidth]="true"

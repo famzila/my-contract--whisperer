@@ -20,6 +20,7 @@ import {
   Lightbulb,
   Search,
   Lock,
+  Mail,
 } from '../../shared/icons/lucide-icons';
 import { ContractStore } from '../../core/stores/contract.store';
 import { UiStore } from '../../core/stores/ui.store';
@@ -28,6 +29,7 @@ import { LanguageStore } from '../../core/stores/language.store';
 import {
   LANGUAGES,
   AI_CONFIG,
+  APPLICATION_CONFIG,
 } from '../../core/config/application.config';
 import {
   isAppLanguageSupported,
@@ -35,6 +37,7 @@ import {
   getLanguageTranslationKey
 } from '../../core/utils/language.util';
 import { Notice } from "../../shared/components/notice/notice";
+import { computed } from '@angular/core';
 
 type UploadMode = 'file' | 'text';
 
@@ -42,7 +45,6 @@ type UploadMode = 'file' | 'text';
   selector: 'app-contract-upload',
   imports: [CommonModule, FormsModule, TranslatePipe, LucideAngularModule, Button, Notice],
   templateUrl: './contract-upload.html',
-  styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContractUpload {
@@ -69,6 +71,7 @@ export class ContractUpload {
   readonly LightbulbIcon = Lightbulb;
   readonly SearchIcon = Search;
   readonly LockIcon = Lock;
+  readonly MailIcon = Mail;
   SparklesIcon = Sparkles;
 
   // Local UI state
@@ -304,6 +307,10 @@ export class ContractUpload {
       // Note: Navigation to /analysis happens automatically in the store when metadata is ready (~1s)
     } else {
       this.logger.error(`❌ [ContractUpload] Role selection failed:`, result.error);
+      // Surface error to the notice system so waitlist UI can render
+      if (result.error) {
+        this.contractStore.setAnalysisError(result.error);
+      }
       this.uiStore.showToast(result.error || 'Analysis failed', 'error');
     }
   }
@@ -473,6 +480,224 @@ export class ContractUpload {
    */
   showFaq(): void {
     this.uiStore.openFaq();
+  }
+
+  /**
+   * Get base message from translated string with placeholders
+   * For example: "Failed to parse PDF: {{error}}. Try copying..." -> "Failed to parse PDF:"
+   */
+  private getBaseTranslatedMessage(key: string, placeholder: string): string {
+    const translated = this.translate.instant(key);
+    const parts = translated.split(placeholder);
+    return parts[0].trim();
+  }
+
+  /**
+   * Get error message key if the error matches a known translation key
+   * Returns the translation key if detected, null otherwise
+   * Works across all languages by checking against actual translated strings
+   */
+  errorMessageKey = computed(() => {
+    const error = this.contractStore.uploadError() || this.contractStore.analysisError();
+    if (!error) return null;
+
+    const lowerError = error.toLowerCase();
+
+    // Check for Chrome API generic failure message
+    if (lowerError.includes('other generic failures occurred') || 
+        lowerError.includes('generic failures') ||
+        lowerError === 'other generic failures occurred.') {
+      return 'errors.genericFailure';
+    }
+
+    // Map of error keys to check (in order of likelihood)
+    const errorKeys = [
+      'errors.contractTextTooLong',
+      'errors.fileSizeExceeded',
+      'errors.contractTextTooShort',
+      'errors.contractTextEmpty',
+      'errors.unsupportedFileType',
+      'errors.fileEmpty',
+      'errors.pdfEmpty',
+      'errors.pdfExtractionFailed',
+      'errors.pdfParsingFailed',
+      'errors.docxEmpty',
+      'errors.docxExtractionFailed',
+      'errors.docxParsingFailed',
+    ];
+
+    // Check each error key by comparing with current language translation
+    for (const key of errorKeys) {
+      const translation = this.translate.instant(key);
+      const lowerTranslation = translation.toLowerCase();
+      
+      // If error exactly matches the translation, use the key
+      if (translation === error || lowerError === lowerTranslation) {
+        return key;
+      }
+      
+      // For errors with dynamic parameters, check base pattern
+      if (key === 'errors.pdfParsingFailed') {
+        const baseMessage = this.getBaseTranslatedMessage(key, '{{error}}');
+        const endingMessage = translation.includes('{{error}}') 
+          ? translation.split('{{error}}')[1]?.trim() || '' 
+          : '';
+        
+        // Check if error contains the base pattern and (if exists) the ending pattern
+        if (baseMessage && lowerError.includes(baseMessage.toLowerCase())) {
+          if (!endingMessage || lowerError.includes(endingMessage.toLowerCase())) {
+            return key;
+          }
+        }
+      }
+      
+      // For unsupportedFileType, check the base message (before {{type}})
+      if (key === 'errors.unsupportedFileType') {
+        const baseMessage = this.getBaseTranslatedMessage(key, '{{type}}');
+        if (baseMessage && lowerError.includes(baseMessage.toLowerCase())) {
+          return key;
+        }
+      }
+      
+      // For pdfEmpty, check if error contains the translated message or key parts
+      if (key === 'errors.pdfEmpty') {
+        if (lowerError.includes(lowerTranslation) || 
+            lowerError.includes('pdf') && (lowerError.includes('empty') || lowerError.includes('فارغ'))) {
+          return key;
+        }
+      }
+    }
+
+    return null;
+  });
+
+  /**
+   * Get the error message to display (either the raw error or let translation handle it)
+   */
+  errorMessage = computed(() => {
+    const error = this.contractStore.uploadError() || this.contractStore.analysisError();
+    const key = this.errorMessageKey();
+    
+    // If we detected a key, return null so messageKey will be used instead
+    if (key) {
+      return null;
+    }
+    
+    // Otherwise return the raw error message
+    return error;
+  });
+
+  /**
+   * Check if the current error should show waitlist button
+   * Shows button for fileSizeExceeded, contractTextTooLong, unsupported file types (images), 
+   * PDF with images only, or any "too large" input errors
+   * Works across all languages by checking error keys and translated patterns
+   */
+  shouldShowWaitlist = computed(() => {
+    const error = this.contractStore.uploadError() || this.contractStore.analysisError();
+    if (!error) return false;
+
+    const key = this.errorMessageKey();
+    const lowerError = error.toLowerCase();
+    
+    // Check if it's a waitlist-related error key (always show for these)
+    if (key === 'errors.fileSizeExceeded' || key === 'errors.contractTextTooLong') {
+      return true;
+    }
+
+    // Check for PDF errors related to images using translated patterns
+    if (key === 'errors.pdfParsingFailed' || key === 'errors.pdfEmpty' || key === 'errors.pdfExtractionFailed') {
+      // Get translated pdfEmpty message and check if it contains image-related phrases
+      const pdfEmptyTranslation = this.translate.instant('errors.pdfEmpty').toLowerCase();
+      
+      // Check if error or translated message mentions images (multi-language support)
+      const imagePatterns = [
+        // English patterns
+        'contains only images',
+        'only images',
+        'no text',
+        'image',
+        // Arabic patterns (from translation)
+        'صور', // images
+        'صورة', // image
+        'يحتوي على صور فقط', // contains only images (from Arabic translation)
+        'فارغ أو يحتوي على صور', // empty or contains images
+      ];
+      
+      // Check both error message and the translated pdfEmpty message
+      const checkText = lowerError + ' ' + pdfEmptyTranslation;
+      return imagePatterns.some(pattern => checkText.includes(pattern.toLowerCase()));
+    }
+
+    // Check for unsupported file type errors (especially images)
+    if (key === 'errors.unsupportedFileType') {
+      // Check if the error message contains image MIME types (language-independent)
+      const imageMimeTypes = [
+        'image/',
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'image/bmp',
+        'image/svg',
+      ];
+      
+      return imageMimeTypes.some(type => lowerError.includes(type));
+    }
+
+    // Fallback: Check raw error message for image-related patterns across languages
+    const imageErrorPatterns = [
+      // English
+      'contains only images',
+      'only images',
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/',
+      // Arabic
+      'صور', // images
+      'صورة', // image
+      'يحتوي على صور', // contains images
+    ];
+    
+    if (imageErrorPatterns.some(pattern => lowerError.includes(pattern))) {
+      return true;
+    }
+
+    // Check for "too large" patterns (from Chrome AI API or browser validation)
+    // Get translated messages to check against
+    const fileSizeError = this.translate.instant('errors.fileSizeExceeded').toLowerCase();
+    const textLengthError = this.translate.instant('errors.contractTextTooLong').toLowerCase();
+    const checkText = lowerError + ' ' + fileSizeError + ' ' + textLengthError;
+    
+    const tooLargePatterns = [
+      // English patterns
+      'too large',
+      'input is too large',
+      'exceeds',
+      'exceeded',
+      'maximum',
+      'limit',
+      '50,000',
+      '50000',
+      '5mb',
+      '5 mb',
+      // Numeric/universal patterns
+      '50000',
+      '5 ميجابايت', // 5MB in Arabic
+    ];
+
+    return tooLargePatterns.some(pattern => checkText.includes(pattern.toLowerCase()));
+  });
+
+  /**
+   * Open waitlist form in new tab
+   */
+  openWaitlist(): void {
+    window.open(APPLICATION_CONFIG.UI.WAITLIST_FORM_URL, '_blank', 'noopener,noreferrer');
   }
 
   /**

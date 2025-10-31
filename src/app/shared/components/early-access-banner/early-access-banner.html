@@ -1,0 +1,41 @@
+@if (shouldShow()) {
+  <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-t border-indigo-200 dark:border-indigo-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div class="flex items-center justify-between gap-4">
+        <!-- Content -->
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <!-- Icons -->
+          <lucide-icon [img]="SparklesIcon" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></lucide-icon>
+          
+          <!-- Message -->
+          <p class="text-sm text-gray-700 dark:text-gray-300 rtl:text-right ltr:text-left flex-1 min-w-0">
+            {{ 'earlyAccess.bannerMessage' | translate }}
+          </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <!-- Join Button -->
+          <app-button
+            (clicked)="openWaitlist()"
+            variant="primary"
+            size="sm"
+            [text]="'earlyAccess.join' | translate"
+            [icon]="RocketIcon"
+            [rounded]="'md'"
+          >
+          </app-button>
+
+          <!-- Dismiss Button -->
+          <button
+            (click)="dismiss()"
+            class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+            [attr.aria-label]="'common.dismiss' | translate"
+          >
+            <lucide-icon [img]="XIcon" class="w-4 h-4"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

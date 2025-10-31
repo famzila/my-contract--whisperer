@@ -504,8 +504,11 @@
   "errors": {
     "contractTextEmpty": "Vertragstext darf nicht leer sein",
     "contractTextTooShort": "Vertragstext ist zu kurz (mindestens 100 Zeichen)",
-    "contractTextTooLong": "Vertragstext ist zu lang. Maximal 50.000 Zeichen erlaubt.",
+    "contractTextTooLong": "Vertragstext ist zu lang.",
     "fileSizeExceeded": "Dateigröße überschreitet das Limit von 5 MB",
+    "joinWaitlist": "Warteliste beitreten",
+    "waitlistDescription": "Wir arbeiten an der Unterstützung größerer Dateien. Treten Sie der Warteliste bei, um benachrichtigt zu werden, wenn dies verfügbar ist.",
+    "waitlistGeneric": "Neue Funktionen bald verfügbar: Mehrparteien‑verträge, längere Dateien, Bilder und mehr. Treten Sie der Warteliste bei, um Updates zu erhalten.",
     "unsupportedFileType": "Nicht unterstützter Dateityp: {{type}}. Unterstützte Typen: TXT, PDF, DOCX",
     "fileEmpty": "Datei ist leer",
     "pdfEmpty": "PDF scheint leer zu sein oder enthält nur Bilder",
@@ -527,6 +530,7 @@
     "languageSwitchRetry": "Sie können zurückgehen und {{targetLanguage}} erneut auswählen, um es nochmal zu versuchen.",
     "notAValidContract": "Dies scheint kein gültiges Vertragsdokument zu sein.",
     "analysisFailed": "Es tut uns leid, es ist ein Fehler aufgetreten. Wir konnten Ihren Vertrag nicht analysieren. Bitte versuchen Sie es erneut.",
+    "genericFailure": "Es tut uns leid, beim Verarbeiten Ihres Vertrags ist etwas schiefgelaufen. Bitte versuchen Sie es erneut.",
     "translationFailed": "Übersetzung fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "multiPartyContract": "Diese App unterstützt derzeit nur Verträge zwischen 2 Parteien. Mehrparteienverträge werden derzeit nicht unterstützt."
   },
@@ -565,5 +569,9 @@
     "q5Answer": "Chrome lädt KI-Modelle (Gemini Nano) direkt von Google beim ersten Gebrauch herunter. Dies wird vollständig von Chrome und Google verwaltet - wir kontrollieren oder empfangen keine Daten von diesem Vorgang. Nach dem Download laufen die Modelle lokal auf Ihrem Gerät.",
     "q6Question": "Welche Browser werden unterstützt?",
     "q6Answer": "Chrome-Browser (Version 141+) mit aktivierter integrierter KI. Die App erfordert, dass Chrome-Flags für Gemini Nano AI aktiviert sind."
+  },
+  "earlyAccess": {
+    "bannerMessage": "Früher Zugang: KI-Vertragschat • Bildverträge hochladen (JPG/PNG) • Analyse ohne Längenlimit • Smarte Exporte",
+    "join": "Frühen Zugang erhalten"
   }
 }
