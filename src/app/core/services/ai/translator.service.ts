@@ -318,10 +318,23 @@ export class TranslatorService {
 
   /**
    * Destroy all translators
+   * Call this when aborting analysis to free up resources
+   */
+  destroy(): void {
+    this.destroyAll();
+    this.logger.info('🧹 [TranslatorService] Destroyed all translators');
+  }
+
+  /**
+   * Destroy all translators
    */
   destroyAll(): void {
     for (const translator of this.translators.values()) {
-      translator.destroy();
+      try {
+        translator.destroy();
+      } catch (error) {
+        this.logger.warn('⚠️ [TranslatorService] Failed to destroy translator:', error);
+      }
     }
     this.translators.clear();
   }

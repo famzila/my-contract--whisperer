@@ -189,15 +189,18 @@ export class PromptService {
    */
   private async promptWithSchema<T>(
     prompt: string,
-    schema: object
+    schema: object,
+    options?: AIPromptOptions
   ): Promise<T> {
     if (!this.session) {
       throw new Error('Session not initialized. Call createSession() first.');
     }
 
-    const resultString = await this.session.prompt(prompt, {
+    const mergedOptions: AIPromptOptions = {
+      ...options,
       responseConstraint: schema,
-    });
+    };
+    const resultString = await this.session.prompt(prompt, mergedOptions);
 
     const parsed = JSON.parse(resultString);
     return parsed as T;

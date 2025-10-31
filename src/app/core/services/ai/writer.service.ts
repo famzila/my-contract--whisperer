@@ -36,7 +36,6 @@ export class WriterService {
     });
   }
 
-
   /**
    * Check if Writer API is available (legacy method for backward compatibility)
    */

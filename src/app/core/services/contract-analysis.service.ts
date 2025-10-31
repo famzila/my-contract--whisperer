@@ -48,6 +48,18 @@ export class ContractAnalysisService {
   private readonly RETRY_CONFIG = AI_CONFIG.RETRY;
 
   /**
+   * Destroy all AI service sessions
+   * Call this when uploading a new contract or resetting state
+   * Sessions will be created on-demand when needed during analysis
+   */
+  destroyAllSessions(): void {
+    this.promptService.destroy();
+    this.summarizerService.destroy();
+    this.translator.destroy(); // Destroys all active translator sessions
+    this.logger.info('🧹 [ContractAnalysisService] Destroyed all AI service sessions');
+  }
+
+  /**
    * ========================================
    * Retry Logic with Exponential Backoff + Event Emission
    * ========================================
@@ -101,6 +113,9 @@ export class ContractAnalysisService {
    * Stream-based analysis that emits results as they complete
    * Metadata is priority 1 (must complete first)
    * All other sections stream independently as they finish
+   * 
+   * Note: Sessions are created on-demand when needed.
+   * Destroy sessions before calling this (e.g., in reset/upload handlers).
    */
   analyzeContractStreaming$(
     parsedContract: ParsedContract,

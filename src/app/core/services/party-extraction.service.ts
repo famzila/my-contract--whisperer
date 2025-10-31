@@ -81,7 +81,7 @@ Analyze the contract and provide your extraction results.`,
       
       // Use structured output with schema
       const response = await session.prompt(prompt, {
-        responseConstraint: PARTY_EXTRACTION_SCHEMA
+        responseConstraint: PARTY_EXTRACTION_SCHEMA,
       });
       session.destroy();
       

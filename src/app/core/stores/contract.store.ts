@@ -19,7 +19,6 @@ import type {
   Obligations,
   Omission,
   ContractSummary,
-  CompleteAnalysis
 } from '../schemas/analysis-schemas';
 import * as Schemas from '../schemas/analysis-schemas';
 import { ContractAnalysisService } from '../services/contract-analysis.service';
@@ -254,8 +253,11 @@ export const ContractStore = signalStore(
     async parseAndAnalyzeFile(file: File): Promise<void> {
       patchState(store, { isUploading: true, uploadError: null });
 
+      // Destroy any existing AI sessions before starting new analysis
+      analysisService.destroyAllSessions();
+
       try {
-                // Step 1: Parse the file
+        // Step 1: Parse the file
                 logger.info('\n📄 [Upload] Parsing file...');
                 const parsedContract = await parserService.parseFile(file);
                 
@@ -343,6 +345,9 @@ export const ContractStore = signalStore(
      */
     async parseAndAnalyzeText(text: string, source: string = 'manual-input'): Promise<void> {
       patchState(store, { isUploading: true, uploadError: null });
+
+      // Destroy any existing AI sessions before starting new analysis
+      analysisService.destroyAllSessions();
 
       try {
         // Step 1: Parse the text
@@ -931,6 +936,18 @@ export const ContractStore = signalStore(
      * Reset store to initial state
      */
     reset: () => {
+      // First, clean up any existing RxJS subscriptions
+      const destroySubject = store.destroySubject();
+      if (destroySubject) {
+        logger.info('🧹 [ContractStore] Canceling RxJS subscriptions...');
+        destroySubject.next();
+        destroySubject.complete();
+      }
+      
+      // Then destroy all AI service sessions
+      analysisService.destroyAllSessions();
+      
+      // Finally, reset state
       patchState(store, initialState);
     },
   })),
