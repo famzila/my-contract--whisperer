@@ -18,7 +18,7 @@
 <!-- Add your demo video here -->
 <div align="center">
 
-[![Watch the Demo](https://img.youtube.com/vi/VIDEO_ID_HERE/maxresdefault.jpg)](https://youtu.be/XUv_oC2fmj0?si=_Fv-1-x9PaDjkWzL)
+[![Watch the Demo](public/demo-thumbnail.png)](https://youtu.be/XUv_oC2fmj0?si=_Fv-1-x9PaDjkWzL)
 
 *Click the image above to watch the full demo video*
 
