@@ -138,7 +138,8 @@ export class PromptService {
         // Track download progress only on first download (not on cached loads)
         m.addEventListener('downloadprogress', (e) => {
           const percent = Math.round(e.loaded * 100);
-          
+          // log the download progress
+          this.logger.info(`📥 [AI Model] Download progress: ${percent}%`);
           // Update download state
           if (e.loaded === 0) {
             // Download starting
@@ -194,18 +195,20 @@ export class PromptService {
             }
           } else {
             // Download in progress - if we've passed the delay threshold, show notice
+            this.logger.info(`📥 [AI Model] Setting progress to: ${percent}%`);
             this.modelDownloadProgress.set(percent);
             
             // If download is taking time, ensure notice is shown
             if (this.downloadStartTime && Date.now() - this.downloadStartTime > 500) {
               this.shouldShowDownloadNotice.set(true);
+
             }
           }
           
           // Only log significant progress milestones to avoid log spam
-          if (e.loaded === 0 || e.loaded === 1 || e.loaded % 0.25 === 0) {
-            this.logger.info(`📥 [AI Model] Loading: ${percent}%`);
-          }
+          // if (e.loaded === 0 || e.loaded === 1 || e.loaded % 0.25 === 0) {
+          //   this.logger.info(`📥 [AI Model] Loading: ${percent}%`);
+          // }
         });
       },
     };
