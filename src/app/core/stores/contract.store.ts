@@ -28,6 +28,7 @@ import { ContractValidationService } from '../services/contract-validation.servi
 import { PartyExtractionService } from '../services/party-extraction.service';
 import { TranslationCacheService } from '../services/translation-cache.service';
 import { AiOrchestratorService } from '../services/ai/ai-orchestrator.service';
+import { PromptService } from '../services/ai/prompt.service';
 import { LanguageStore } from './language.store';
 import { OnboardingStore } from './onboarding.store';
 import { AppConfig } from '../config/application.config';
@@ -145,7 +146,7 @@ export const ContractStore = signalStore(
       sectionsQuestions,
     isTranslating,
     translatingToLanguage,
-  }) => ({
+  }, promptService = inject(PromptService)) => ({
     // Check if contract is loaded
     hasContract: computed(() => contract() !== null),
     
@@ -168,6 +169,11 @@ export const ContractStore = signalStore(
       const questions = sectionsQuestions();
       return meta?.loading || summary?.loading || risks?.loading || oblig?.loading || omiss?.loading || questions?.loading || false;
     }),
+    
+    // Download state from PromptService
+    isDownloadingModel: computed(() => promptService.isDownloadingModel()),
+    modelDownloadProgress: computed(() => promptService.modelDownloadProgress()),
+    shouldShowDownloadNotice: computed(() => promptService.shouldShowDownloadNotice()),
   })),
   
   // Methods to update state

@@ -1,4 +1,4 @@
-import { Injectable, inject, DestroyRef } from '@angular/core';
+import { Injectable, inject, DestroyRef, signal } from '@angular/core';
 import { Observable, from, defer, finalize } from 'rxjs';
 import { map, catchError, takeUntil } from 'rxjs/operators';
 import type {
@@ -28,6 +28,14 @@ export class PromptService {
   private logger = inject(LoggerService);
   private promptBuilder = inject(PromptBuilderService);
   private readonly destroy$ = new Subject<void>();
+  
+  // Download state tracking
+  readonly modelDownloadProgress = signal<number | null>(null);
+  readonly isDownloadingModel = signal<boolean>(false);
+  readonly shouldShowDownloadNotice = signal<boolean>(false);
+  
+  private downloadStartTime: number | null = null;
+  private showNoticeTimeoutId: ReturnType<typeof setTimeout> | null = null;
   
   constructor() {
     // Register cleanup callback
@@ -129,7 +137,71 @@ export class PromptService {
       monitor: (m) => {
         // Track download progress only on first download (not on cached loads)
         m.addEventListener('downloadprogress', (e) => {
-          const percent = (e.loaded * 100).toFixed(1);
+          const percent = Math.round(e.loaded * 100);
+          
+          // Update download state
+          if (e.loaded === 0) {
+            // Download starting
+            this.isDownloadingModel.set(true);
+            this.modelDownloadProgress.set(0);
+            this.downloadStartTime = Date.now();
+            this.shouldShowDownloadNotice.set(false);
+            
+            // Clear any existing timeout
+            if (this.showNoticeTimeoutId) {
+              clearTimeout(this.showNoticeTimeoutId);
+              this.showNoticeTimeoutId = null;
+            }
+            
+            // Only show notice if download takes more than 500ms
+            // This prevents flickering for cached models that complete instantly
+            this.showNoticeTimeoutId = setTimeout(() => {
+              // Check if download is still in progress (not complete)
+              if (this.isDownloadingModel() && this.modelDownloadProgress() !== null && this.modelDownloadProgress() !== 100) {
+                this.shouldShowDownloadNotice.set(true);
+              }
+            }, 500);
+            
+            this.logger.info(`📥 [AI Model] Download started`);
+          } else if (e.loaded === 1) {
+            // Download complete
+            this.modelDownloadProgress.set(100);
+            
+            // Clear the timeout if download completed quickly
+            if (this.showNoticeTimeoutId) {
+              clearTimeout(this.showNoticeTimeoutId);
+              this.showNoticeTimeoutId = null;
+            }
+            
+            // Check if download was fast (less than 500ms) - likely cached
+            const downloadDuration = this.downloadStartTime ? Date.now() - this.downloadStartTime : 0;
+            if (downloadDuration < 500) {
+              // Model was cached, completed instantly - don't show notice
+              this.shouldShowDownloadNotice.set(false);
+              this.isDownloadingModel.set(false);
+              this.modelDownloadProgress.set(null);
+              this.downloadStartTime = null;
+              this.logger.info(`📥 [AI Model] Download complete (cached, ${downloadDuration}ms)`);
+            } else {
+              // Show completion briefly, then reset
+              this.isDownloadingModel.set(false);
+              setTimeout(() => {
+                this.modelDownloadProgress.set(null);
+                this.shouldShowDownloadNotice.set(false);
+                this.downloadStartTime = null;
+              }, 500);
+              this.logger.info(`📥 [AI Model] Download complete (${downloadDuration}ms)`);
+            }
+          } else {
+            // Download in progress - if we've passed the delay threshold, show notice
+            this.modelDownloadProgress.set(percent);
+            
+            // If download is taking time, ensure notice is shown
+            if (this.downloadStartTime && Date.now() - this.downloadStartTime > 500) {
+              this.shouldShowDownloadNotice.set(true);
+            }
+          }
+          
           // Only log significant progress milestones to avoid log spam
           if (e.loaded === 0 || e.loaded === 1 || e.loaded % 0.25 === 0) {
             this.logger.info(`📥 [AI Model] Loading: ${percent}%`);
@@ -355,5 +427,15 @@ export class PromptService {
       this.session.destroy();
       this.session = null;
     }
+    // Clear timeout if exists
+    if (this.showNoticeTimeoutId) {
+      clearTimeout(this.showNoticeTimeoutId);
+      this.showNoticeTimeoutId = null;
+    }
+    // Reset download state
+    this.isDownloadingModel.set(false);
+    this.modelDownloadProgress.set(null);
+    this.shouldShowDownloadNotice.set(false);
+    this.downloadStartTime = null;
   }
 }
