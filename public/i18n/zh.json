@@ -147,7 +147,7 @@
     "translating": "正在翻译分析结果",
     "translatingTo": "正在翻译成 {{language}}...",
     "translationComplete": "翻译完成！",
-    "translationFailed": "翻译失败。请重试。",
+    "translationFailed": "翻译到{{language}}失败。请重试。",
     "viewingInDifferentLanguage": "正在以不同语言查看分析",
     "chromeAiNotAvailable": "Chrome AI 功能不可用",
     "chromeAiNotAvailableMessage": "此应用需要 Chrome 141 或更高版本，并启用内置 AI 功能。请更新 Chrome 或检查您的设备是否满足要求。",
@@ -553,7 +553,7 @@
     "notAValidContract": "这似乎不是一个有效的合同文件。",
     "analysisFailed": "很抱歉，发生了一个错误。我们无法分析您的合同。请重试。",
     "genericFailure": "很抱歉，处理您的合同时出现了问题。请重试。",
-    "translationFailed": "翻译失败。请重试。",
+    "translationFailed": "翻译到{{language}}失败。请重试。",
     "multiPartyContract": "此应用目前仅支持双方合同。多方合同目前不受支持。"
   },
   "languages": {

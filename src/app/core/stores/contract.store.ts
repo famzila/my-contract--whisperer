@@ -32,7 +32,7 @@ import { PromptService } from '../services/ai/prompt.service';
 import { LanguageStore } from './language.store';
 import { OnboardingStore } from './onboarding.store';
 import { AppConfig } from '../config/application.config';
-import { isGeminiNanoSupported } from '../utils/language.util';
+import { isGeminiNanoSupported, getLanguageTranslationKey } from '../utils/language.util';
 import { MOCK_CONTRACT, MOCK_LEASE_DATA } from '../../../../public/mocks/mock-analysis.data';
 
 /**
@@ -835,11 +835,14 @@ export const ContractStore = signalStore(
         logger.info(`🔄 [Store] Reverting to previous language: ${prevLang}`);
         languageStore.setPreferredLanguage(prevLang);
         
+        // Get language name for user-friendly error message
+        const targetLanguageName = translate.instant(getLanguageTranslationKey(targetLanguage));
+        
         // Clear translation state
         patchState(store, {
           isTranslating: false,
           translatingToLanguage: null,
-          analysisError: `Failed to translate to ${targetLanguage}. Please try again.`
+          analysisError: translate.instant('errors.translationFailed', { language: targetLanguageName })
         });
         
         throw error; // Re-throw for language-selector to handle

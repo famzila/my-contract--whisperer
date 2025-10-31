@@ -147,7 +147,7 @@
     "translating": "Traduciendo Análisis",
     "translatingTo": "Traduciendo a {{language}}...",
     "translationComplete": "¡Traducción completa!",
-    "translationFailed": "Fallo en la traducción. Por favor, inténtalo de nuevo.",
+    "translationFailed": "Error al traducir a {{language}}. Por favor, inténtalo de nuevo.",
     "viewingInDifferentLanguage": "Viendo análisis en otro idioma",
     "chromeAiNotAvailable": "Funciones de IA de Chrome no disponibles",
     "chromeAiNotAvailableMessage": "Esta aplicación requiere Chrome versión 141 o posterior con las funciones de IA integradas habilitadas. Por favor, actualiza Chrome o verifica si tu dispositivo cumple con los requisitos.",
@@ -553,7 +553,7 @@
     "notAValidContract": "Esto no parece ser un documento de contrato válido.",
     "analysisFailed": "Lo sentimos, ocurrió un error. No pudimos analizar tu contrato. Por favor, inténtalo de nuevo.",
     "genericFailure": "Lo sentimos, algo salió mal al procesar tu contrato. Por favor, inténtalo de nuevo.",
-    "translationFailed": "Fallo en la traducción. Por favor, inténtalo de nuevo.",
+    "translationFailed": "Error al traducir a {{language}}. Por favor, inténtalo de nuevo.",
     "multiPartyContract": "Esta aplicación actualmente solo admite contratos entre 2 partes. Los contratos multipartitas no son compatibles en este momento."
   },
   "languages": {

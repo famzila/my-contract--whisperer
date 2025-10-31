@@ -147,7 +147,7 @@
     "translating": "分析を翻訳中",
     "translatingTo": "{{language}} に翻訳中...",
     "translationComplete": "翻訳完了！",
-    "translationFailed": "翻訳に失敗しました。もう一度お試しください。",
+    "translationFailed": "{{language}}への翻訳に失敗しました。もう一度お試しください。",
     "viewingInDifferentLanguage": "異なる言語で分析を表示中",
     "chromeAiNotAvailable": "Chrome AI機能は利用できません",
     "chromeAiNotAvailableMessage": "このアプリには、組み込みAI機能が有効になったChrome 141以降が必要です。Chromeを更新するか、お使いのデバイスが要件を満たしているか確認してください。",
@@ -553,7 +553,7 @@
     "notAValidContract": "これは有効な契約書文書ではないようです。",
     "analysisFailed": "申し訳ありません、エラーが発生しました。契約書を分析できませんでした。もう一度お試しください。",
     "genericFailure": "申し訳ございませんが、契約書の処理中に問題が発生しました。もう一度お試しください。",
-    "translationFailed": "翻訳に失敗しました。もう一度お試しください。",
+    "translationFailed": "{{language}}への翻訳に失敗しました。もう一度お試しください。",
     "multiPartyContract": "このアプリは現在、2者間の契約のみをサポートしています。多者間契約は現在サポートされていません。"
   },
   "languages": {

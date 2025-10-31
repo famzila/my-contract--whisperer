@@ -38,8 +38,7 @@
       <div class="mb-6">
         <app-notice
           type="error"
-          [title]="'analysis.translationFailed' | translate"
-          [message]="translationError()"
+          [title]="translationError() || 'analysis.translationFailed' | translate"
         ></app-notice>
       </div>
     }

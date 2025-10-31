@@ -148,7 +148,7 @@
     "translating": "Translating Analysis",
     "translatingTo": "Translating to {{language}}...",
     "translationComplete": "Translation complete!",
-    "translationFailed": "Translation failed. Please try again.",
+    "translationFailed": "Failed to translate to {{language}}. Please try again.",
     "viewingInDifferentLanguage": "Viewing analysis in different language",
     "chromeAiNotAvailable": "Chrome AI Features Not Available",
     "chromeAiNotAvailableMessage": "This app requires Chrome version 141 or later with built-in AI features enabled. Please update Chrome or check if your device meets the requirements.",
@@ -552,7 +552,7 @@
     "notAValidContract": "This doesn't appear to be a valid contract document.",
     "analysisFailed": "We're sorry, an error occurred. We couldn't analyze your contract. Please try again.",
     "genericFailure": "We're sorry, something went wrong while processing your contract. Please try again.",
-    "translationFailed": "Translation failed. Please try again.",
+    "translationFailed": "Failed to translate to {{language}}. Please try again.",
     "multiPartyContract": "This app currently only supports contracts between 2 parties. Multi-party contracts are not supported at this time."
   },
   "languages": {

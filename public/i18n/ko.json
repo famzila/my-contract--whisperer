@@ -147,7 +147,7 @@
     "translating": "분석 번역 중",
     "translatingTo": "{{language}} (으)로 번역 중...",
     "translationComplete": "번역 완료!",
-    "translationFailed": "번역에 실패했습니다. 다시 시도하십시오.",
+    "translationFailed": "{{language}}(으)로 번역에 실패했습니다. 다시 시도하십시오.",
     "viewingInDifferentLanguage": "다른 언어로 분석 보기",
     "chromeAiNotAvailable": "Chrome AI 기능 사용 불가",
     "chromeAiNotAvailableMessage": "이 앱은 내장 AI 기능이 활성화된 Chrome 141 이상이 필요합니다. Chrome을 업데이트하거나 기기가 요구사항을 충족하는지 확인하세요.",
@@ -553,7 +553,7 @@
     "notAValidContract": "이는 유효한 계약 문서로 보이지 않습니다.",
     "analysisFailed": "죄송합니다. 오류가 발생했습니다. 계약서를 분석할 수 없었습니다. 다시 시도하십시오.",
     "genericFailure": "죄송합니다. 계약서를 처리하는 중에 문제가 발생했습니다. 다시 시도하십시오.",
-    "translationFailed": "번역에 실패했습니다. 다시 시도하십시오.",
+    "translationFailed": "{{language}}(으)로 번역에 실패했습니다. 다시 시도하십시오.",
     "multiPartyContract": "이 앱은 현재 2자 간 계약만 지원합니다. 다자 계약은 현재 지원되지 않습니다."
   },
   "languages": {

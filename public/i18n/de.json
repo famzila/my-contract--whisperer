@@ -147,7 +147,7 @@
     "translating": "Analyse wird übersetzt",
     "translatingTo": "Wird ins {{language}} übersetzt...",
     "translationComplete": "Übersetzung abgeschlossen!",
-    "translationFailed": "Übersetzung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "translationFailed": "Übersetzung nach {{language}} fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "viewingInDifferentLanguage": "Analyse wird in einer anderen Sprache angezeigt",
     "chromeAiNotAvailable": "Chrome KI-Funktionen nicht verfügbar",
     "chromeAiNotAvailableMessage": "Diese App erfordert Chrome Version 141 oder höher mit aktivierten integrierten KI-Funktionen. Bitte aktualisieren Sie Chrome oder prüfen Sie, ob Ihr Gerät die Anforderungen erfüllt.",
@@ -553,7 +553,7 @@
     "notAValidContract": "Dies scheint kein gültiges Vertragsdokument zu sein.",
     "analysisFailed": "Es tut uns leid, es ist ein Fehler aufgetreten. Wir konnten Ihren Vertrag nicht analysieren. Bitte versuchen Sie es erneut.",
     "genericFailure": "Es tut uns leid, beim Verarbeiten Ihres Vertrags ist etwas schiefgelaufen. Bitte versuchen Sie es erneut.",
-    "translationFailed": "Übersetzung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "translationFailed": "Übersetzung nach {{language}} fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "multiPartyContract": "Diese App unterstützt derzeit nur Verträge zwischen 2 Parteien. Mehrparteienverträge werden derzeit nicht unterstützt."
   },
   "languages": {
