@@ -33,13 +33,9 @@ export class PromptService {
   readonly modelDownloadProgress = signal<number | null>(null);
   readonly isDownloadingModel = signal<boolean>(false);
   readonly shouldShowDownloadNotice = signal<boolean>(false);
-  readonly isIndeterminateProgress = signal<boolean>(false); // For when Chrome doesn't fire intermediate events
   
   private downloadStartTime: number | null = null;
   private showNoticeTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  private progressSimulationIntervalId: ReturnType<typeof setInterval> | null = null;
-  private checkProgressUpdateInterval: ReturnType<typeof setInterval> | null = null;
-  private lastProgressUpdateTime: number | null = null;
   
   constructor() {
     // Register cleanup callback
@@ -141,85 +137,45 @@ export class PromptService {
       monitor: (m) => {
         // IMPORTANT: Log when monitor is called to verify it's being invoked
         this.logger.info(`📥 [AI Model] Monitor callback invoked - setting up downloadprogress listener`);
-        this.logger.info(`📥 [AI Model] Monitor object received:`, m);
         
-        // Track that monitor was called - this means download is happening or about to happen
-        const monitorInvokedAt = Date.now();
-        
-        // Track download progress only on first download (not on cached loads)
+        // Listen for the 'downloadprogress' event on the monitor object (m)
         m.addEventListener('downloadprogress', (e) => {
-          const percent = Math.round(e.loaded * 100);
-          // log the download progress
-          this.logger.info(`📥 [AI Model] Download progress event fired: ${percent}% (loaded: ${e.loaded}, total: ${e.total})`);
-          this.logger.info(`📥 [AI Model] Event details:`, e);
+          const loaded = e.loaded;
+          const total = e.total;
           
-          // Update download state
-          if (e.loaded === 0) {
-            // Download starting
-            this.logger.info(`📥 [AI Model] Download starting - e.loaded === 0`);
+          // Calculate percentage
+          const percentage = total > 0 ? parseFloat(((loaded / total) * 100).toFixed(2)) : 0;
+          
+          // Log the real-time progress to the console
+          this.logger.info(`📥 [DOWNLOAD] Progress: ${percentage}% (${loaded} of ${total} bytes)`);
+          
+          // Update progress in UI
+          this.modelDownloadProgress.set(Math.round(percentage));
+          
+          // Handle download start
+          if (loaded === 0 && !this.isDownloadingModel()) {
+            this.logger.info(`📥 [AI Model] Download starting`);
             this.isDownloadingModel.set(true);
             this.modelDownloadProgress.set(0);
-            this.isIndeterminateProgress.set(false);
             this.downloadStartTime = Date.now();
-            this.lastProgressUpdateTime = Date.now();
-            this.shouldShowDownloadNotice.set(false);
+            this.shouldShowDownloadNotice.set(true);
             
-            // Clear any existing timeouts/intervals
+            // Clear any existing timeout
             if (this.showNoticeTimeoutId) {
               clearTimeout(this.showNoticeTimeoutId);
               this.showNoticeTimeoutId = null;
             }
-            if (this.progressSimulationIntervalId) {
-              clearInterval(this.progressSimulationIntervalId);
-              this.progressSimulationIntervalId = null;
-            }
-            
-            // Always show notice immediately so user can see progress
-            // Even if download is cached/instant, we want to show the progress
-            this.shouldShowDownloadNotice.set(true);
-            
-            // Also set a timeout to check for missing progress events
-            this.showNoticeTimeoutId = setTimeout(() => {
-              // Check if download is still in progress (not complete)
-              if (this.isDownloadingModel() && this.modelDownloadProgress() !== null && this.modelDownloadProgress() !== 100) {
-                this.logger.info(`📥 [AI Model] Download taking time - notice already shown`);
-                
-                // If we haven't received progress updates in 2 seconds, Chrome might not be firing intermediate events
-                // Switch to indeterminate progress (animated loading)
-                const timeSinceLastUpdate = this.lastProgressUpdateTime ? Date.now() - this.lastProgressUpdateTime : 0;
-                if (timeSinceLastUpdate > 2000) {
-                  this.logger.info(`📥 [AI Model] No progress updates for ${timeSinceLastUpdate}ms - switching to indeterminate progress`);
-                  this.isIndeterminateProgress.set(true);
-                  this.modelDownloadProgress.set(null); // Clear percentage, show animated loader
-                  
-                  // Start simulated progress (slowly animate from 0-90% over time)
-                  this.startProgressSimulation();
-                }
-              }
-            }, 500);
-            
-            // Monitor for lack of progress updates (Chrome might not fire intermediate events)
-            this.checkProgressUpdateInterval = setInterval(() => {
-              const timeSinceLastUpdate = this.lastProgressUpdateTime ? Date.now() - this.lastProgressUpdateTime : 0;
-              if (timeSinceLastUpdate > 2000 && this.isDownloadingModel() && !this.isIndeterminateProgress()) {
-                this.logger.info(`📥 [AI Model] No progress events for ${timeSinceLastUpdate}ms - Chrome may not be firing intermediate events`);
-                this.isIndeterminateProgress.set(true);
-                this.modelDownloadProgress.set(null);
-                this.startProgressSimulation();
-              }
-            }, 1000);
-            
-            this.logger.info(`📥 [AI Model] Download started - progress set to 0`);
-          } else if (e.loaded === 1) {
-            // Download complete
-            this.logger.info(`📥 [AI Model] Download complete - e.loaded === 1`);
+          }
+          
+          // Optional: If the download completes (100%), signal extraction phase.
+          if (loaded === total && total > 0) {
+            this.logger.info(`📥 [STATUS] Download 100%. Model is now being extracted and loaded into memory...`);
             this.cleanupProgressTracking();
             this.modelDownloadProgress.set(100);
             
             // Always show completion progress so user can see it
             const downloadDuration = this.downloadStartTime ? Date.now() - this.downloadStartTime : 0;
             this.isDownloadingModel.set(false);
-            this.isIndeterminateProgress.set(false);
             
             // Show completion for 2 seconds so user can see 100%
             setTimeout(() => {
@@ -229,30 +185,13 @@ export class PromptService {
             }, 2000);
             
             this.logger.info(`📥 [AI Model] Download complete (${downloadDuration}ms, ${downloadDuration < 500 ? 'cached' : 'downloaded'})`);
-          } else {
-            // Download in progress - received an intermediate progress event!
-            // This means Chrome IS firing progress events, so use real progress
-            this.logger.info(`📥 [AI Model] Setting progress to: ${percent}%`);
-            this.lastProgressUpdateTime = Date.now();
-            this.isIndeterminateProgress.set(false); // Use real progress
-            this.modelDownloadProgress.set(percent);
-            
-            // Stop any progress simulation since we have real updates
-            if (this.progressSimulationIntervalId) {
-              clearInterval(this.progressSimulationIntervalId);
-              this.progressSimulationIntervalId = null;
-            }
-            
+          } else if (loaded > 0 && loaded < total) {
+            // Download in progress - intermediate progress event
             // If download is taking time, ensure notice is shown
             if (this.downloadStartTime && Date.now() - this.downloadStartTime > 500) {
               this.shouldShowDownloadNotice.set(true);
             }
           }
-          
-          // Only log significant progress milestones to avoid log spam
-          // if (e.loaded === 0 || e.loaded === 1 || e.loaded % 0.25 === 0) {
-          //   this.logger.info(`📥 [AI Model] Loading: ${percent}%`);
-          // }
         });
       },
     };
@@ -510,51 +449,12 @@ export class PromptService {
   }
 
   /**
-   * Clean up resources
-   */
-  /**
-   * Start simulated progress when Chrome doesn't fire intermediate events
-   * This shows a slowly increasing progress bar to give visual feedback
-   */
-  private startProgressSimulation(): void {
-    if (this.progressSimulationIntervalId) {
-      return; // Already running
-    }
-    
-    this.logger.info(`📥 [AI Model] Starting progress simulation`);
-    let simulatedProgress = 0;
-    
-    this.progressSimulationIntervalId = setInterval(() => {
-      // Slowly increase from 0 to 90% over time (cap at 90% to leave room for real completion)
-      simulatedProgress = Math.min(90, simulatedProgress + 1);
-      this.modelDownloadProgress.set(simulatedProgress);
-      this.logger.info(`📥 [AI Model] Simulated progress: ${simulatedProgress}%`);
-      
-      // Stop if we get a real progress update or download completes
-      if (!this.isDownloadingModel() || !this.isIndeterminateProgress()) {
-        if (this.progressSimulationIntervalId) {
-          clearInterval(this.progressSimulationIntervalId);
-          this.progressSimulationIntervalId = null;
-        }
-      }
-    }, 1000); // Update every second
-  }
-
-  /**
    * Clean up all progress tracking intervals and timeouts
    */
   private cleanupProgressTracking(): void {
     if (this.showNoticeTimeoutId) {
       clearTimeout(this.showNoticeTimeoutId);
       this.showNoticeTimeoutId = null;
-    }
-    if (this.progressSimulationIntervalId) {
-      clearInterval(this.progressSimulationIntervalId);
-      this.progressSimulationIntervalId = null;
-    }
-    if (this.checkProgressUpdateInterval) {
-      clearInterval(this.checkProgressUpdateInterval);
-      this.checkProgressUpdateInterval = null;
     }
   }
 
@@ -571,8 +471,6 @@ export class PromptService {
     this.isDownloadingModel.set(false);
     this.modelDownloadProgress.set(null);
     this.shouldShowDownloadNotice.set(false);
-    this.isIndeterminateProgress.set(false);
     this.downloadStartTime = null;
-    this.lastProgressUpdateTime = null;
   }
 }
