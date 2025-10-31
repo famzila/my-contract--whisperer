@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Button } from '../button/button';
@@ -52,3 +52,4 @@ export class EarlyAccessBanner {
     sessionStorage.setItem('early-access-banner-dismissed', 'true');
   }
 }
+

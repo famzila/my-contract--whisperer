@@ -5,9 +5,11 @@
       <div class="flex items-center justify-between">
         <!-- Logo & Title -->
         <div class="flex items-center gap-3 cursor-pointer" routerLink="/">
-          <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg">
-            <lucide-icon [name]="FileTextIcon" class="w-8 h-8 text-white"></lucide-icon>
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="Contract Whisperer Logo" 
+            class="w-12 h-12 object-contain rounded-2xl"
+          />
           <div>
             <h1 class="text-xl font-bold">{{ 'navbar.title' | translate }}</h1>
             <p class="text-body-xs">{{ 'navbar.subtitle' | translate }}</p>

@@ -4,7 +4,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { LanguageSelector, Button, EarlyAccessBanner } from '../../shared/components';
 import { UiStore } from '../../core/stores/ui.store';
-import { FileText, Bot, Shield, Menu, Sun, Moon } from '../../shared/icons/lucide-icons';
+import { Bot, Shield, Menu, Sun, Moon } from '../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'app-main-layout',
@@ -17,7 +17,6 @@ export class MainLayout {
   private uiStore = inject(UiStore);
   
   // Lucide icons
-  readonly FileTextIcon = FileText;
   readonly BotIcon = Bot;
   readonly ShieldIcon = Shield;
   readonly MenuIcon = Menu;
